@@ -1,19 +1,23 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from geoalchemy2.elements import WKTElement
+
+from app.database import get_db
+from app.models.incident import Incident
 from app.schemas.incident import IncidentCreate, IncidentResponse
+
 
 router = APIRouter(
     prefix="/incidents",
     tags=["Incidents"]
 )
 
-incidents = []
-next_id = 1
-
 
 @router.post("/", response_model=IncidentResponse)
-def create_incident(incident: IncidentCreate):
-    global next_id
-
+def create_incident(
+    incident: IncidentCreate,
+    db: Session = Depends(get_db)
+):
     risk_score = {
         "low": 25,
         "medium": 50,
@@ -21,19 +25,30 @@ def create_incident(incident: IncidentCreate):
         "critical": 95
     }.get(incident.severity.lower(), 50)
 
-    new_incident = {
-        "id": next_id,
-        **incident.model_dump(),
-        "status": "reported",
-        "risk_score": risk_score
-    }
+    db_incident = Incident(
+        incident_type=incident.incident_type,
+        severity=incident.severity,
+        description=incident.description,
+        latitude=incident.latitude,
+        longitude=incident.longitude,
+        location=WKTElement(
+            f"POINT({incident.longitude} {incident.latitude})",
+            srid=4326
+        ),
+        road_status=incident.road_status,
+        status="reported",
+        risk_score=risk_score
+    )
 
-    incidents.append(new_incident)
-    next_id += 1
+    db.add(db_incident)
+    db.commit()
+    db.refresh(db_incident)
 
-    return new_incident
+    return db_incident
 
 
 @router.get("/", response_model=list[IncidentResponse])
-def get_incidents():
-    return incidents
+def get_incidents(
+    db: Session = Depends(get_db)
+):
+    return db.query(Incident).order_by(Incident.id.desc()).all()
