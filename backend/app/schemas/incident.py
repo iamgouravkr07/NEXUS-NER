@@ -9,6 +9,7 @@ class IncidentCreate(BaseModel):
     latitude: float = Field(..., ge=20, le=30)
     longitude: float = Field(..., ge=88, le=98)
     road_status: Optional[str] = "unknown"
+    affected_road_id: Optional[int] = None
 
 
 class IncidentStatusUpdate(BaseModel):

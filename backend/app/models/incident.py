@@ -27,3 +27,8 @@ class Incident(Base):
     road_status = Column(String(30), default="unknown")
     status = Column(String(30), default="reported")
     risk_score = Column(Float, default=0)
+
+    affected_road_id = Column(
+        Integer,
+        nullable=True
+    )

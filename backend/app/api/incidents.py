@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from geoalchemy2.elements import WKTElement
-
+from app.models.road import Road
 from app.database import get_db
 from app.models.incident import Incident
 from app.schemas.incident import (
@@ -41,7 +41,8 @@ def create_incident(
         ),
         road_status=incident.road_status,
         status="reported",
-        risk_score=risk_score
+        risk_score=risk_score,
+        affected_road_id=incident.affected_road_id
     )
 
     db.add(db_incident)
@@ -90,6 +91,27 @@ def update_incident_status(
         )
 
     incident.status = new_status
+
+    # When a disruption is verified, update the affected road.
+    if new_status == "verified" and incident.affected_road_id:
+
+        road = db.query(Road).filter(
+            Road.id == incident.affected_road_id
+        ).first()
+
+        if not road:
+            raise HTTPException(
+                status_code=404,
+                detail="Affected road not found"
+            )
+
+        if incident.incident_type.lower() in {
+            "landslide",
+            "flood",
+            "road_damage"
+        }:
+            road.status = "blocked"
+            road.risk_score = 95
 
     db.commit()
     db.refresh(incident)
