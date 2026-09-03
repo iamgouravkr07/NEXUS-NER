@@ -5,6 +5,8 @@ from app.api.incidents import router as incidents_router
 from app.api.roads import router as roads_router
 from app.database import Base, engine
 from app.models.incident import Incident
+from app.api.vehicles import router as vehicles_router
+from app.api.trips import router as trips_router
 
 
 # Create the database tables
@@ -27,6 +29,8 @@ app.add_middleware(
 
 app.include_router(incidents_router)
 app.include_router(roads_router)
+app.include_router(vehicles_router)
+app.include_router(trips_router)
 
 @app.get("/")
 def root():
