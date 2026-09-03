@@ -1,5 +1,40 @@
+# Dependencies
+node_modules/
+__pycache__/
+.venv/
+venv/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build
+dist/
+dist-ssr/
+build/
+.expo/
+
+# IDE
+.vscode/
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Python
+*.pyc
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+*.sqlite
+*.sqlite3
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,16 +42,8 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Other local files
 *.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
