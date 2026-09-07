@@ -194,14 +194,6 @@ function RoutePlanner() {
 
   const [routeCalculated, setRouteCalculated] = useState(false);
   const [showAlternate, setShowAlternate] = useState(false);
-  const [routing, setRouting] = useState(false);
-  const [routeError, setRouteError] = useState("");
-  const [mainRoute, setMainRoute] = useState<[number, number][]>([]);
-  const [alternateRoute, setAlternateRoute] = useState<[number, number][]>([]);
-  const [routeDistanceKm, setRouteDistanceKm] = useState<number | null>(null);
-  const [routeDurationMinutes, setRouteDurationMinutes] = useState<number | null>(null);
-  const [alternateDistanceKm, setAlternateDistanceKm] = useState<number | null>(null);
-  const [alternateDurationMinutes, setAlternateDurationMinutes] = useState<number | null>(null);
 
   const fetchData = async () => {
     try {
@@ -269,13 +261,6 @@ function RoutePlanner() {
 
     setRouteCalculated(false);
     setShowAlternate(false);
-    setRouteError("");
-    setMainRoute([]);
-    setAlternateRoute([]);
-    setRouteDistanceKm(null);
-    setRouteDurationMinutes(null);
-    setAlternateDistanceKm(null);
-    setAlternateDurationMinutes(null);
   }, [selectedTrip, vehicles]);
 
   const filteredTrips = useMemo(() => {
@@ -307,128 +292,69 @@ function RoutePlanner() {
     ? getLocation(selectedTrip.destination)
     : null;
 
-  type OsrmRoute = {
-    distance: number;
-    duration: number;
-    geometry: {
-      coordinates: [number, number][];
-    };
-  };
-
-  const fetchOsrmRoutes = async () => {
+  /*
+   * Main route.
+   *
+   * This is currently a visual route between the two known
+   * NER locations. Later, OSRM/PostGIS/AI risk weighting
+   * will replace this with an actual road-network route.
+   */
+  const mainRoute = useMemo(() => {
     if (!origin || !destination) {
-      return null;
+      return [];
     }
 
-    const [originLat, originLng] = origin.position;
-    const [destinationLat, destinationLng] = destination.position;
+    const [lat1, lng1] = origin.position;
+    const [lat2, lng2] = destination.position;
 
-    const url =
-      `https://router.project-osrm.org/route/v1/driving/` +
-      `${originLng},${originLat};${destinationLng},${destinationLat}` +
-      `?overview=full&geometries=geojson&alternatives=true`;
+    const midLat = (lat1 + lat2) / 2;
+    const midLng = (lng1 + lng2) / 2;
 
-    const response = await fetch(url);
+    return [
+      origin.position,
+      [midLat + 0.25, midLng] as [number, number],
+      destination.position,
+    ];
+  }, [origin, destination]);
 
-    if (!response.ok) {
-      throw new Error(`OSRM request failed (${response.status})`);
+  /*
+   * Alternate route intentionally takes a different visual
+   * path. Later this will be replaced by the AI routing engine.
+   */
+  const alternateRoute = useMemo(() => {
+    if (!origin || !destination) {
+      return [];
     }
 
-    const data: { code: string; routes?: OsrmRoute[]; message?: string } =
-      await response.json();
+    const [lat1, lng1] = origin.position;
+    const [lat2, lng2] = destination.position;
 
-    if (data.code !== "Ok" || !data.routes?.length) {
-      throw new Error(data.message || "No road route was found");
-    }
+    const midLat = (lat1 + lat2) / 2;
+    const midLng = (lng1 + lng2) / 2;
 
-    return data.routes;
-  };
+    return [
+      origin.position,
+      [midLat - 0.35, midLng + 0.35] as [number, number],
+      destination.position,
+    ];
+  }, [origin, destination]);
 
-  const applyOsrmRoutes = (routes: OsrmRoute[]) => {
-    const primary = routes[0];
-    const alternate = routes[1];
-
-    setMainRoute(
-      primary.geometry.coordinates.map(([lng, lat]) => [lat, lng])
-    );
-    setRouteDistanceKm(primary.distance / 1000);
-    setRouteDurationMinutes(primary.duration / 60);
-
-    if (alternate) {
-      setAlternateRoute(
-        alternate.geometry.coordinates.map(([lng, lat]) => [lat, lng])
-      );
-      setAlternateDistanceKm(alternate.distance / 1000);
-      setAlternateDurationMinutes(alternate.duration / 60);
-    } else {
-      setAlternateRoute([]);
-      setAlternateDistanceKm(null);
-      setAlternateDurationMinutes(null);
-    }
-  };
-
-  const handleCalculateRoute = async () => {
-    if (!selectedTrip || !origin || !destination) {
+  const handleCalculateRoute = () => {
+    if (!selectedTrip) {
       return;
     }
 
-    try {
-      setRouting(true);
-      setRouteError("");
-      setShowAlternate(false);
-
-      const routes = await fetchOsrmRoutes();
-      if (!routes) {
-        return;
-      }
-
-      applyOsrmRoutes(routes);
-      setRouteCalculated(true);
-    } catch (err) {
-      console.error(err);
-      setRouteCalculated(false);
-      setRouteError(
-        err instanceof Error
-          ? err.message
-          : "Unable to calculate the road route"
-      );
-    } finally {
-      setRouting(false);
-    }
+    setRouteCalculated(true);
+    setShowAlternate(false);
   };
 
-  const handleAlternateRoute = async () => {
-    if (!selectedTrip || !origin || !destination) {
+  const handleAlternateRoute = () => {
+    if (!selectedTrip) {
       return;
     }
 
-    try {
-      setRouting(true);
-      setRouteError("");
-
-      const routes = await fetchOsrmRoutes();
-      if (!routes) {
-        return;
-      }
-
-      applyOsrmRoutes(routes);
-      setRouteCalculated(true);
-      setShowAlternate(routes.length > 1);
-
-      if (routes.length <= 1) {
-        setRouteError("OSRM did not return a separate alternate route for this trip.");
-      }
-    } catch (err) {
-      console.error(err);
-      setRouteCalculated(false);
-      setRouteError(
-        err instanceof Error
-          ? err.message
-          : "Unable to calculate the alternate route"
-      );
-    } finally {
-      setRouting(false);
-    }
+    setRouteCalculated(true);
+    setShowAlternate(true);
   };
 
   const handleTripClick = (trip: Trip) => {
@@ -492,16 +418,6 @@ function RoutePlanner() {
             <p className="mt-1 text-sm text-red-400/80">
               {error}
             </p>
-          </div>
-        </div>
-      )}
-
-      {routeError && (
-        <div className="flex items-center gap-3 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
-          <AlertTriangle size={20} className="shrink-0 text-orange-400" />
-          <div>
-            <p className="font-medium text-orange-300">Routing service message</p>
-            <p className="mt-1 text-sm text-orange-300/80">{routeError}</p>
           </div>
         </div>
       )}
@@ -779,9 +695,7 @@ function RoutePlanner() {
                   </p>
 
                   <p className="mt-1 text-sm font-semibold text-white">
-                    {routeDistanceKm !== null
-                      ? routeDistanceKm.toFixed(1)
-                      : selectedTrip.route_distance_km ?? "N/A"} km
+                    {selectedTrip.route_distance_km ?? "N/A"} km
                   </p>
                 </div>
 
@@ -791,11 +705,7 @@ function RoutePlanner() {
                   </p>
 
                   <p className="mt-1 text-sm font-semibold text-white">
-                    {formatDuration(
-                      routeDurationMinutes !== null
-                        ? Math.round(routeDurationMinutes)
-                        : selectedTrip.eta_minutes
-                    )}
+                    {formatDuration(selectedTrip.eta_minutes)}
                   </p>
                 </div>
               </div>
@@ -821,20 +731,18 @@ function RoutePlanner() {
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <button
                   onClick={handleCalculateRoute}
-                  disabled={routing}
                   className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-blue-500"
                 >
                   <RouteIcon size={16} />
-                  {routing && !showAlternate ? "Routing..." : "Calculate"}
+                  Calculate
                 </button>
 
                 <button
                   onClick={handleAlternateRoute}
-                  disabled={routing}
                   className="flex items-center justify-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-2.5 text-sm font-medium text-purple-300 transition hover:bg-purple-500/20"
                 >
                   <ArrowRight size={16} />
-                  {routing && showAlternate ? "Routing..." : "Alternate"}
+                  Alternate
                 </button>
               </div>
             </div>
@@ -985,8 +893,8 @@ function RoutePlanner() {
                 </CircleMarker>
               )}
 
-              {/* MAIN ROAD-NETWORK ROUTE */}
-              {routeCalculated && !showAlternate && mainRoute.length > 0 && (
+              {/* MAIN ROUTE */}
+              {routeCalculated && !showAlternate && (
                 <Polyline
                   positions={mainRoute}
                   pathOptions={{
@@ -997,24 +905,24 @@ function RoutePlanner() {
                 >
                   <Popup>
                     <div className="text-sm">
-                      <strong>OSRM Primary Road Route</strong>
+                      <strong>Primary Route</strong>
+
                       <br />
-                      {selectedTrip?.origin} → {selectedTrip?.destination}
+
+                      {selectedTrip?.origin} →{" "}
+                      {selectedTrip?.destination}
+
                       <br />
-                      Distance: {routeDistanceKm?.toFixed(1)} km
-                      <br />
-                      Travel time: {formatDuration(
-                        routeDurationMinutes !== null
-                          ? Math.round(routeDurationMinutes)
-                          : null
-                      )}
+
+                      Distance:{" "}
+                      {selectedTrip?.route_distance_km} km
                     </div>
                   </Popup>
                 </Polyline>
               )}
 
-              {/* OSRM ALTERNATE ROAD ROUTE */}
-              {routeCalculated && showAlternate && alternateRoute.length > 0 && (
+              {/* ALTERNATE ROUTE */}
+              {routeCalculated && showAlternate && (
                 <>
                   <Polyline
                     positions={alternateRoute}
@@ -1027,17 +935,16 @@ function RoutePlanner() {
                   >
                     <Popup>
                       <div className="text-sm">
-                        <strong>OSRM Alternate Road Route</strong>
+                        <strong>Alternate Route</strong>
+
                         <br />
-                        {selectedTrip?.origin} → {selectedTrip?.destination}
+
+                        Risk-aware alternate path
+
                         <br />
-                        Distance: {alternateDistanceKm?.toFixed(1)} km
-                        <br />
-                        Travel time: {formatDuration(
-                          alternateDurationMinutes !== null
-                            ? Math.round(alternateDurationMinutes)
-                            : null
-                        )}
+
+                        {selectedTrip?.origin} →{" "}
+                        {selectedTrip?.destination}
                       </div>
                     </Popup>
                   </Polyline>
@@ -1054,7 +961,6 @@ function RoutePlanner() {
                   />
                 </>
               )}
-
             </MapContainer>
 
             {/* MAP STATUS */}
@@ -1147,11 +1053,7 @@ function RoutePlanner() {
                   </p>
 
                   <p className="text-sm font-semibold text-white">
-                    {showAlternate && alternateDistanceKm !== null
-                      ? alternateDistanceKm.toFixed(1)
-                      : routeDistanceKm !== null
-                      ? routeDistanceKm.toFixed(1)
-                      : selectedTrip.route_distance_km ?? "N/A"} km
+                    {selectedTrip.route_distance_km ?? "N/A"} km
                   </p>
                 </div>
               </div>
@@ -1168,13 +1070,7 @@ function RoutePlanner() {
                   </p>
 
                   <p className="text-sm font-semibold text-white">
-                    {formatDuration(
-                      showAlternate && alternateDurationMinutes !== null
-                        ? Math.round(alternateDurationMinutes)
-                        : routeDurationMinutes !== null
-                        ? Math.round(routeDurationMinutes)
-                        : selectedTrip.eta_minutes
-                    )}
+                    {formatDuration(selectedTrip.eta_minutes)}
                   </p>
                 </div>
               </div>
