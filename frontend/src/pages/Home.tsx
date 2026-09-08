@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -54,6 +55,51 @@ type Incident = {
   confidence?: number;
   created_at?: string;
 };
+
+type AlertItem = {
+  id: number;
+  title: string;
+  description: string;
+  severity: string;
+  alert_type: string;
+  status: string;
+  location?: string;
+  created_at?: string;
+};
+
+function formatRelativeTime(dateStr?: string): string {
+  if (!dateStr) return "Just now";
+  try {
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins} min ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hr ago`;
+    return `${Math.floor(diffHours / 24)} d ago`;
+  } catch {
+    return "Recently";
+  }
+}
+
+function alertIcon(type?: string) {
+  switch (type?.toLowerCase()) {
+    case "weather":
+      return CloudRain;
+    case "vehicle":
+      return Truck;
+    case "road_risk":
+      return AlertTriangle;
+    case "road_incident":
+      return ShieldAlert;
+    case "reroute":
+      return Route;
+    case "trip_delay":
+      return Clock3;
+    default:
+      return AlertTriangle;
+  }
+}
 
 type RiskPoint = {
   name: string;
@@ -202,7 +248,10 @@ function StatCard({
 function Home() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [criticalAlerts, setCriticalAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingAlerts, setLoadingAlerts] = useState(true);
+  const [alertsError, setAlertsError] = useState(false);
   const [backendOnline, setBackendOnline] = useState(true);
 
   useEffect(() => {
@@ -210,10 +259,11 @@ function Home() {
 
     async function loadDashboard() {
       try {
-        const [vehicleResponse, incidentResponse] =
+        const [vehicleResponse, incidentResponse, alertResponse] =
           await Promise.all([
             fetch(`${API_URL}/vehicles/`),
             fetch(`${API_URL}/incidents/`),
+            fetch(`${API_URL}/alerts/?severity=critical&status=active&limit=5`),
           ]);
 
         if (!vehicleResponse.ok || !incidentResponse.ok) {
@@ -222,26 +272,31 @@ function Home() {
 
         const vehicleData = await vehicleResponse.json();
         const incidentData = await incidentResponse.json();
+        const alertData = alertResponse.ok ? await alertResponse.json() : [];
 
         if (!mounted) return;
 
         setVehicles(Array.isArray(vehicleData) ? vehicleData : []);
         setIncidents(Array.isArray(incidentData) ? incidentData : []);
+        setCriticalAlerts(Array.isArray(alertData) ? alertData : []);
+        setAlertsError(!alertResponse.ok);
         setBackendOnline(true);
       } catch {
         if (!mounted) return;
 
         setBackendOnline(false);
+        setAlertsError(true);
       } finally {
         if (mounted) {
           setLoading(false);
+          setLoadingAlerts(false);
         }
       }
     }
 
     loadDashboard();
 
-    const interval = window.setInterval(loadDashboard, 30000);
+    const interval = window.setInterval(loadDashboard, 10000);
 
     return () => {
       mounted = false;
@@ -646,92 +701,105 @@ function Home() {
           </div>
 
           {/* Alerts */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/70">
-            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
-              <div>
-                <h3 className="font-semibold text-white">
-                  Critical Alerts
-                </h3>
+          <div className="rounded-xl border border-slate-800 bg-slate-900/70 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-white">
+                      Critical Alerts
+                    </h3>
+                    {criticalAlerts.length > 0 && (
+                      <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-400 border border-red-500/30">
+                        {criticalAlerts.length} Active
+                      </span>
+                    )}
+                  </div>
 
-                <p className="mt-1 text-xs text-slate-500">
-                  Requires operator attention
-                </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Requires operator attention
+                  </p>
+                </div>
+
+                <AlertTriangle
+                  size={18}
+                  className={criticalAlerts.length > 0 ? "text-red-400" : "text-slate-500"}
+                />
               </div>
 
-              <AlertTriangle
-                size={18}
-                className="text-red-400"
-              />
+              <div className="divide-y divide-slate-800">
+                {loadingAlerts && criticalAlerts.length === 0 ? (
+                  <div className="p-4 space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex gap-3 animate-pulse">
+                        <div className="h-8 w-8 rounded-lg bg-slate-800" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 w-3/4 rounded bg-slate-800" />
+                          <div className="h-3 w-1/2 rounded bg-slate-800/60" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : alertsError && criticalAlerts.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <AlertTriangle size={24} className="mx-auto text-amber-400 mb-2" />
+                    <p className="text-sm font-medium text-slate-300">Unable to load critical alerts</p>
+                    <p className="text-xs text-slate-500 mt-1">Connecting to backend...</p>
+                  </div>
+                ) : criticalAlerts.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                      <CheckCircle2 size={20} />
+                    </div>
+                    <p className="text-sm font-medium text-slate-200">All Corridors Normal</p>
+                    <p className="mt-1 text-xs text-slate-500">No active critical alerts require operator intervention.</p>
+                  </div>
+                ) : (
+                  criticalAlerts.map((alert) => {
+                    const IconComponent = alertIcon(alert.alert_type);
+                    return (
+                      <div key={alert.id} className="p-4 transition hover:bg-slate-800/30">
+                        <div className="flex gap-3">
+                          <div className="mt-0.5 rounded-lg bg-red-500/10 p-2 text-red-400 shrink-0">
+                            <IconComponent size={16} />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm font-medium text-slate-200 truncate">
+                                {alert.title}
+                              </p>
+                              <span className="shrink-0 text-[10px] text-slate-500">
+                                {formatRelativeTime(alert.created_at)}
+                              </span>
+                            </div>
+
+                            <p className="mt-1 text-xs leading-5 text-slate-400 line-clamp-2">
+                              {alert.description}
+                            </p>
+
+                            {alert.location && (
+                              <p className="mt-1.5 flex items-center gap-1 text-[11px] text-slate-500">
+                                <MapPin size={11} className="shrink-0 text-slate-600" />
+                                <span className="truncate">{alert.location}</span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
 
-            <div className="divide-y divide-slate-800">
-              <div className="p-4">
-                <div className="flex gap-3">
-                  <div className="mt-0.5 rounded-lg bg-red-500/10 p-2 text-red-400">
-                    <CloudRain size={16} />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-slate-200">
-                      Heavy rainfall warning
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                      Elevated disruption probability near
-                      Aizawl corridor.
-                    </p>
-
-                    <p className="mt-2 text-[10px] text-slate-600">
-                      12 minutes ago
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4">
-                <div className="flex gap-3">
-                  <div className="mt-0.5 rounded-lg bg-amber-500/10 p-2 text-amber-400">
-                    <AlertTriangle size={16} />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-slate-200">
-                      Road accessibility degraded
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                      Possible landslide impact on an active
-                      logistics corridor.
-                    </p>
-
-                    <p className="mt-2 text-[10px] text-slate-600">
-                      28 minutes ago
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4">
-                <div className="flex gap-3">
-                  <div className="mt-0.5 rounded-lg bg-emerald-500/10 p-2 text-emerald-400">
-                    <CheckCircle2 size={16} />
-                  </div>
-
-                  <div>
-                    <p className="text-sm font-medium text-slate-200">
-                      Route restored
-                    </p>
-
-                    <p className="mt-1 text-xs leading-5 text-slate-500">
-                      Previous road restriction has been cleared.
-                    </p>
-
-                    <p className="mt-2 text-[10px] text-slate-600">
-                      43 minutes ago
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="border-t border-slate-800/80 p-3 bg-slate-950/40 text-center rounded-b-xl">
+              <Link
+                to="/alerts"
+                className="text-xs font-medium text-cyan-400 hover:text-cyan-300 transition"
+              >
+                View All Operational Alerts &rarr;
+              </Link>
             </div>
           </div>
         </div>

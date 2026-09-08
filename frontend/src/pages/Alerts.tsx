@@ -172,6 +172,10 @@ function Alerts() {
 
   useEffect(() => {
     fetchAlertsData();
+    const interval = window.setInterval(fetchAlertsData, 10000);
+    return () => {
+      window.clearInterval(interval);
+    };
   }, [fetchAlertsData]);
 
   const handleAcknowledge = async (rawId: number) => {

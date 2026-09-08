@@ -161,12 +161,19 @@ class Phase3AlertTests(unittest.TestCase):
         self.assertEqual(reroute_resp.status_code, 200)
 
         # Check reroute alert
-        alerts = self.client.get(f"/alerts/?alert_type=reroute&search=Trip #{trip.id}").json()
-        self.assertTrue(len(alerts) > 0, "Expected reroute alert for trip")
+        alerts = self.client.get("/alerts/", params={"alert_type": "reroute", "search": f"Trip #{trip.id}"}).json()
+        self.assertEqual(len(alerts), 1, "Expected exactly 1 reroute alert for trip")
         reroute_alert = alerts[0]
         self.assertIn("Safe Detour Active", reroute_alert["title"])
         self.assertEqual(reroute_alert["source_entity_id"], trip.id)
-        print("PASS: Scenario C - Dynamic reroute alert generation verified.")
+        self.assertEqual(reroute_alert["dedup_key"], f"reroute:trip:{trip.id}")
+
+        # Trigger second dynamic reroute on same trip to verify dedup suppression
+        reroute_resp2 = self.client.post(f"/trips/{trip.id}/reroute")
+        self.assertEqual(reroute_resp2.status_code, 200)
+        alerts2 = self.client.get("/alerts/", params={"alert_type": "reroute", "search": f"Trip #{trip.id}"}).json()
+        self.assertEqual(len(alerts2), 1, "Duplicate reroute alert was not suppressed")
+        print("PASS: Scenario C - Dynamic reroute alert generation & deduplication verified.")
 
     def test_scenario_d_trip_delay_alert(self):
         """Scenario D: Test trip delay alert generation when no safe route is available."""
@@ -232,7 +239,7 @@ class Phase3AlertTests(unittest.TestCase):
         self.assertEqual(reroute_resp.status_code, 200)
 
         # Check trip_delay alert
-        delay_alerts = self.client.get(f"/alerts/?alert_type=trip_delay&search=Trip #{trip.id}").json()
+        delay_alerts = self.client.get("/alerts/", params={"alert_type": "trip_delay", "search": f"Trip #{trip.id}"}).json()
         self.assertTrue(len(delay_alerts) > 0, "Expected trip delay alert")
         self.assertEqual(delay_alerts[0]["severity"], "critical")
         print("PASS: Scenario D - Trip delay alert when no safe detour exists verified.")

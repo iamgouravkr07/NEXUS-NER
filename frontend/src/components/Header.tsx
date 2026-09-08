@@ -1,7 +1,38 @@
+import { useEffect, useState } from "react";
 import { Bell, Search, User } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const API_URL = "http://127.0.0.1:8000";
+
 function Header() {
+  const [criticalCount, setCriticalCount] = useState<number>(0);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchSummary() {
+      try {
+        const res = await fetch(`${API_URL}/alerts/summary`);
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted) {
+            setCriticalCount(data.critical || 0);
+          }
+        }
+      } catch {
+        // Fallback gracefully on network error
+      }
+    }
+
+    fetchSummary();
+    const interval = window.setInterval(fetchSummary, 10000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-800 bg-slate-950 px-6 text-white">
       {/* Left */}
@@ -28,12 +59,20 @@ function Header() {
         {/* Notifications */}
         <Link
           to="/alerts"
-          title="View Alerts & Notifications"
+          title={
+            criticalCount > 0
+              ? `${criticalCount} Critical Alerts requiring attention`
+              : "View Alerts & Notifications"
+          }
           className="relative rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
         >
           <Bell size={20} />
 
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+          {criticalCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-slate-950">
+              {criticalCount > 99 ? "99+" : criticalCount}
+            </span>
+          )}
         </Link>
 
         {/* User */}

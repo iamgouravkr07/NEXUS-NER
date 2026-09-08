@@ -108,29 +108,38 @@ def get_alerts(
 
 
 def get_alert_summary(db: Session) -> AlertSummary:
-    """Compute aggregate counts by severity and lifecycle status."""
-    alerts = db.query(Alert.severity, Alert.status).all()
+    """Compute aggregate counts by severity and lifecycle status via SQL GROUP BY."""
+    rows = (
+        db.query(
+            Alert.severity,
+            Alert.status,
+            func.count(Alert.id)
+        )
+        .group_by(Alert.severity, Alert.status)
+        .all()
+    )
 
-    summary = AlertSummary(total=len(alerts))
-    for sev, stat in alerts:
+    summary = AlertSummary()
+    for sev, stat, cnt in rows:
+        summary.total += cnt
         s_sev = (sev or "").lower()
         s_stat = (stat or "").lower()
 
         if s_sev == "critical":
-            summary.critical += 1
+            summary.critical += cnt
         elif s_sev == "high":
-            summary.high += 1
+            summary.high += cnt
         elif s_sev == "medium":
-            summary.medium += 1
+            summary.medium += cnt
         elif s_sev == "low":
-            summary.low += 1
+            summary.low += cnt
 
         if s_stat == "active":
-            summary.active += 1
+            summary.active += cnt
         elif s_stat == "acknowledged":
-            summary.acknowledged += 1
+            summary.acknowledged += cnt
         elif s_stat == "resolved":
-            summary.resolved += 1
+            summary.resolved += cnt
 
     return summary
 

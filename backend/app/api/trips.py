@@ -915,7 +915,7 @@ def reroute_trip(
             location=trip.origin,
             source_entity="trip",
             source_entity_id=trip.id,
-            dedup_key=f"reroute:trip:{trip.id}:{trip.reroute_count}"
+            dedup_key=f"reroute:trip:{trip.id}"
         )
     except Exception:
         pass
