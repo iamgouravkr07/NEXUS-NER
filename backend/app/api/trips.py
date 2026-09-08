@@ -1,3 +1,4 @@
+import json
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -110,6 +111,8 @@ def create_trip(
         vehicle_id=trip.vehicle_id,
         origin=trip.origin,
         destination=trip.destination,
+        origin_lat=trip.origin_lat,
+        origin_lon=trip.origin_lon,
         destination_lat=trip.destination_lat,
         destination_lon=trip.destination_lon,
         cargo_type=trip.cargo_type,
@@ -118,6 +121,9 @@ def create_trip(
         eta_minutes=trip.eta_minutes,
         route_distance_km=trip.route_distance_km,
         route_duration_minutes=trip.route_duration_minutes,
+        current_route_geometry=trip.current_route_geometry,
+        reroute_count=trip.reroute_count or 0,
+        last_reroute_reason=trip.last_reroute_reason,
     )
 
     db.add(db_trip)
@@ -301,10 +307,18 @@ def reroute_trip(
             detail="Vehicle not found",
         )
 
-    if vehicle.latitude is None or vehicle.longitude is None:
+    if vehicle.latitude is not None and vehicle.longitude is not None:
+        start_lat = vehicle.latitude
+        start_lon = vehicle.longitude
+        origin_source = "vehicle_gps"
+    elif trip.origin_lat is not None and trip.origin_lon is not None:
+        start_lat = trip.origin_lat
+        start_lon = trip.origin_lon
+        origin_source = "trip_origin"
+    else:
         raise HTTPException(
             status_code=400,
-            detail="Vehicle GPS location is not available",
+            detail="Neither vehicle GPS location nor trip origin coordinates are available",
         )
 
     if (
@@ -322,8 +336,8 @@ def reroute_trip(
 
     try:
         primary_route = calculate_route(
-            origin_lat=vehicle.latitude,
-            origin_lon=vehicle.longitude,
+            origin_lat=start_lat,
+            origin_lon=start_lon,
             destination_lat=trip.destination_lat,
             destination_lon=trip.destination_lon,
         )
@@ -361,12 +375,12 @@ def reroute_trip(
             trip.status = "active"
 
         trip.route_distance_km = primary_route["distance_km"]
-
         trip.route_duration_minutes = (
             primary_route["duration_minutes"]
         )
-
         trip.eta_minutes = primary_route["duration_minutes"]
+        trip.current_route_geometry = json.dumps(primary_route["geometry"])
+        trip.last_reroute_reason = "Current route is safe"
 
         db.commit()
         db.refresh(trip)
@@ -377,15 +391,27 @@ def reroute_trip(
             "status": trip.status,
             "reroute_required": False,
             "reason": "Current route is safe",
-            "primary_route": primary_route,
-            "primary_risk": primary_risk,
+            "origin_used": {
+                "source": origin_source,
+                "latitude": start_lat,
+                "longitude": start_lon,
+            },
+            "blockage": None,
+            "previous_route": primary_route,
             "selected_route": primary_route,
-            "selected_risk": primary_risk,
+            "new_route": primary_route,
+            "current_route": primary_route,
             "previous_eta_minutes": previous_eta,
             "new_eta_minutes": primary_route["duration_minutes"],
             "delay_minutes": 0,
-            "alternatives_count": 0,
+            "previous_risk": primary_risk,
+            "selected_risk": primary_risk,
             "safe_alternatives_count": 0,
+            "safe_alternatives_found": 0,
+            "alternatives_count": 0,
+            "alternatives_evaluated": 0,
+            "reroute_count": trip.reroute_count or 0,
+            "last_reroute_reason": trip.last_reroute_reason,
             "alternatives": [],
         }
 
@@ -513,8 +539,8 @@ def reroute_trip(
         # the primary route geometry was too sparse to infer a
         # local direction.
         corridor_bearing = calculate_bearing(
-            vehicle.latitude,
-            vehicle.longitude,
+            start_lat,
+            start_lon,
             trip.destination_lat,
             trip.destination_lon,
         )
@@ -605,8 +631,8 @@ def reroute_trip(
 
             try:
                 alternative_route = calculate_route_via_waypoint(
-                    origin_lat=vehicle.latitude,
-                    origin_lon=vehicle.longitude,
+                    origin_lat=start_lat,
+                    origin_lon=start_lon,
                     waypoint_lat=attempt_lat,
                     waypoint_lon=attempt_lon,
                     destination_lat=trip.destination_lat,
@@ -775,6 +801,7 @@ def reroute_trip(
     if not safe_alternatives:
 
         trip.status = "delayed"
+        trip.last_reroute_reason = f"{blockage_source} - No safe alternative found"
 
         db.commit()
         db.refresh(trip)
@@ -784,25 +811,33 @@ def reroute_trip(
             "vehicle_id": vehicle.id,
             "status": trip.status,
             "reroute_required": True,
-            "reason": "No safe alternative route found",
-            "blockage_source": blockage_source,
-            "blockage_distance_km": round(
-                blockage_distance,
-                2,
-            ),
-            "blockage_location": {
+            "reason": "No safe alternative route found; corridor is blocked",
+            "blockage": {
+                "source": blockage_source,
+                "title": blockage_source,
+                "type": blockage_source.split(" ")[0].lower(),
+                "distance_km": round(blockage_distance, 2),
                 "latitude": blocked_lat,
                 "longitude": blocked_lon,
             },
-            "previous_route": primary_route,
-            "previous_risk": primary_risk,
+            "previous_route": {
+                **primary_route,
+                "risk_score": primary_risk.get("risk_score", 95.0),
+                "risk_level": primary_risk.get("risk_level", "critical"),
+            },
             "selected_route": None,
-            "selected_risk": None,
+            "new_route": None,
             "previous_eta_minutes": trip.eta_minutes,
             "new_eta_minutes": trip.eta_minutes,
             "delay_minutes": 0,
-            "alternatives_count": len(alternatives),
+            "previous_risk": primary_risk,
+            "selected_risk": None,
             "safe_alternatives_count": 0,
+            "safe_alternatives_found": 0,
+            "alternatives_count": len(alternatives),
+            "alternatives_evaluated": len(alternatives),
+            "reroute_count": trip.reroute_count or 0,
+            "last_reroute_reason": trip.last_reroute_reason,
             "alternatives": alternatives,
             "rejected_candidates": rejected_candidates,
         }
@@ -847,6 +882,10 @@ def reroute_trip(
         selected_route["duration_minutes"]
     )
 
+    trip.current_route_geometry = json.dumps(selected_route["geometry"])
+    trip.reroute_count = (trip.reroute_count or 0) + 1
+    trip.last_reroute_reason = f"Avoided {blockage_source}"
+
     db.commit()
     db.refresh(trip)
 
@@ -877,28 +916,43 @@ def reroute_trip(
             "Primary route is unsafe; "
             "safe alternative route selected"
         ),
-        "blockage_source": blockage_source,
-        "blockage_distance_km": round(
-            blockage_distance,
-            2,
-        ),
-        "blockage_location": {
+        "origin_used": {
+            "source": origin_source,
+            "latitude": start_lat,
+            "longitude": start_lon,
+        },
+        "blockage": {
+            "source": blockage_source,
+            "title": blockage_source,
+            "type": blockage_source.split(" ")[0].lower(),
+            "distance_km": round(blockage_distance, 2),
             "latitude": blocked_lat,
             "longitude": blocked_lon,
         },
-        "previous_route": primary_route,
-        "previous_risk": primary_risk,
+        "previous_route": {
+            **primary_route,
+            "risk_score": primary_risk.get("risk_score", 95.0),
+            "risk_level": primary_risk.get("risk_level", "critical"),
+        },
         "selected_route": selected_route,
-        "selected_risk": selected_risk,
+        "new_route": {
+            **selected_route,
+            "risk_score": selected_risk.get("risk_score", 25.0),
+            "risk_level": selected_risk.get("risk_level", "low"),
+        },
         "previous_eta_minutes": previous_eta,
         "new_eta_minutes": (
             selected_route["duration_minutes"]
         ),
         "delay_minutes": delay_minutes,
+        "previous_risk": primary_risk,
+        "selected_risk": selected_risk,
+        "safe_alternatives_count": len(safe_alternatives),
+        "safe_alternatives_found": len(safe_alternatives),
         "alternatives_count": len(alternatives),
-        "safe_alternatives_count": len(
-            safe_alternatives
-        ),
+        "alternatives_evaluated": len(alternatives),
+        "reroute_count": trip.reroute_count,
+        "last_reroute_reason": trip.last_reroute_reason,
         "alternatives": alternatives,
         "rejected_candidates": rejected_candidates,
     }

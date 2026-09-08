@@ -1,4 +1,5 @@
 
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -6,12 +7,22 @@ from app.database import get_db
 from app.models.vehicle import Vehicle
 from app.schemas.vehicle import (
     VehicleCreate,
+    VehicleLocationResponse,
     VehicleLocationUpdate,
     VehicleResponse,
     VehicleStatusUpdate,
 )
 
 router = APIRouter(prefix="/vehicles", tags=["Vehicles"])
+
+ALLOWED_STATUSES = {
+    "idle",
+    "in_transit",
+    "delayed",
+    "stopped",
+    "delivered",
+    "offline",
+}
 
 
 @router.post("/", response_model=VehicleResponse)
@@ -29,6 +40,10 @@ def create_vehicle(
             detail="Vehicle number already exists"
         )
 
+    last_gps = vehicle.last_gps_timestamp
+    if last_gps is None and vehicle.latitude is not None and vehicle.longitude is not None:
+        last_gps = datetime.now(timezone.utc)
+
     db_vehicle = Vehicle(
         vehicle_number=vehicle.vehicle_number,
         vehicle_type=vehicle.vehicle_type,
@@ -37,6 +52,7 @@ def create_vehicle(
         status=vehicle.status,
         latitude=vehicle.latitude,
         longitude=vehicle.longitude,
+        last_gps_timestamp=last_gps,
         current_trip_id=vehicle.current_trip_id,
     )
 
@@ -70,11 +86,69 @@ def get_vehicle(
     return vehicle
 
 
+@router.get(
+    "/{vehicle_id}/location",
+    response_model=VehicleLocationResponse
+)
+def get_vehicle_location(
+    vehicle_id: int,
+    db: Session = Depends(get_db)
+):
+    vehicle = db.query(Vehicle).filter(
+        Vehicle.id == vehicle_id
+    ).first()
+
+    if not vehicle:
+        raise HTTPException(
+            status_code=404,
+            detail="Vehicle not found"
+        )
+
+    if vehicle.latitude is None or vehicle.longitude is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Vehicle GPS coordinates not available"
+        )
+
+    return VehicleLocationResponse(
+        vehicle_id=vehicle.id,
+        vehicle_number=vehicle.vehicle_number,
+        latitude=vehicle.latitude,
+        longitude=vehicle.longitude,
+        timestamp=vehicle.last_gps_timestamp,
+        status=vehicle.status,
+        current_trip_id=vehicle.current_trip_id,
+    )
+
+
+def _apply_location_update(
+    vehicle: Vehicle,
+    location_update: VehicleLocationUpdate,
+    db: Session
+) -> Vehicle:
+    vehicle.latitude = location_update.latitude
+    vehicle.longitude = location_update.longitude
+    vehicle.last_gps_timestamp = (
+        location_update.timestamp
+        if location_update.timestamp is not None
+        else datetime.now(timezone.utc)
+    )
+
+    if location_update.status is not None:
+        normalized_status = location_update.status.lower()
+        if normalized_status in ALLOWED_STATUSES:
+            vehicle.status = normalized_status
+
+    db.commit()
+    db.refresh(vehicle)
+    return vehicle
+
+
 @router.patch(
     "/{vehicle_id}/location",
     response_model=VehicleResponse
 )
-def update_vehicle_location(
+def update_vehicle_location_patch(
     vehicle_id: int,
     location_update: VehicleLocationUpdate,
     db: Session = Depends(get_db)
@@ -89,13 +163,29 @@ def update_vehicle_location(
             detail="Vehicle not found"
         )
 
-    vehicle.latitude = location_update.latitude
-    vehicle.longitude = location_update.longitude
+    return _apply_location_update(vehicle, location_update, db)
 
-    db.commit()
-    db.refresh(vehicle)
 
-    return vehicle
+@router.post(
+    "/{vehicle_id}/location",
+    response_model=VehicleResponse
+)
+def update_vehicle_location_post(
+    vehicle_id: int,
+    location_update: VehicleLocationUpdate,
+    db: Session = Depends(get_db)
+):
+    vehicle = db.query(Vehicle).filter(
+        Vehicle.id == vehicle_id
+    ).first()
+
+    if not vehicle:
+        raise HTTPException(
+            status_code=404,
+            detail="Vehicle not found"
+        )
+
+    return _apply_location_update(vehicle, location_update, db)
 
 
 @router.patch(
@@ -117,21 +207,12 @@ def update_vehicle_status(
             detail="Vehicle not found"
         )
 
-    allowed_statuses = {
-        "idle",
-        "in_transit",
-        "delayed",
-        "stopped",
-        "delivered",
-        "offline",
-    }
-
     new_status = status_update.status.lower()
 
-    if new_status not in allowed_statuses:
+    if new_status not in ALLOWED_STATUSES:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid status. Allowed values: {sorted(allowed_statuses)}"
+            detail=f"Invalid status. Allowed values: {sorted(ALLOWED_STATUSES)}"
         )
 
     vehicle.status = new_status
@@ -140,3 +221,4 @@ def update_vehicle_status(
     db.refresh(vehicle)
 
     return vehicle
+

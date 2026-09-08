@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, DateTime
 
 from app.database import Base
 
@@ -18,5 +18,6 @@ class Vehicle(Base):
 
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    last_gps_timestamp = Column(DateTime(timezone=True), nullable=True)
 
     current_trip_id = Column(Integer, nullable=True)

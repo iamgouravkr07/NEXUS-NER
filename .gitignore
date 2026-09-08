@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Dependencies
 node_modules/
 __pycache__/
@@ -12,11 +11,13 @@ venv/
 
 # Build
 dist/
+dist-ssr/
 build/
 .expo/
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 .idea/
 
 # Python
@@ -32,10 +33,7 @@ Thumbs.db
 *.sqlite3
 
 # Logs
-*.log
-=======
-# Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -43,19 +41,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Other local files
 *.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
->>>>>>> d11419b (Update frontend)
+

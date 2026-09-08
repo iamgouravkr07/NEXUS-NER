@@ -1,4 +1,5 @@
 import logging
+import time
 from math import radians, degrees, sin, cos, asin, atan2
 
 import requests
@@ -15,6 +16,37 @@ def _format_route(route):
         "duration_minutes": round(route["duration"] / 60),
         "geometry": route["geometry"],
     }
+
+
+def _osrm_get(
+    url: str,
+    params: dict | None = None,
+    timeout: int = 20,
+    max_retries: int = 3,
+):
+    """Execute OSRM HTTP request with retry logic, custom User-Agent, and timeout handling."""
+    last_error = None
+    headers = {"User-Agent": "NEXUS-NER-GIS-Router/1.0 (India SIH2026 Emergency Logistics)"}
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as error:
+            last_error = error
+            logger.warning(
+                "OSRM request attempt %d/%d to %s failed: %s",
+                attempt,
+                max_retries,
+                url,
+                error,
+            )
+            if attempt < max_retries:
+                time.sleep(1.0 * attempt)
+
+    raise requests.RequestException(
+        f"OSRM routing service unavailable after {max_retries} attempts: {last_error}"
+    ) from last_error
 
 
 def calculate_route(
@@ -34,13 +66,12 @@ def calculate_route(
         "geometries": "geojson",
     }
 
-    response = requests.get(url, params=params, timeout=30)
-    response.raise_for_status()
-
-    data = response.json()
+    data = _osrm_get(url, params=params, timeout=20, max_retries=2)
 
     if data.get("code") != "Ok" or not data.get("routes"):
-        raise RuntimeError("No route found")
+        raise RuntimeError(
+            f"No route found between ({origin_lat}, {origin_lon}) and ({destination_lat}, {destination_lon})"
+        )
 
     return _format_route(data["routes"][0])
 
@@ -70,13 +101,12 @@ def calculate_alternative_routes(
         "alternatives": "true",
     }
 
-    response = requests.get(url, params=params, timeout=30)
-    response.raise_for_status()
-
-    data = response.json()
+    data = _osrm_get(url, params=params, timeout=20, max_retries=2)
 
     if data.get("code") != "Ok" or not data.get("routes"):
-        raise RuntimeError("No alternative routes found")
+        raise RuntimeError(
+            f"No alternative routes found between ({origin_lat}, {origin_lon}) and ({destination_lat}, {destination_lon})"
+        )
 
     return [_format_route(route) for route in data["routes"]]
 
@@ -91,8 +121,6 @@ def calculate_route_via_waypoint(
 ):
     """
     Calculate a route forced through a waypoint.
-
-    Kept for compatibility with existing /routes endpoints.
     """
 
     url = (
@@ -107,15 +135,12 @@ def calculate_route_via_waypoint(
         "geometries": "geojson",
     }
 
-    response = requests.get(url, params=params, timeout=30)
-    response.raise_for_status()
-
-    data = response.json()
+    data = _osrm_get(url, params=params, timeout=20, max_retries=2)
 
     if data.get("code") != "Ok" or not data.get("routes"):
         raise RuntimeError(
-            f"No route found through waypoint: "
-            f"{waypoint_lat}, {waypoint_lon}"
+            f"No route found through waypoint ({waypoint_lat}, {waypoint_lon}) "
+            f"from ({origin_lat}, {origin_lon}) to ({destination_lat}, {destination_lon})"
         )
 
     return _format_route(data["routes"][0])
@@ -233,13 +258,10 @@ def snap_to_road(lat: float, lon: float):
     url = f"{OSRM_BASE_URL}/nearest/v1/driving/{lon},{lat}"
 
     try:
-        response = requests.get(url, timeout=15)
-        response.raise_for_status()
+        data = _osrm_get(url, timeout=10, max_retries=2)
     except requests.RequestException as error:
         logger.info("OSRM /nearest request failed for (%s, %s): %s", lat, lon, error)
         return None
-
-    data = response.json()
 
     if data.get("code") != "Ok" or not data.get("waypoints"):
         logger.info("OSRM /nearest found no routable road near (%s, %s)", lat, lon)
