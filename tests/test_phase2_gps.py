@@ -20,6 +20,11 @@ from geoalchemy2.elements import WKTElement
 
 client = TestClient(app)
 
+# Authenticate test client as CONTROL_OPERATOR for operational GPS and reroute tests
+_login_res = client.post("/auth/login", json={"username": "operator", "password": "Operator@Nexus2026"})
+if _login_res.status_code == 200:
+    client.headers["Authorization"] = f"Bearer {_login_res.json()['access_token']}"
+
 
 def cleanup_test_data(db):
     """Clean up synthetic test entities."""

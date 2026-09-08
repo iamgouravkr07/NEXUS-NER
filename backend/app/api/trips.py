@@ -31,6 +31,7 @@ from app.services.risk import (
     haversine_distance_km,
 )
 from app.services import alert_service
+from app.api.auth import require_roles
 
 
 logger = logging.getLogger("nexus_ner.reroute")
@@ -274,6 +275,7 @@ def update_trip_eta(
 def reroute_trip(
     trip_id: int,
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
 
     # --------------------------------------------------------

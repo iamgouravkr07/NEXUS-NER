@@ -36,6 +36,10 @@ class Phase3AlertTests(unittest.TestCase):
     def setUpClass(cls):
         cls.client = TestClient(app)
         cls.db = SessionLocal()
+        # Authenticate client as CONTROL_OPERATOR for operational alert and reroute permissions
+        login_resp = cls.client.post("/auth/login", json={"username": "operator", "password": "Operator@Nexus2026"})
+        if login_resp.status_code == 200:
+            cls.client.headers["Authorization"] = f"Bearer {login_resp.json()['access_token']}"
 
     @classmethod
     def tearDownClass(cls):

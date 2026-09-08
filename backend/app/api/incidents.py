@@ -10,6 +10,7 @@ from app.schemas.incident import (
     IncidentStatusUpdate
 )
 from app.services import alert_service
+from app.api.auth import require_roles
 
 
 router = APIRouter(
@@ -21,7 +22,8 @@ router = APIRouter(
 @router.post("/", response_model=IncidentResponse)
 def create_incident(
     incident: IncidentCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
 ):
     risk_score = {
         "low": 25,
@@ -82,7 +84,8 @@ def get_incidents(
 def update_incident_status(
     incident_id: int,
     status_update: IncidentStatusUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     incident = db.query(Incident).filter(
         Incident.id == incident_id

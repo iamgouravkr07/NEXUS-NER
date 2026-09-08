@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
-import { Bell, Search, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Bell, Search, User, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const API_URL = "http://127.0.0.1:8000";
 
 function Header() {
   const [criticalCount, setCriticalCount] = useState<number>(0);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -83,13 +91,21 @@ function Header() {
 
           <div className="hidden sm:block">
             <p className="text-sm font-medium text-white">
-              Control Operator
+              {user?.username || "Control Operator"}
             </p>
 
-            <p className="text-xs text-slate-500">
-              NEXUS-NER
+            <p className="text-[10px] font-semibold text-cyan-400 uppercase tracking-wider">
+              {user?.role || "OPERATOR"}
             </p>
           </div>
+
+          <button
+            onClick={handleLogout}
+            title="Sign out of NEXUS-NER"
+            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-red-400"
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
     </header>

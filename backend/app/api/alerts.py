@@ -10,6 +10,7 @@ from app.schemas.alert import (
     AlertStatusUpdate
 )
 from app.services import alert_service
+from app.api.auth import require_roles
 
 router = APIRouter(
     prefix="/alerts",
@@ -71,7 +72,8 @@ def create_manual_alert(
 @router.patch("/{alert_id}/acknowledge", response_model=AlertResponse)
 def acknowledge_alert_endpoint(
     alert_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     """Mark an alert as acknowledged by an operator."""
     alert = alert_service.acknowledge_alert(db=db, alert_id=alert_id)
@@ -83,7 +85,8 @@ def acknowledge_alert_endpoint(
 @router.patch("/{alert_id}/resolve", response_model=AlertResponse)
 def resolve_alert_endpoint(
     alert_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     """Mark an alert as resolved."""
     alert = alert_service.resolve_alert(db=db, alert_id=alert_id)

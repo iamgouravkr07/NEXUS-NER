@@ -12,6 +12,7 @@ from app.schemas.vehicle import (
     VehicleResponse,
     VehicleStatusUpdate,
 )
+from app.api.auth import require_roles, get_current_user
 
 router = APIRouter(prefix="/vehicles", tags=["Vehicles"])
 
@@ -28,7 +29,8 @@ ALLOWED_STATUSES = {
 @router.post("/", response_model=VehicleResponse)
 def create_vehicle(
     vehicle: VehicleCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN")),
 ):
     existing = db.query(Vehicle).filter(
         Vehicle.vehicle_number == vehicle.vehicle_number
@@ -151,7 +153,8 @@ def _apply_location_update(
 def update_vehicle_location_patch(
     vehicle_id: int,
     location_update: VehicleLocationUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
 ):
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
@@ -173,7 +176,8 @@ def update_vehicle_location_patch(
 def update_vehicle_location_post(
     vehicle_id: int,
     location_update: VehicleLocationUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
 ):
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
