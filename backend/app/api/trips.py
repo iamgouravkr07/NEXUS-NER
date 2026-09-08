@@ -30,6 +30,7 @@ from app.services.risk import (
     calculate_route_risk,
     haversine_distance_km,
 )
+from app.services import alert_service
 
 
 logger = logging.getLogger("nexus_ner.reroute")
@@ -806,6 +807,21 @@ def reroute_trip(
         db.commit()
         db.refresh(trip)
 
+        try:
+            alert_service.create_alert(
+                db=db,
+                title=f"Trip #{trip.id} Delayed: No Safe Route",
+                description=f"Trip #{trip.id} (Vehicle #{vehicle.id}) from {trip.origin} to {trip.destination} blocked by {blockage_source}. All alternative detours impassable.",
+                severity="critical",
+                alert_type="trip_delay",
+                location=trip.origin,
+                source_entity="trip",
+                source_entity_id=trip.id,
+                dedup_key=f"trip_delay:trip:{trip.id}"
+            )
+        except Exception:
+            pass
+
         return {
             "trip_id": trip.id,
             "vehicle_id": vehicle.id,
@@ -888,6 +904,21 @@ def reroute_trip(
 
     db.commit()
     db.refresh(trip)
+
+    try:
+        alert_service.create_alert(
+            db=db,
+            title=f"Safe Detour Active: Trip #{trip.id}",
+            description=f"Trip #{trip.id} (Vehicle #{vehicle.id}) dynamically rerouted to avoid {blockage_source}. New ETA: {trip.eta_minutes} min ({round(selected_route['distance_km'], 1)} km).",
+            severity="critical" if (trip.priority or "").lower() == "critical" else "high",
+            alert_type="reroute",
+            location=trip.origin,
+            source_entity="trip",
+            source_entity_id=trip.id,
+            dedup_key=f"reroute:trip:{trip.id}:{trip.reroute_count}"
+        )
+    except Exception:
+        pass
 
     # --------------------------------------------------------
     # 12. Calculate delay

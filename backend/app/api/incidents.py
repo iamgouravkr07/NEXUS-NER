@@ -9,6 +9,7 @@ from app.schemas.incident import (
     IncidentResponse,
     IncidentStatusUpdate
 )
+from app.services import alert_service
 
 
 router = APIRouter(
@@ -48,6 +49,24 @@ def create_incident(
     db.add(db_incident)
     db.commit()
     db.refresh(db_incident)
+
+    if db_incident.severity.lower() in {"critical", "high"}:
+        try:
+            alert_service.create_alert(
+                db=db,
+                title=f"{db_incident.severity.title()} Incident: {db_incident.incident_type.replace('_', ' ').title()}",
+                description=db_incident.description,
+                severity=db_incident.severity.lower(),
+                alert_type="road_incident",
+                location=f"Lat {db_incident.latitude:.4f}, Lon {db_incident.longitude:.4f}",
+                latitude=db_incident.latitude,
+                longitude=db_incident.longitude,
+                source_entity="incident",
+                source_entity_id=db_incident.id,
+                dedup_key=f"incident:{db_incident.id}"
+            )
+        except Exception:
+            pass
 
     return db_incident
 
@@ -105,13 +124,25 @@ def update_incident_status(
                 detail="Affected road not found"
             )
 
-        if incident.incident_type.lower() in {
-            "landslide",
-            "flood",
-            "road_damage"
-        }:
+        inc_type = incident.incident_type.lower()
+        if inc_type in {"landslide", "flood", "flash_flood", "road_damage", "blockage"} or "flood" in inc_type or "landslide" in inc_type:
             road.status = "blocked"
             road.risk_score = 95
+
+            try:
+                alert_service.create_alert(
+                    db=db,
+                    title=f"Corridor Blocked: {road.road_name}",
+                    description=f"Corridor {road.road_name} blocked due to verified {incident.incident_type.replace('_', ' ')}. Risk escalated to 95%.",
+                    severity="critical",
+                    alert_type="road_risk",
+                    location=road.road_name,
+                    source_entity="road",
+                    source_entity_id=road.id,
+                    dedup_key=f"road_risk:road:{road.id}:{road.status}"
+                )
+            except Exception:
+                pass
 
     db.commit()
     db.refresh(incident)

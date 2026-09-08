@@ -9,17 +9,24 @@ from app.api.vehicles import router as vehicles_router
 from app.api.trips import router as trips_router
 from app.api.routes import router as routes_router
 from app.api.risk import router as risk_router
+from app.api.alerts import router as alerts_router
 from app.database import Base, engine
 from app.models.incident import Incident
 from app.models.road import Road
 from app.models.vehicle import Vehicle
 from app.models.trip import Trip
+from app.models.alert import Alert
 
 logger = logging.getLogger("nexus_ner")
 
 # Create the database tables if database is reachable
 try:
     Base.metadata.create_all(bind=engine)
+    from app.database import SessionLocal
+    from app.services.alert_service import seed_initial_alerts_if_empty
+    _db = SessionLocal()
+    seed_initial_alerts_if_empty(_db)
+    _db.close()
 except Exception as err:
     logger.warning("Database connection failed during table initialization: %s", err)
 
@@ -45,6 +52,7 @@ app.include_router(vehicles_router)
 app.include_router(trips_router)
 app.include_router(routes_router)
 app.include_router(risk_router)
+app.include_router(alerts_router)
 
 @app.get("/")
 def root():

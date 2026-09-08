@@ -1,4 +1,5 @@
 import { Bell, Search, User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Header() {
   return (
@@ -25,14 +26,15 @@ function Header() {
         </div>
 
         {/* Notifications */}
-        <button
-          type="button"
+        <Link
+          to="/alerts"
+          title="View Alerts & Notifications"
           className="relative rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
         >
           <Bell size={20} />
 
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
-        </button>
+        </Link>
 
         {/* User */}
         <div className="flex items-center gap-3 border-l border-slate-800 pl-4">
