@@ -11,6 +11,7 @@ from app.api.routes import router as routes_router
 from app.api.risk import router as risk_router
 from app.api.alerts import router as alerts_router
 from app.api.auth import router as auth_router
+from app.api.sync import router as sync_router
 from app.database import Base, engine
 from app.models.incident import Incident
 from app.models.road import Road
@@ -18,6 +19,7 @@ from app.models.vehicle import Vehicle
 from app.models.trip import Trip
 from app.models.alert import Alert
 from app.models.user import User
+from app.models.sync_event import SyncEvent
 
 logger = logging.getLogger("nexus_ner")
 
@@ -51,6 +53,7 @@ app.add_middleware(
 
 
 app.include_router(auth_router)
+app.include_router(sync_router)
 app.include_router(incidents_router)
 app.include_router(roads_router)
 app.include_router(vehicles_router)
