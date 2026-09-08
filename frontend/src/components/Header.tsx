@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
-import { Bell, Search, User, LogOut } from "lucide-react";
+import { Bell, Search, User, LogOut, UploadCloud } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
-const API_URL = "http://127.0.0.1:8000";
+import { syncQueue } from "../offline/syncQueue";
 
 function Header() {
   const [criticalCount, setCriticalCount] = useState<number>(0);
-  const { user, logout } = useAuth();
+  const [pendingOutboxCount, setPendingOutboxCount] = useState<number>(0);
+  const { user, logout, apiUrl } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -20,7 +20,7 @@ function Header() {
 
     async function fetchSummary() {
       try {
-        const res = await fetch(`${API_URL}/alerts/summary`);
+        const res = await fetch(`${apiUrl}/alerts/summary`);
         if (res.ok) {
           const data = await res.json();
           if (mounted) {
@@ -32,14 +32,30 @@ function Header() {
       }
     }
 
+    async function updatePending() {
+      try {
+        const count = await syncQueue.countPending();
+        if (mounted) {
+          setPendingOutboxCount(count);
+        }
+      } catch {}
+    }
+
     fetchSummary();
+    updatePending();
+
     const interval = window.setInterval(fetchSummary, 10000);
+    const handleQueueChange = () => {
+      updatePending();
+    };
+    window.addEventListener("nexus:sync_queue_changed", handleQueueChange);
 
     return () => {
       mounted = false;
       window.clearInterval(interval);
+      window.removeEventListener("nexus:sync_queue_changed", handleQueueChange);
     };
-  }, []);
+  }, [apiUrl]);
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-800 bg-slate-950 px-6 text-white">
@@ -63,6 +79,25 @@ function Header() {
             className="w-40 bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
           />
         </div>
+
+        {/* Outbox Pending */}
+        <Link
+          to="/field-report"
+          title={
+            pendingOutboxCount > 0
+              ? `${pendingOutboxCount} offline reports queued in outbox`
+              : "Offline Outbox (All synced)"
+          }
+          className="relative rounded-lg p-2 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+        >
+          <UploadCloud size={20} className={pendingOutboxCount > 0 ? "text-amber-400" : ""} />
+
+          {pendingOutboxCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-slate-950 shadow-sm ring-2 ring-slate-950">
+              {pendingOutboxCount > 99 ? "99+" : pendingOutboxCount}
+            </span>
+          )}
+        </Link>
 
         {/* Notifications */}
         <Link

@@ -1,6 +1,26 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-const API_URL = "http://127.0.0.1:8000";
+export function getAuthApiUrl(): string {
+  if (typeof window !== "undefined") {
+    const envUrl = (import.meta as any).env?.VITE_API_URL;
+    if (envUrl) return envUrl.replace(/\/+$/, "");
+  }
+  return "http://127.0.0.1:8000";
+}
+
+function isTokenExpired(jwtToken: string): boolean {
+  try {
+    const payloadBase64 = jwtToken.split(".")[1];
+    if (!payloadBase64) return true;
+    const decoded = JSON.parse(atob(payloadBase64));
+    if (typeof decoded.exp === "number") {
+      return decoded.exp * 1000 < Date.now();
+    }
+    return false;
+  } catch {
+    return true;
+  }
+}
 
 export type UserRole = "ADMIN" | "CONTROL_OPERATOR" | "FIELD_OFFICER" | "DRIVER";
 
@@ -20,6 +40,7 @@ type AuthContextType = {
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   getAuthHeader: () => Record<string, string>;
+  apiUrl: string;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,8 +56,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (savedToken && savedUser) {
       try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
+        if (isTokenExpired(savedToken)) {
+          localStorage.removeItem("nexus_token");
+          localStorage.removeItem("nexus_user");
+          setToken(null);
+          setUser(null);
+        } else {
+          setToken(savedToken);
+          setUser(JSON.parse(savedUser));
+        }
       } catch {
         localStorage.removeItem("nexus_token");
         localStorage.removeItem("nexus_user");
@@ -45,9 +73,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
+  const apiUrl = getAuthApiUrl();
+
   const login = async (username: string, password: string) => {
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -103,6 +133,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         getAuthHeader,
+        apiUrl,
       }}
     >
       {children}

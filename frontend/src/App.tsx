@@ -1,8 +1,11 @@
+import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
+import { syncWorker } from "./offline/syncWorker";
+import { networkService } from "./services/network";
 
 import Home from "./pages/Home";
 import Incidents from "./pages/Incidents";
@@ -15,6 +18,17 @@ import FieldReport from "./pages/FieldReport";
 import Login from "./pages/Login";
 
 function App() {
+  useEffect(() => {
+    // Initialize network status listener
+    networkService.init();
+
+    // Start background sync polling every 30s
+    syncWorker.startPeriodicSync(30000);
+
+    return () => {
+      syncWorker.stopPeriodicSync();
+    };
+  }, []);
   return (
     <AuthProvider>
       <BrowserRouter>
