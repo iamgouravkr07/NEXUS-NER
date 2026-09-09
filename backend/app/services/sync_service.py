@@ -102,7 +102,9 @@ def _process_incident_report(
         road_status=road_status,
         status="reported",
         risk_score=risk_score,
-        affected_road_id=affected_road_id
+        affected_road_id=affected_road_id,
+        reported_at=created_at_dt,
+        created_at=created_at_dt,
     )
 
     db.add(db_incident)

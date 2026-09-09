@@ -1,0 +1,261 @@
+{
+  "model": "RandomForestClassifier",
+  "model_version": "v1.0",
+  "dataset_version": "prototype-v1.0",
+  "provenance": "prototype_training_augmentation",
+  "is_synthetic": true,
+  "data_honesty_notice": "CRITICAL DATA HONESTY: This dataset is a physics-informed prototype training/augmentation dataset constructed for SIH 2026 algorithmic demonstration. It must NEVER be represented as real historical government agency or field telemetry data.",
+  "shap_version": "0.52.0",
+  "explained_class": "disruption_within_6h = 1",
+  "explained_output_space": "probability_space",
+  "base_value": 0.5008,
+  "sample_size": 1000,
+  "random_seed": 42,
+  "total_features": 24,
+  "ranked_features": [
+    {
+      "rank": 1,
+      "feature": "antecedent_rain_24h_mm",
+      "display_name": "Antecedent 24h Rainfall",
+      "mean_abs_shap": 0.1038,
+      "relative_importance_pct": 18.16,
+      "unit": "mm",
+      "physical_meaning": "Cumulative precipitation over the 24 hours strictly preceding time t (soil moisture saturation proxy)."
+    },
+    {
+      "rank": 2,
+      "feature": "antecedent_rain_72h_mm",
+      "display_name": "Antecedent 72h Rainfall",
+      "mean_abs_shap": 0.0807,
+      "relative_importance_pct": 14.12,
+      "unit": "mm",
+      "physical_meaning": "Cumulative precipitation over the 72 hours strictly preceding time t (deep pore-water pressure proxy)."
+    },
+    {
+      "rank": 3,
+      "feature": "forecast_rain_max_intensity_mm",
+      "display_name": "Peak 1h Forecast Rain Intensity",
+      "mean_abs_shap": 0.0533,
+      "relative_importance_pct": 9.33,
+      "unit": "mm/h",
+      "physical_meaning": "Maximum 1-hour projected rainfall intensity within the 6-hour forward-looking horizon."
+    },
+    {
+      "rank": 4,
+      "feature": "forecast_rain_6h_sum_mm",
+      "display_name": "6-Hour Cumulative Forecast Rain",
+      "mean_abs_shap": 0.0488,
+      "relative_importance_pct": 8.54,
+      "unit": "mm",
+      "physical_meaning": "Projected cumulative rainfall volume over the 6-hour forward-looking horizon [t, t+6h]."
+    },
+    {
+      "rank": 5,
+      "feature": "is_monsoon_season",
+      "display_name": "Monsoon Season Indicator",
+      "mean_abs_shap": 0.0428,
+      "relative_importance_pct": 7.48,
+      "unit": "binary (0/1)",
+      "physical_meaning": "Calendar indicator for South-West monsoon season (June to September)."
+    },
+    {
+      "rank": 6,
+      "feature": "forecast_precip_prob_max",
+      "display_name": "Peak Forecast Precipitation Probability",
+      "mean_abs_shap": 0.0388,
+      "relative_importance_pct": 6.79,
+      "unit": "%",
+      "physical_meaning": "Maximum meteorological precipitation probability across the 6-hour window."
+    },
+    {
+      "rank": 7,
+      "feature": "slope_angle_deg",
+      "display_name": "Cut-Slope Angle",
+      "mean_abs_shap": 0.0335,
+      "relative_importance_pct": 5.87,
+      "unit": "degrees",
+      "physical_meaning": "Roadside cut-slope gradient along highway alignment."
+    },
+    {
+      "rank": 8,
+      "feature": "active_incidents_nearby_15km",
+      "display_name": "Active Incidents within 15km",
+      "mean_abs_shap": 0.0271,
+      "relative_importance_pct": 4.74,
+      "unit": "count",
+      "physical_meaning": "Verified active hazard or obstruction reports within 15km strictly prior to time t."
+    },
+    {
+      "rank": 9,
+      "feature": "curr_precip_mm",
+      "display_name": "Current 1h Precipitation",
+      "mean_abs_shap": 0.0256,
+      "relative_importance_pct": 4.47,
+      "unit": "mm",
+      "physical_meaning": "Surface rainfall accumulated over the preceding 1 hour at observation time t."
+    },
+    {
+      "rank": 10,
+      "feature": "historical_vulnerability_score",
+      "display_name": "Historical Vulnerability Rating",
+      "mean_abs_shap": 0.0252,
+      "relative_importance_pct": 4.4,
+      "unit": "score (0-1)",
+      "physical_meaning": "Baseline structural susceptibility derived from historical geotechnical failure frequency."
+    },
+    {
+      "rank": 11,
+      "feature": "elevation_m",
+      "display_name": "Corridor Elevation",
+      "mean_abs_shap": 0.0189,
+      "relative_importance_pct": 3.31,
+      "unit": "m",
+      "physical_meaning": "Altitude above sea level along corridor segment."
+    },
+    {
+      "rank": 12,
+      "feature": "terrain_type_Plain",
+      "display_name": "Terrain: Alluvial Plain",
+      "mean_abs_shap": 0.0156,
+      "relative_importance_pct": 2.73,
+      "unit": "binary",
+      "physical_meaning": "Corridor traverses low-lying alluvial plains susceptible to waterlogging and riverine flooding."
+    },
+    {
+      "rank": 13,
+      "feature": "month_of_year",
+      "display_name": "Month of Year",
+      "mean_abs_shap": 0.0143,
+      "relative_importance_pct": 2.5,
+      "unit": "month (1-12)",
+      "physical_meaning": "Annual temporal cyclical anchor representing broader seasonal weather patterns."
+    },
+    {
+      "rank": 14,
+      "feature": "wind_speed_kmh",
+      "display_name": "Surface Wind Speed",
+      "mean_abs_shap": 0.0095,
+      "relative_importance_pct": 1.66,
+      "unit": "km/h",
+      "physical_meaning": "Sustained horizontal surface wind velocity at observation time t."
+    },
+    {
+      "rank": 15,
+      "feature": "visibility_km",
+      "display_name": "Horizontal Visibility",
+      "mean_abs_shap": 0.0088,
+      "relative_importance_pct": 1.54,
+      "unit": "km",
+      "physical_meaning": "Surface horizontal atmospheric visibility distance at observation time t."
+    },
+    {
+      "rank": 16,
+      "feature": "wind_gust_kmh",
+      "display_name": "Peak Wind Gust",
+      "mean_abs_shap": 0.008,
+      "relative_importance_pct": 1.39,
+      "unit": "km/h",
+      "physical_meaning": "Maximum instantaneous surface wind gust velocity at observation time t."
+    },
+    {
+      "rank": 17,
+      "feature": "terrain_type_High Mountain Ridge",
+      "display_name": "Terrain: High Mountain Ridge",
+      "mean_abs_shap": 0.0046,
+      "relative_importance_pct": 0.8,
+      "unit": "binary",
+      "physical_meaning": "Corridor traverses alpine mountain ridge terrain with extreme slopes and rockfall hazards."
+    },
+    {
+      "rank": 18,
+      "feature": "terrain_type_Steep Ghat",
+      "display_name": "Terrain: Steep Ghat",
+      "mean_abs_shap": 0.0037,
+      "relative_importance_pct": 0.64,
+      "unit": "binary",
+      "physical_meaning": "Corridor traverses precipitous ghat mountain passes with deep roadside valley cuts."
+    },
+    {
+      "rank": 19,
+      "feature": "road_class_national_highway",
+      "display_name": "Road Class: National Highway",
+      "mean_abs_shap": 0.0022,
+      "relative_importance_pct": 0.39,
+      "unit": "binary",
+      "physical_meaning": "Corridor is classified as a primary National Highway (NH)."
+    },
+    {
+      "rank": 20,
+      "feature": "terrain_type_Foothill",
+      "display_name": "Terrain: Foothill",
+      "mean_abs_shap": 0.0019,
+      "relative_importance_pct": 0.33,
+      "unit": "binary",
+      "physical_meaning": "Corridor traverses undulating foothill topography with moderate cut-slopes."
+    },
+    {
+      "rank": 21,
+      "feature": "hour_of_day",
+      "display_name": "Hour of Day",
+      "mean_abs_shap": 0.0015,
+      "relative_importance_pct": 0.26,
+      "unit": "hour (0-23)",
+      "physical_meaning": "Diurnal cyclical anchor representing daily heating and convective storm cycles."
+    },
+    {
+      "rank": 22,
+      "feature": "road_class_state_highway",
+      "display_name": "Road Class: State Highway",
+      "mean_abs_shap": 0.0014,
+      "relative_importance_pct": 0.25,
+      "unit": "binary",
+      "physical_meaning": "Corridor is classified as a State Highway (SH)."
+    },
+    {
+      "rank": 23,
+      "feature": "road_class_arterial",
+      "display_name": "Road Class: Arterial Road",
+      "mean_abs_shap": 0.0009,
+      "relative_importance_pct": 0.16,
+      "unit": "binary",
+      "physical_meaning": "Corridor is classified as a secondary or arterial feeder road."
+    },
+    {
+      "rank": 24,
+      "feature": "severe_weather_flag",
+      "display_name": "Severe Weather Flag",
+      "mean_abs_shap": 0.0008,
+      "relative_importance_pct": 0.13,
+      "unit": "binary (0/1)",
+      "physical_meaning": "Meteorological indicator for active storm, cloudburst, or severe convective cell."
+    }
+  ],
+  "feature_importances": {
+    "antecedent_rain_24h_mm": 0.1038,
+    "antecedent_rain_72h_mm": 0.0807,
+    "forecast_rain_max_intensity_mm": 0.0533,
+    "forecast_rain_6h_sum_mm": 0.0488,
+    "is_monsoon_season": 0.0428,
+    "forecast_precip_prob_max": 0.0388,
+    "slope_angle_deg": 0.0335,
+    "active_incidents_nearby_15km": 0.0271,
+    "curr_precip_mm": 0.0256,
+    "historical_vulnerability_score": 0.0252,
+    "elevation_m": 0.0189,
+    "terrain_type_Plain": 0.0156,
+    "month_of_year": 0.0143,
+    "wind_speed_kmh": 0.0095,
+    "visibility_km": 0.0088,
+    "wind_gust_kmh": 0.008,
+    "terrain_type_High Mountain Ridge": 0.0046,
+    "terrain_type_Steep Ghat": 0.0037,
+    "road_class_national_highway": 0.0022,
+    "terrain_type_Foothill": 0.0019,
+    "hour_of_day": 0.0015,
+    "road_class_state_highway": 0.0014,
+    "road_class_arterial": 0.0009,
+    "severe_weather_flag": 0.0008
+  },
+  "methodology_note": "Global SHAP feature importance is computed as the mean absolute SHAP value across the representative sample in model probability output space. Higher values indicate features that exert stronger marginal influence on the predicted disruption probability. This indicates predictive statistical association, not confirmed physical causality.",
+  "generated_at": "2026-09-09T14:02:39.849373+00:00"
+}

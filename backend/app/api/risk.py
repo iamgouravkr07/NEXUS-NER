@@ -1,10 +1,14 @@
-﻿from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.incident import Incident
 from app.models.road import Road
+from app.models.user import User
+from app.api.auth import get_current_user
+from app.schemas.ml import PredictiveRiskResult
+from app.services import ml_prediction_service
 
 router = APIRouter(
     prefix="/risk",
@@ -205,3 +209,31 @@ def get_road_risks(db: Session = Depends(get_db)):
         )
 
     return result
+
+
+@router.get(
+    "/corridor/{road_id}/predictive",
+    response_model=PredictiveRiskResult,
+    summary="Get Corridor Predictive Disruption Risk with Authoritative Deterministic Baseline",
+    description=(
+        "Returns composite risk for a specific road corridor combining authoritative deterministic risk "
+        "with prototype ML disruption prediction and SHAP feature attributions."
+    ),
+)
+def get_corridor_predictive_risk(
+    road_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> PredictiveRiskResult:
+    """
+    Retrieve predictive risk evaluation for a monitored road corridor.
+    """
+    road = db.query(Road).filter(Road.id == road_id).first()
+    if not road:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Road with ID {road_id} not found.",
+        )
+
+    result = ml_prediction_service.evaluate_predictive_risk(db=db, road=road)
+    return PredictiveRiskResult(**result)

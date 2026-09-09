@@ -1,0 +1,1183 @@
+{
+  "model": "RandomForestClassifier",
+  "model_version": "v1.0",
+  "dataset_version": "prototype-v1.0",
+  "provenance": "prototype_training_augmentation",
+  "is_synthetic": true,
+  "data_honesty_notice": "CRITICAL DATA HONESTY: This dataset is a physics-informed prototype training/augmentation dataset constructed for SIH 2026 algorithmic demonstration. It must NEVER be represented as real historical government agency or field telemetry data.",
+  "selection_strategy": "Deterministic selection from held-out test split: 1. Highest predicted probability (high-risk case); 2. Lowest predicted probability (low-risk case); 3. Closest probability to operational threshold tau=0.55 (borderline case).",
+  "examples": [
+    {
+      "example_type": "high_risk_positive_case",
+      "test_split_index": 32,
+      "timestamp": "2026-09-18T08:00:00+00:00",
+      "corridor_id": "NH-6",
+      "corridor_name": "Shillong-Jowai-Silchar",
+      "ground_truth_disruption": 1,
+      "explanation": {
+        "prediction": {
+          "predicted_probability": 0.9999,
+          "operational_threshold": 0.55,
+          "predicted_class": 1,
+          "risk_tier": "CRITICAL DISRUPTION RISK",
+          "base_value": 0.5008,
+          "explained_output_space": "probability_space",
+          "additive_consistency": {
+            "reconstructed_probability": 0.9999,
+            "absolute_error": 3e-08,
+            "is_exact": true
+          }
+        },
+        "top_positive_contributors": [
+          {
+            "feature": "antecedent_rain_24h_mm",
+            "display_name": "Antecedent 24h Rainfall",
+            "unit": "mm",
+            "transformed_value": 2.1551,
+            "raw_value": 75.4,
+            "shap_value": 0.0857,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0857,
+            "physical_interpretation": "Topsoil near field capacity, dramatically reducing roadside cut-slope shear resistance."
+          },
+          {
+            "feature": "antecedent_rain_72h_mm",
+            "display_name": "Antecedent 72h Rainfall",
+            "unit": "mm",
+            "transformed_value": 2.4775,
+            "raw_value": 230.4,
+            "shap_value": 0.0744,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0744,
+            "physical_interpretation": "Substantial deep pore-water pressure accumulation in hillside strata promoting deep-seated slides."
+          },
+          {
+            "feature": "forecast_rain_max_intensity_mm",
+            "display_name": "Peak 1h Forecast Rain Intensity",
+            "unit": "mm/h",
+            "transformed_value": 4.1891,
+            "raw_value": 50.5,
+            "shap_value": 0.0678,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0678,
+            "physical_interpretation": "Extreme burst intensity capable of triggering sudden debris flows and culvert overflows."
+          },
+          {
+            "feature": "forecast_rain_6h_sum_mm",
+            "display_name": "6-Hour Cumulative Forecast Rain",
+            "unit": "mm",
+            "transformed_value": 4.5066,
+            "raw_value": 115.9,
+            "shap_value": 0.0616,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0616,
+            "physical_interpretation": "Substantial forecasted rainfall volume expected to overwhelm regional corridor drainage."
+          },
+          {
+            "feature": "forecast_precip_prob_max",
+            "display_name": "Peak Forecast Precipitation Probability",
+            "unit": "%",
+            "transformed_value": 2.2858,
+            "raw_value": 100.0,
+            "shap_value": 0.0494,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0494,
+            "physical_interpretation": "High meteorological confidence of impending rain events along the corridor."
+          }
+        ],
+        "top_negative_contributors": [
+          {
+            "feature": "terrain_type_High Mountain Ridge",
+            "display_name": "Terrain: High Mountain Ridge",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": -0.0013,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0013,
+            "physical_interpretation": "Non-high-mountain terrain classification."
+          }
+        ],
+        "all_feature_attributions": [
+          {
+            "feature": "curr_precip_mm",
+            "display_name": "Current 1h Precipitation",
+            "unit": "mm",
+            "transformed_value": 5.903,
+            "raw_value": 35.8,
+            "shap_value": 0.0362,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0362,
+            "physical_interpretation": "Intense immediate surface rain elevating surface washout and flash-ponding potential."
+          },
+          {
+            "feature": "forecast_rain_6h_sum_mm",
+            "display_name": "6-Hour Cumulative Forecast Rain",
+            "unit": "mm",
+            "transformed_value": 4.5066,
+            "raw_value": 115.9,
+            "shap_value": 0.0616,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0616,
+            "physical_interpretation": "Substantial forecasted rainfall volume expected to overwhelm regional corridor drainage."
+          },
+          {
+            "feature": "forecast_rain_max_intensity_mm",
+            "display_name": "Peak 1h Forecast Rain Intensity",
+            "unit": "mm/h",
+            "transformed_value": 4.1891,
+            "raw_value": 50.5,
+            "shap_value": 0.0678,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0678,
+            "physical_interpretation": "Extreme burst intensity capable of triggering sudden debris flows and culvert overflows."
+          },
+          {
+            "feature": "forecast_precip_prob_max",
+            "display_name": "Peak Forecast Precipitation Probability",
+            "unit": "%",
+            "transformed_value": 2.2858,
+            "raw_value": 100.0,
+            "shap_value": 0.0494,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0494,
+            "physical_interpretation": "High meteorological confidence of impending rain events along the corridor."
+          },
+          {
+            "feature": "wind_speed_kmh",
+            "display_name": "Surface Wind Speed",
+            "unit": "km/h",
+            "transformed_value": 2.7226,
+            "raw_value": 35.2,
+            "shap_value": 0.0084,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0084,
+            "physical_interpretation": "Elevated sustained winds contributing to roadside debris and vehicle transit instability."
+          },
+          {
+            "feature": "wind_gust_kmh",
+            "display_name": "Peak Wind Gust",
+            "unit": "km/h",
+            "transformed_value": 2.5435,
+            "raw_value": 53.1,
+            "shap_value": 0.0076,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0076,
+            "physical_interpretation": "Gale-force gusts posing significant tree-fall and high-profile vehicle rollover risks."
+          },
+          {
+            "feature": "visibility_km",
+            "display_name": "Horizontal Visibility",
+            "unit": "km",
+            "transformed_value": -3.9056,
+            "raw_value": 1.0,
+            "shap_value": 0.0097,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0097,
+            "physical_interpretation": "Severe fog, mist, or torrential downpour blinding drivers and reducing safe speed."
+          },
+          {
+            "feature": "antecedent_rain_24h_mm",
+            "display_name": "Antecedent 24h Rainfall",
+            "unit": "mm",
+            "transformed_value": 2.1551,
+            "raw_value": 75.4,
+            "shap_value": 0.0857,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0857,
+            "physical_interpretation": "Topsoil near field capacity, dramatically reducing roadside cut-slope shear resistance."
+          },
+          {
+            "feature": "antecedent_rain_72h_mm",
+            "display_name": "Antecedent 72h Rainfall",
+            "unit": "mm",
+            "transformed_value": 2.4775,
+            "raw_value": 230.4,
+            "shap_value": 0.0744,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0744,
+            "physical_interpretation": "Substantial deep pore-water pressure accumulation in hillside strata promoting deep-seated slides."
+          },
+          {
+            "feature": "elevation_m",
+            "display_name": "Corridor Elevation",
+            "unit": "m",
+            "transformed_value": 0.2164,
+            "raw_value": 1334.9,
+            "shap_value": 0.005,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.005,
+            "physical_interpretation": "High mountain elevation characterized by extreme weather gradients and steep rock faces."
+          },
+          {
+            "feature": "slope_angle_deg",
+            "display_name": "Cut-Slope Angle",
+            "unit": "degrees",
+            "transformed_value": 0.7747,
+            "raw_value": 38.1,
+            "shap_value": 0.0158,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0158,
+            "physical_interpretation": "Steep hillside gradient (>30\u00b0) where gravity induces high shear stress on saturated soil."
+          },
+          {
+            "feature": "historical_vulnerability_score",
+            "display_name": "Historical Vulnerability Rating",
+            "unit": "score (0-1)",
+            "transformed_value": 0.8251,
+            "raw_value": 0.851,
+            "shap_value": 0.0102,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0102,
+            "physical_interpretation": "Corridor segment historically prone to chronic rockfalls, slides, or road washouts."
+          },
+          {
+            "feature": "active_incidents_nearby_15km",
+            "display_name": "Active Incidents within 15km",
+            "unit": "count",
+            "transformed_value": 1.0166,
+            "raw_value": 2,
+            "shap_value": 0.0101,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0101,
+            "physical_interpretation": "Cluster of nearby active hazards indicating regional geotechnical or hydrological distress."
+          },
+          {
+            "feature": "severe_weather_flag",
+            "display_name": "Severe Weather Flag",
+            "unit": "binary (0/1)",
+            "transformed_value": 1.0,
+            "raw_value": 1,
+            "shap_value": 0.0026,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0026,
+            "physical_interpretation": "Active severe thunderstorm or violent rain cell warning in effect."
+          },
+          {
+            "feature": "is_monsoon_season",
+            "display_name": "Monsoon Season Indicator",
+            "unit": "binary (0/1)",
+            "transformed_value": 1.0,
+            "raw_value": 1,
+            "shap_value": 0.0343,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0343,
+            "physical_interpretation": "Observation falls during peak regional monsoon hydrometeorological stress."
+          },
+          {
+            "feature": "month_of_year",
+            "display_name": "Month of Year",
+            "unit": "month (1-12)",
+            "transformed_value": 9.0,
+            "raw_value": 9,
+            "shap_value": 0.0107,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0107,
+            "physical_interpretation": "Annual calendar timing aligned with historically high disruption months."
+          },
+          {
+            "feature": "hour_of_day",
+            "display_name": "Hour of Day",
+            "unit": "hour (0-23)",
+            "transformed_value": 8.0,
+            "raw_value": 8,
+            "shap_value": 0.0006,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0006,
+            "physical_interpretation": "Diurnal window coinciding with peak solar heating and mountain convection."
+          },
+          {
+            "feature": "terrain_type_Foothill",
+            "display_name": "Terrain: Foothill",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0008,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0008,
+            "physical_interpretation": "Non-foothill terrain classification."
+          },
+          {
+            "feature": "terrain_type_High Mountain Ridge",
+            "display_name": "Terrain: High Mountain Ridge",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": -0.0013,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0013,
+            "physical_interpretation": "Non-high-mountain terrain classification."
+          },
+          {
+            "feature": "terrain_type_Plain",
+            "display_name": "Terrain: Alluvial Plain",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0063,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0063,
+            "physical_interpretation": "Elevated hill or ghat terrain classification."
+          },
+          {
+            "feature": "terrain_type_Steep Ghat",
+            "display_name": "Terrain: Steep Ghat",
+            "unit": "binary",
+            "transformed_value": 1.0,
+            "raw_value": null,
+            "shap_value": 0.0019,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0019,
+            "physical_interpretation": "Steep ghat geometry characterized by severe mudslide, landslide, and road subsidence risks."
+          },
+          {
+            "feature": "road_class_arterial",
+            "display_name": "Road Class: Arterial Road",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0001,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0001,
+            "physical_interpretation": "Non-arterial road classification."
+          },
+          {
+            "feature": "road_class_national_highway",
+            "display_name": "Road Class: National Highway",
+            "unit": "binary",
+            "transformed_value": 1.0,
+            "raw_value": null,
+            "shap_value": 0.0009,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0009,
+            "physical_interpretation": "National Highway with higher engineering standards and wider clearing margins."
+          },
+          {
+            "feature": "road_class_state_highway",
+            "display_name": "Road Class: State Highway",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0005,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0005,
+            "physical_interpretation": "National Highway or arterial road classification."
+          }
+        ],
+        "human_readable_explanation": "Model prediction: CRITICAL DISRUPTION RISK (predicted probability: 100.0%, operational alert threshold: 55.0%). Base prior probability across training distribution is 50.1%. Primary factors that contributed to increasing the disruption prediction: Antecedent 24h Rainfall (+0.086); Antecedent 72h Rainfall (+0.074); Peak 1h Forecast Rain Intensity (+0.068). Primary factors that contributed to lowering the disruption prediction: Terrain: High Mountain Ridge (-0.001). Note: SHAP attributions reflect statistical model contribution for this corridor condition, not verified empirical causality.",
+        "data_honesty_notice": "CRITICAL DATA HONESTY: This dataset is a physics-informed prototype training/augmentation dataset constructed for SIH 2026 algorithmic demonstration. It must NEVER be represented as real historical government agency or field telemetry data."
+      }
+    },
+    {
+      "example_type": "low_risk_negative_case",
+      "test_split_index": 112,
+      "timestamp": "2026-09-24T10:00:00+00:00",
+      "corridor_id": "NH-37",
+      "corridor_name": "Kaziranga Flood Bypass",
+      "ground_truth_disruption": 0,
+      "explanation": {
+        "prediction": {
+          "predicted_probability": 0.0011,
+          "operational_threshold": 0.55,
+          "predicted_class": 0,
+          "risk_tier": "LOW DISRUPTION RISK",
+          "base_value": 0.5008,
+          "explained_output_space": "probability_space",
+          "additive_consistency": {
+            "reconstructed_probability": 0.0011,
+            "absolute_error": 2e-08,
+            "is_exact": true
+          }
+        },
+        "top_positive_contributors": [
+          {
+            "feature": "is_monsoon_season",
+            "display_name": "Monsoon Season Indicator",
+            "unit": "binary (0/1)",
+            "transformed_value": 1.0,
+            "raw_value": 1,
+            "shap_value": 0.0309,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0309,
+            "physical_interpretation": "Observation falls during peak regional monsoon hydrometeorological stress."
+          },
+          {
+            "feature": "month_of_year",
+            "display_name": "Month of Year",
+            "unit": "month (1-12)",
+            "transformed_value": 9.0,
+            "raw_value": 9,
+            "shap_value": 0.0079,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0079,
+            "physical_interpretation": "Annual calendar timing aligned with historically high disruption months."
+          },
+          {
+            "feature": "wind_gust_kmh",
+            "display_name": "Peak Wind Gust",
+            "unit": "km/h",
+            "transformed_value": 0.9682,
+            "raw_value": 34.4,
+            "shap_value": 0.0061,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0061,
+            "physical_interpretation": "Gale-force gusts posing significant tree-fall and high-profile vehicle rollover risks."
+          },
+          {
+            "feature": "wind_speed_kmh",
+            "display_name": "Surface Wind Speed",
+            "unit": "km/h",
+            "transformed_value": 0.5839,
+            "raw_value": 19.1,
+            "shap_value": 0.0045,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0045,
+            "physical_interpretation": "Elevated sustained winds contributing to roadside debris and vehicle transit instability."
+          },
+          {
+            "feature": "road_class_national_highway",
+            "display_name": "Road Class: National Highway",
+            "unit": "binary",
+            "transformed_value": 1.0,
+            "raw_value": null,
+            "shap_value": 0.0006,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0006,
+            "physical_interpretation": "National Highway with higher engineering standards and wider clearing margins."
+          }
+        ],
+        "top_negative_contributors": [
+          {
+            "feature": "slope_angle_deg",
+            "display_name": "Cut-Slope Angle",
+            "unit": "degrees",
+            "transformed_value": -2.0269,
+            "raw_value": 1.0,
+            "shap_value": -0.0909,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0909,
+            "physical_interpretation": "Gentle or flat roadside topography resistant to gravitational slide failure."
+          },
+          {
+            "feature": "antecedent_rain_24h_mm",
+            "display_name": "Antecedent 24h Rainfall",
+            "unit": "mm",
+            "transformed_value": -0.0467,
+            "raw_value": 17.3,
+            "shap_value": -0.0813,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0813,
+            "physical_interpretation": "Dry antecedent soil providing high infiltration capacity and stable shear strength."
+          },
+          {
+            "feature": "elevation_m",
+            "display_name": "Corridor Elevation",
+            "unit": "m",
+            "transformed_value": -1.4468,
+            "raw_value": 105.9,
+            "shap_value": -0.0484,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0484,
+            "physical_interpretation": "Lowland valley or plain elevation."
+          },
+          {
+            "feature": "terrain_type_Plain",
+            "display_name": "Terrain: Alluvial Plain",
+            "unit": "binary",
+            "transformed_value": 1.0,
+            "raw_value": null,
+            "shap_value": -0.0455,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0455,
+            "physical_interpretation": "Plain terrain where disruptions are predominantly water accumulation and flash flooding."
+          },
+          {
+            "feature": "forecast_rain_max_intensity_mm",
+            "display_name": "Peak 1h Forecast Rain Intensity",
+            "unit": "mm/h",
+            "transformed_value": -0.3529,
+            "raw_value": 0.0,
+            "shap_value": -0.0454,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0454,
+            "physical_interpretation": "No intense burst rain events projected across the forecast horizon."
+          }
+        ],
+        "all_feature_attributions": [
+          {
+            "feature": "curr_precip_mm",
+            "display_name": "Current 1h Precipitation",
+            "unit": "mm",
+            "transformed_value": -0.2932,
+            "raw_value": 0.0,
+            "shap_value": -0.0217,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0217,
+            "physical_interpretation": "Dry immediate surface conditions reducing surface washout trigger."
+          },
+          {
+            "feature": "forecast_rain_6h_sum_mm",
+            "display_name": "6-Hour Cumulative Forecast Rain",
+            "unit": "mm",
+            "transformed_value": -0.3633,
+            "raw_value": 0.0,
+            "shap_value": -0.0429,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0429,
+            "physical_interpretation": "Negligible forecasted rainfall volume over the upcoming 6-hour window."
+          },
+          {
+            "feature": "forecast_rain_max_intensity_mm",
+            "display_name": "Peak 1h Forecast Rain Intensity",
+            "unit": "mm/h",
+            "transformed_value": -0.3529,
+            "raw_value": 0.0,
+            "shap_value": -0.0454,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0454,
+            "physical_interpretation": "No intense burst rain events projected across the forecast horizon."
+          },
+          {
+            "feature": "forecast_precip_prob_max",
+            "display_name": "Peak Forecast Precipitation Probability",
+            "unit": "%",
+            "transformed_value": -0.6332,
+            "raw_value": 13.8,
+            "shap_value": -0.0348,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0348,
+            "physical_interpretation": "Low meteorological likelihood of precipitation."
+          },
+          {
+            "feature": "wind_speed_kmh",
+            "display_name": "Surface Wind Speed",
+            "unit": "km/h",
+            "transformed_value": 0.5839,
+            "raw_value": 19.1,
+            "shap_value": 0.0045,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0045,
+            "physical_interpretation": "Elevated sustained winds contributing to roadside debris and vehicle transit instability."
+          },
+          {
+            "feature": "wind_gust_kmh",
+            "display_name": "Peak Wind Gust",
+            "unit": "km/h",
+            "transformed_value": 0.9682,
+            "raw_value": 34.4,
+            "shap_value": 0.0061,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0061,
+            "physical_interpretation": "Gale-force gusts posing significant tree-fall and high-profile vehicle rollover risks."
+          },
+          {
+            "feature": "visibility_km",
+            "display_name": "Horizontal Visibility",
+            "unit": "km",
+            "transformed_value": 0.184,
+            "raw_value": 11.6,
+            "shap_value": -0.0111,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0111,
+            "physical_interpretation": "Clear atmospheric sightlines supporting safe mountain transit."
+          },
+          {
+            "feature": "antecedent_rain_24h_mm",
+            "display_name": "Antecedent 24h Rainfall",
+            "unit": "mm",
+            "transformed_value": -0.0467,
+            "raw_value": 17.3,
+            "shap_value": -0.0813,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0813,
+            "physical_interpretation": "Dry antecedent soil providing high infiltration capacity and stable shear strength."
+          },
+          {
+            "feature": "antecedent_rain_72h_mm",
+            "display_name": "Antecedent 72h Rainfall",
+            "unit": "mm",
+            "transformed_value": 0.026,
+            "raw_value": 63.4,
+            "shap_value": -0.0428,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0428,
+            "physical_interpretation": "Substantial deep pore-water pressure accumulation in hillside strata promoting deep-seated slides."
+          },
+          {
+            "feature": "elevation_m",
+            "display_name": "Corridor Elevation",
+            "unit": "m",
+            "transformed_value": -1.4468,
+            "raw_value": 105.9,
+            "shap_value": -0.0484,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0484,
+            "physical_interpretation": "Lowland valley or plain elevation."
+          },
+          {
+            "feature": "slope_angle_deg",
+            "display_name": "Cut-Slope Angle",
+            "unit": "degrees",
+            "transformed_value": -2.0269,
+            "raw_value": 1.0,
+            "shap_value": -0.0909,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0909,
+            "physical_interpretation": "Gentle or flat roadside topography resistant to gravitational slide failure."
+          },
+          {
+            "feature": "historical_vulnerability_score",
+            "display_name": "Historical Vulnerability Rating",
+            "unit": "score (0-1)",
+            "transformed_value": -0.8422,
+            "raw_value": 0.554,
+            "shap_value": -0.0391,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0391,
+            "physical_interpretation": "Corridor segment with historically resilient engineering and low failure frequency."
+          },
+          {
+            "feature": "active_incidents_nearby_15km",
+            "display_name": "Active Incidents within 15km",
+            "unit": "count",
+            "transformed_value": -0.7433,
+            "raw_value": 0,
+            "shap_value": -0.0315,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0315,
+            "physical_interpretation": "No nearby active disruptions reported."
+          },
+          {
+            "feature": "severe_weather_flag",
+            "display_name": "Severe Weather Flag",
+            "unit": "binary (0/1)",
+            "transformed_value": 0.0,
+            "raw_value": 0,
+            "shap_value": -0.001,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.001,
+            "physical_interpretation": "No severe convective weather warning active."
+          },
+          {
+            "feature": "is_monsoon_season",
+            "display_name": "Monsoon Season Indicator",
+            "unit": "binary (0/1)",
+            "transformed_value": 1.0,
+            "raw_value": 1,
+            "shap_value": 0.0309,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0309,
+            "physical_interpretation": "Observation falls during peak regional monsoon hydrometeorological stress."
+          },
+          {
+            "feature": "month_of_year",
+            "display_name": "Month of Year",
+            "unit": "month (1-12)",
+            "transformed_value": 9.0,
+            "raw_value": 9,
+            "shap_value": 0.0079,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0079,
+            "physical_interpretation": "Annual calendar timing aligned with historically high disruption months."
+          },
+          {
+            "feature": "hour_of_day",
+            "display_name": "Hour of Day",
+            "unit": "hour (0-23)",
+            "transformed_value": 10.0,
+            "raw_value": 10,
+            "shap_value": -0.0012,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0012,
+            "physical_interpretation": "Diurnal window coinciding with peak solar heating and mountain convection."
+          },
+          {
+            "feature": "terrain_type_Foothill",
+            "display_name": "Terrain: Foothill",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0005,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0005,
+            "physical_interpretation": "Non-foothill terrain classification."
+          },
+          {
+            "feature": "terrain_type_High Mountain Ridge",
+            "display_name": "Terrain: High Mountain Ridge",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": -0.0051,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0051,
+            "physical_interpretation": "Non-high-mountain terrain classification."
+          },
+          {
+            "feature": "terrain_type_Plain",
+            "display_name": "Terrain: Alluvial Plain",
+            "unit": "binary",
+            "transformed_value": 1.0,
+            "raw_value": null,
+            "shap_value": -0.0455,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0455,
+            "physical_interpretation": "Plain terrain where disruptions are predominantly water accumulation and flash flooding."
+          },
+          {
+            "feature": "terrain_type_Steep Ghat",
+            "display_name": "Terrain: Steep Ghat",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": -0.0074,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0074,
+            "physical_interpretation": "Non-ghat terrain classification."
+          },
+          {
+            "feature": "road_class_arterial",
+            "display_name": "Road Class: Arterial Road",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": -0.0004,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0004,
+            "physical_interpretation": "Non-arterial road classification."
+          },
+          {
+            "feature": "road_class_national_highway",
+            "display_name": "Road Class: National Highway",
+            "unit": "binary",
+            "transformed_value": 1.0,
+            "raw_value": null,
+            "shap_value": 0.0006,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0006,
+            "physical_interpretation": "National Highway with higher engineering standards and wider clearing margins."
+          },
+          {
+            "feature": "road_class_state_highway",
+            "display_name": "Road Class: State Highway",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0003,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0003,
+            "physical_interpretation": "National Highway or arterial road classification."
+          }
+        ],
+        "human_readable_explanation": "Model prediction: LOW DISRUPTION RISK (predicted probability: 0.1%, operational alert threshold: 55.0%). Base prior probability across training distribution is 50.1%. Primary factors that contributed to increasing the disruption prediction: Monsoon Season Indicator (+0.031); Month of Year (+0.008); Peak Wind Gust (+0.006). Primary factors that contributed to lowering the disruption prediction: Cut-Slope Angle (-0.091); Antecedent 24h Rainfall (-0.081); Corridor Elevation (-0.048). Note: SHAP attributions reflect statistical model contribution for this corridor condition, not verified empirical causality.",
+        "data_honesty_notice": "CRITICAL DATA HONESTY: This dataset is a physics-informed prototype training/augmentation dataset constructed for SIH 2026 algorithmic demonstration. It must NEVER be represented as real historical government agency or field telemetry data."
+      }
+    },
+    {
+      "example_type": "borderline_threshold_case",
+      "test_split_index": 287,
+      "timestamp": "2026-10-07T06:00:00+00:00",
+      "corridor_id": "NH-10",
+      "corridor_name": "Siliguri-Gangtok Highway",
+      "ground_truth_disruption": 0,
+      "explanation": {
+        "prediction": {
+          "predicted_probability": 0.5452,
+          "operational_threshold": 0.55,
+          "predicted_class": 0,
+          "risk_tier": "LOW DISRUPTION RISK",
+          "base_value": 0.5008,
+          "explained_output_space": "probability_space",
+          "additive_consistency": {
+            "reconstructed_probability": 0.5452,
+            "absolute_error": 1e-08,
+            "is_exact": true
+          }
+        },
+        "top_positive_contributors": [
+          {
+            "feature": "forecast_rain_max_intensity_mm",
+            "display_name": "Peak 1h Forecast Rain Intensity",
+            "unit": "mm/h",
+            "transformed_value": 0.2318,
+            "raw_value": 6.5,
+            "shap_value": 0.0987,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0987,
+            "physical_interpretation": "Extreme burst intensity capable of triggering sudden debris flows and culvert overflows."
+          },
+          {
+            "feature": "forecast_precip_prob_max",
+            "display_name": "Peak Forecast Precipitation Probability",
+            "unit": "%",
+            "transformed_value": 1.0058,
+            "raw_value": 62.2,
+            "shap_value": 0.0565,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0565,
+            "physical_interpretation": "High meteorological confidence of impending rain events along the corridor."
+          },
+          {
+            "feature": "forecast_rain_6h_sum_mm",
+            "display_name": "6-Hour Cumulative Forecast Rain",
+            "unit": "mm",
+            "transformed_value": 0.1913,
+            "raw_value": 13.2,
+            "shap_value": 0.0464,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0464,
+            "physical_interpretation": "Substantial forecasted rainfall volume expected to overwhelm regional corridor drainage."
+          },
+          {
+            "feature": "slope_angle_deg",
+            "display_name": "Cut-Slope Angle",
+            "unit": "degrees",
+            "transformed_value": 0.5934,
+            "raw_value": 35.7,
+            "shap_value": 0.0291,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0291,
+            "physical_interpretation": "Steep hillside gradient (>30\u00b0) where gravity induces high shear stress on saturated soil."
+          },
+          {
+            "feature": "elevation_m",
+            "display_name": "Corridor Elevation",
+            "unit": "m",
+            "transformed_value": 0.7496,
+            "raw_value": 1728.9,
+            "shap_value": 0.0286,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0286,
+            "physical_interpretation": "High mountain elevation characterized by extreme weather gradients and steep rock faces."
+          }
+        ],
+        "top_negative_contributors": [
+          {
+            "feature": "antecedent_rain_24h_mm",
+            "display_name": "Antecedent 24h Rainfall",
+            "unit": "mm",
+            "transformed_value": -0.2817,
+            "raw_value": 11.1,
+            "shap_value": -0.0936,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0936,
+            "physical_interpretation": "Dry antecedent soil providing high infiltration capacity and stable shear strength."
+          },
+          {
+            "feature": "antecedent_rain_72h_mm",
+            "display_name": "Antecedent 72h Rainfall",
+            "unit": "mm",
+            "transformed_value": -0.2837,
+            "raw_value": 42.3,
+            "shap_value": -0.0682,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0682,
+            "physical_interpretation": "Low deep pore-water pressure maintaining slope stability."
+          },
+          {
+            "feature": "is_monsoon_season",
+            "display_name": "Monsoon Season Indicator",
+            "unit": "binary (0/1)",
+            "transformed_value": 0.0,
+            "raw_value": 0,
+            "shap_value": -0.0467,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0467,
+            "physical_interpretation": "Observation falls outside monsoon season during dry or post-monsoon periods."
+          },
+          {
+            "feature": "curr_precip_mm",
+            "display_name": "Current 1h Precipitation",
+            "unit": "mm",
+            "transformed_value": -0.2932,
+            "raw_value": 0.0,
+            "shap_value": -0.0361,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0361,
+            "physical_interpretation": "Dry immediate surface conditions reducing surface washout trigger."
+          },
+          {
+            "feature": "wind_speed_kmh",
+            "display_name": "Surface Wind Speed",
+            "unit": "km/h",
+            "transformed_value": -0.1068,
+            "raw_value": 13.9,
+            "shap_value": -0.0234,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0234,
+            "physical_interpretation": "Calm surface wind conditions."
+          }
+        ],
+        "all_feature_attributions": [
+          {
+            "feature": "curr_precip_mm",
+            "display_name": "Current 1h Precipitation",
+            "unit": "mm",
+            "transformed_value": -0.2932,
+            "raw_value": 0.0,
+            "shap_value": -0.0361,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0361,
+            "physical_interpretation": "Dry immediate surface conditions reducing surface washout trigger."
+          },
+          {
+            "feature": "forecast_rain_6h_sum_mm",
+            "display_name": "6-Hour Cumulative Forecast Rain",
+            "unit": "mm",
+            "transformed_value": 0.1913,
+            "raw_value": 13.2,
+            "shap_value": 0.0464,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0464,
+            "physical_interpretation": "Substantial forecasted rainfall volume expected to overwhelm regional corridor drainage."
+          },
+          {
+            "feature": "forecast_rain_max_intensity_mm",
+            "display_name": "Peak 1h Forecast Rain Intensity",
+            "unit": "mm/h",
+            "transformed_value": 0.2318,
+            "raw_value": 6.5,
+            "shap_value": 0.0987,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0987,
+            "physical_interpretation": "Extreme burst intensity capable of triggering sudden debris flows and culvert overflows."
+          },
+          {
+            "feature": "forecast_precip_prob_max",
+            "display_name": "Peak Forecast Precipitation Probability",
+            "unit": "%",
+            "transformed_value": 1.0058,
+            "raw_value": 62.2,
+            "shap_value": 0.0565,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0565,
+            "physical_interpretation": "High meteorological confidence of impending rain events along the corridor."
+          },
+          {
+            "feature": "wind_speed_kmh",
+            "display_name": "Surface Wind Speed",
+            "unit": "km/h",
+            "transformed_value": -0.1068,
+            "raw_value": 13.9,
+            "shap_value": -0.0234,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0234,
+            "physical_interpretation": "Calm surface wind conditions."
+          },
+          {
+            "feature": "wind_gust_kmh",
+            "display_name": "Peak Wind Gust",
+            "unit": "km/h",
+            "transformed_value": -0.1438,
+            "raw_value": 21.2,
+            "shap_value": -0.0089,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0089,
+            "physical_interpretation": "Light wind gusts within normal transit safety margins."
+          },
+          {
+            "feature": "visibility_km",
+            "display_name": "Horizontal Visibility",
+            "unit": "km",
+            "transformed_value": 0.6856,
+            "raw_value": 12.9,
+            "shap_value": -0.0139,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0139,
+            "physical_interpretation": "Clear atmospheric sightlines supporting safe mountain transit."
+          },
+          {
+            "feature": "antecedent_rain_24h_mm",
+            "display_name": "Antecedent 24h Rainfall",
+            "unit": "mm",
+            "transformed_value": -0.2817,
+            "raw_value": 11.1,
+            "shap_value": -0.0936,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0936,
+            "physical_interpretation": "Dry antecedent soil providing high infiltration capacity and stable shear strength."
+          },
+          {
+            "feature": "antecedent_rain_72h_mm",
+            "display_name": "Antecedent 72h Rainfall",
+            "unit": "mm",
+            "transformed_value": -0.2837,
+            "raw_value": 42.3,
+            "shap_value": -0.0682,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0682,
+            "physical_interpretation": "Low deep pore-water pressure maintaining slope stability."
+          },
+          {
+            "feature": "elevation_m",
+            "display_name": "Corridor Elevation",
+            "unit": "m",
+            "transformed_value": 0.7496,
+            "raw_value": 1728.9,
+            "shap_value": 0.0286,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0286,
+            "physical_interpretation": "High mountain elevation characterized by extreme weather gradients and steep rock faces."
+          },
+          {
+            "feature": "slope_angle_deg",
+            "display_name": "Cut-Slope Angle",
+            "unit": "degrees",
+            "transformed_value": 0.5934,
+            "raw_value": 35.7,
+            "shap_value": 0.0291,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0291,
+            "physical_interpretation": "Steep hillside gradient (>30\u00b0) where gravity induces high shear stress on saturated soil."
+          },
+          {
+            "feature": "historical_vulnerability_score",
+            "display_name": "Historical Vulnerability Rating",
+            "unit": "score (0-1)",
+            "transformed_value": 1.4594,
+            "raw_value": 0.964,
+            "shap_value": 0.0281,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0281,
+            "physical_interpretation": "Corridor segment historically prone to chronic rockfalls, slides, or road washouts."
+          },
+          {
+            "feature": "active_incidents_nearby_15km",
+            "display_name": "Active Incidents within 15km",
+            "unit": "count",
+            "transformed_value": 1.0166,
+            "raw_value": 2,
+            "shap_value": 0.0225,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0225,
+            "physical_interpretation": "Cluster of nearby active hazards indicating regional geotechnical or hydrological distress."
+          },
+          {
+            "feature": "severe_weather_flag",
+            "display_name": "Severe Weather Flag",
+            "unit": "binary (0/1)",
+            "transformed_value": 0.0,
+            "raw_value": 0,
+            "shap_value": -0.0004,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0004,
+            "physical_interpretation": "No severe convective weather warning active."
+          },
+          {
+            "feature": "is_monsoon_season",
+            "display_name": "Monsoon Season Indicator",
+            "unit": "binary (0/1)",
+            "transformed_value": 0.0,
+            "raw_value": 0,
+            "shap_value": -0.0467,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0467,
+            "physical_interpretation": "Observation falls outside monsoon season during dry or post-monsoon periods."
+          },
+          {
+            "feature": "month_of_year",
+            "display_name": "Month of Year",
+            "unit": "month (1-12)",
+            "transformed_value": 10.0,
+            "raw_value": 10,
+            "shap_value": 0.0042,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0042,
+            "physical_interpretation": "Annual calendar timing aligned with historically high disruption months."
+          },
+          {
+            "feature": "hour_of_day",
+            "display_name": "Hour of Day",
+            "unit": "hour (0-23)",
+            "transformed_value": 6.0,
+            "raw_value": 6,
+            "shap_value": 0.0052,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0052,
+            "physical_interpretation": "Diurnal window coinciding with peak solar heating and mountain convection."
+          },
+          {
+            "feature": "terrain_type_Foothill",
+            "display_name": "Terrain: Foothill",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0016,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0016,
+            "physical_interpretation": "Non-foothill terrain classification."
+          },
+          {
+            "feature": "terrain_type_High Mountain Ridge",
+            "display_name": "Terrain: High Mountain Ridge",
+            "unit": "binary",
+            "transformed_value": 1.0,
+            "raw_value": null,
+            "shap_value": 0.0058,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0058,
+            "physical_interpretation": "High ridge terrain associated with severe elevation gradients and acute landslide risks."
+          },
+          {
+            "feature": "terrain_type_Plain",
+            "display_name": "Terrain: Alluvial Plain",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0089,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0089,
+            "physical_interpretation": "Elevated hill or ghat terrain classification."
+          },
+          {
+            "feature": "terrain_type_Steep Ghat",
+            "display_name": "Terrain: Steep Ghat",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": -0.0049,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0049,
+            "physical_interpretation": "Non-ghat terrain classification."
+          },
+          {
+            "feature": "road_class_arterial",
+            "display_name": "Road Class: Arterial Road",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": -0.0008,
+            "direction": "decreases_disruption_probability",
+            "magnitude": 0.0008,
+            "physical_interpretation": "Non-arterial road classification."
+          },
+          {
+            "feature": "road_class_national_highway",
+            "display_name": "Road Class: National Highway",
+            "unit": "binary",
+            "transformed_value": 1.0,
+            "raw_value": null,
+            "shap_value": 0.0026,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0026,
+            "physical_interpretation": "National Highway with higher engineering standards and wider clearing margins."
+          },
+          {
+            "feature": "road_class_state_highway",
+            "display_name": "Road Class: State Highway",
+            "unit": "binary",
+            "transformed_value": 0.0,
+            "raw_value": null,
+            "shap_value": 0.0031,
+            "direction": "increases_disruption_probability",
+            "magnitude": 0.0031,
+            "physical_interpretation": "National Highway or arterial road classification."
+          }
+        ],
+        "human_readable_explanation": "Model prediction: LOW DISRUPTION RISK (predicted probability: 54.5%, operational alert threshold: 55.0%). Base prior probability across training distribution is 50.1%. Primary factors that contributed to increasing the disruption prediction: Peak 1h Forecast Rain Intensity (+0.099); Peak Forecast Precipitation Probability (+0.057); 6-Hour Cumulative Forecast Rain (+0.046). Primary factors that contributed to lowering the disruption prediction: Antecedent 24h Rainfall (-0.094); Antecedent 72h Rainfall (-0.068); Monsoon Season Indicator (-0.047). Note: SHAP attributions reflect statistical model contribution for this corridor condition, not verified empirical causality.",
+        "data_honesty_notice": "CRITICAL DATA HONESTY: This dataset is a physics-informed prototype training/augmentation dataset constructed for SIH 2026 algorithmic demonstration. It must NEVER be represented as real historical government agency or field telemetry data."
+      }
+    }
+  ],
+  "generated_at": "2026-09-09T14:02:39.959620+00:00"
+}

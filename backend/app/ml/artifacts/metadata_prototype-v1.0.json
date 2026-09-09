@@ -1,0 +1,89 @@
+{
+  "dataset_version": "prototype-v1.0",
+  "generated_at": "2026-09-09T13:30:31.793088+00:00",
+  "random_seed": 42,
+  "simulation_window_days": 730,
+  "simulation_window_description": "730 calendar days (2025-01-01 to 2026-12-31, 2 full annual cycles)",
+  "provenance": "prototype_training_augmentation",
+  "is_synthetic": true,
+  "data_honesty_notice": "CRITICAL DATA HONESTY: This dataset is a physics-informed prototype training/augmentation dataset constructed for SIH 2026 algorithmic demonstration. It must NEVER be represented as real historical government agency or field telemetry data.",
+  "prediction_task": {
+    "target_column": "disruption_within_6h",
+    "prediction_horizon_hours": 6,
+    "target_description": "Binary indicator (1/0) indicating whether a logistics-halting disruption event (landslide, severe flash flood, mudslide, or structural road blockage) occurs within the 6-hour forward-looking horizon [t, t + 6h]."
+  },
+  "statistics": {
+    "total_samples": 10000,
+    "total_features": 19,
+    "positive_samples": 2272,
+    "negative_samples": 7728,
+    "positive_class_ratio": 0.2272
+  },
+  "feature_schema": {
+    "all_features": [
+      "curr_precip_mm",
+      "forecast_rain_6h_sum_mm",
+      "forecast_rain_max_intensity_mm",
+      "forecast_precip_prob_max",
+      "wind_speed_kmh",
+      "wind_gust_kmh",
+      "visibility_km",
+      "antecedent_rain_24h_mm",
+      "antecedent_rain_72h_mm",
+      "elevation_m",
+      "slope_angle_deg",
+      "historical_vulnerability_score",
+      "active_incidents_nearby_15km",
+      "terrain_type",
+      "road_class",
+      "severe_weather_flag",
+      "is_monsoon_season",
+      "month_of_year",
+      "hour_of_day"
+    ],
+    "numerical_features": [
+      "curr_precip_mm",
+      "forecast_rain_6h_sum_mm",
+      "forecast_rain_max_intensity_mm",
+      "forecast_precip_prob_max",
+      "wind_speed_kmh",
+      "wind_gust_kmh",
+      "visibility_km",
+      "antecedent_rain_24h_mm",
+      "antecedent_rain_72h_mm",
+      "elevation_m",
+      "slope_angle_deg",
+      "historical_vulnerability_score",
+      "active_incidents_nearby_15km"
+    ],
+    "categorical_features": [
+      "terrain_type",
+      "road_class"
+    ],
+    "binary_features": [
+      "severe_weather_flag",
+      "is_monsoon_season"
+    ],
+    "temporal_features": [
+      "month_of_year",
+      "hour_of_day"
+    ]
+  },
+  "leakage_safeguards": {
+    "forbidden_columns": [
+      "status",
+      "road_status",
+      "risk_score",
+      "actual_rain_next_6h",
+      "actual_weather_next_6h",
+      "incident_id",
+      "disruption_duration_hours",
+      "is_disrupted_now"
+    ],
+    "status": "enforced_and_validated"
+  },
+  "files": {
+    "dataset_csv": "dataset_prototype-v1.0.csv",
+    "metadata_json": "metadata_prototype-v1.0.json"
+  }
+}

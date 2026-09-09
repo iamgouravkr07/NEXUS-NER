@@ -2,6 +2,7 @@ import {
   AlertCircle,
   AlertTriangle,
   Bell,
+  BrainCircuit,
   CheckCircle2,
   Clock3,
   CloudRain,
@@ -27,6 +28,7 @@ type AlertItem = {
   location: string;
   severity: AlertSeverity;
   type: string;
+  rawType: string;
   time: string;
   status: AlertStatus;
 };
@@ -65,6 +67,8 @@ function formatAlertType(rawType: string): string {
     trip_delay: "Trip Delay",
     weather: "Weather",
     vehicle: "Vehicle",
+    predictive_disruption: "Predictive Disruption",
+    corridor_blocked: "Confirmed Corridor Blockage",
   };
   return map[rawType.toLowerCase()] || rawType.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -84,6 +88,10 @@ function severityClass(severity: AlertSeverity) {
 
 function alertIcon(type: string) {
   switch (type) {
+    case "Predictive Disruption":
+      return BrainCircuit;
+    case "Confirmed Corridor Blockage":
+      return ShieldAlert;
     case "Weather":
       return CloudRain;
     case "Vehicle":
@@ -148,6 +156,8 @@ function Alerts() {
               ? "Resolved"
               : "Active";
 
+        const rawAlertsType = (a.alert_type || "general").toLowerCase();
+
         return {
           rawId: a.id,
           id: `ALT-${String(a.id).padStart(3, "0")}`,
@@ -156,6 +166,7 @@ function Alerts() {
           location: a.location || "North Eastern Region",
           severity: sevFormatted,
           type: formatAlertType(a.alert_type || "general"),
+          rawType: rawAlertsType,
           time: formatRelativeTime(a.created_at),
           status: statFormatted,
         };
@@ -428,6 +439,8 @@ function Alerts() {
               className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300 outline-none"
             >
               <option value="All">All Types</option>
+              <option value="Predictive Disruption">Predictive Disruption</option>
+              <option value="Confirmed Corridor Blockage">Confirmed Corridor Blockage</option>
               <option value="Road Incident">Road Incident</option>
               <option value="Road Risk">Road Risk</option>
               <option value="Reroute">Reroute</option>
@@ -472,13 +485,15 @@ function Alerts() {
                   <div className="flex min-w-0 items-start gap-4">
                     <div
                       className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                        alert.severity === "Critical"
-                          ? "bg-red-500/10 text-red-400"
-                          : alert.severity === "High"
-                            ? "bg-orange-500/10 text-orange-400"
-                            : alert.severity === "Medium"
-                              ? "bg-amber-500/10 text-amber-400"
-                              : "bg-emerald-500/10 text-emerald-400"
+                        alert.rawType === "predictive_disruption"
+                          ? "bg-purple-500/10 text-purple-400"
+                          : alert.severity === "Critical"
+                            ? "bg-red-500/10 text-red-400"
+                            : alert.severity === "High"
+                              ? "bg-orange-500/10 text-orange-400"
+                              : alert.severity === "Medium"
+                                ? "bg-amber-500/10 text-amber-400"
+                                : "bg-emerald-500/10 text-emerald-400"
                       }`}
                     >
                       <Icon size={19} />
@@ -494,6 +509,15 @@ function Alerts() {
                         >
                           {alert.severity}
                         </span>
+                        {alert.rawType === "predictive_disruption" ? (
+                          <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold text-purple-300">
+                            PREDICTIVE ADVISORY
+                          </span>
+                        ) : alert.rawType === "corridor_blocked" || alert.rawType === "road_incident" ? (
+                          <span className="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-300">
+                            CONFIRMED
+                          </span>
+                        ) : null}
                         <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">
                           {alert.type}
                         </span>
@@ -502,6 +526,18 @@ function Alerts() {
                       <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">
                         {alert.description}
                       </p>
+
+                      {alert.rawType === "predictive_disruption" && (
+                        <div className="mt-2.5 rounded-lg border border-purple-500/20 bg-purple-500/[0.04] p-2.5 text-[11px] text-slate-300 flex flex-wrap items-center justify-between gap-2">
+                          <span className="flex items-center gap-1.5 text-purple-300">
+                            <BrainCircuit size={13} />
+                            <span>Forecast Horizon: Next 6 Hours &bull; Threshold: 55%</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400 italic">
+                            Operational verification required &bull; Prototype ML advisory
+                          </span>
+                        </div>
+                      )}
 
                       <div className="mt-3 flex flex-wrap items-center gap-4">
                         <div className="flex items-center gap-1.5">

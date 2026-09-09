@@ -45,7 +45,8 @@ def create_incident(
         road_status=incident.road_status,
         status="reported",
         risk_score=risk_score,
-        affected_road_id=incident.affected_road_id
+        affected_road_id=incident.affected_road_id,
+        reported_at=incident.reported_at,
     )
 
     db.add(db_incident)

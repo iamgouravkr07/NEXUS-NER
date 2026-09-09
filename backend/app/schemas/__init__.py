@@ -13,3 +13,16 @@ from app.schemas.weather import (
     RouteWeatherWaypoint,
     RouteWeatherResponse,
 )
+from app.schemas.ml import (
+    DisruptionPredictionRequest,
+    FeatureAttributionItem,
+    AdditiveConsistencyDetail,
+    PredictionDetail,
+    ExplanationDetail,
+    DisruptionPredictionResponse,
+    ModelMetadataResponse,
+    MLPredictionSignal,
+    CombinedRiskAssessment,
+    PredictiveRiskResult,
+    CorridorPredictiveRiskRequest,
+)

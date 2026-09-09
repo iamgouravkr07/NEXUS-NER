@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
@@ -20,9 +20,11 @@ import {
   Users,
   Wifi,
   WifiOff,
-
   Wind,
 } from "lucide-react";
+import { PredictiveRiskCard } from "../components/PredictiveRiskCard";
+import { mlClient } from "../api/mlClient";
+import type { PredictiveRiskResult } from "../types/ml";
 import {
   Area,
   AreaChart,
@@ -327,13 +329,37 @@ function Home() {
     }
   };
 
+  // Predictive ML Disruption Risk state
+  const [predictiveRisk, setPredictiveRisk] = useState<PredictiveRiskResult | null>(null);
+  const [loadingPredictive, setLoadingPredictive] = useState(true);
+  const [predictiveError, setPredictiveError] = useState<string | null>(null);
+
+  const fetchPredictiveRisk = useCallback(async (idx: number) => {
+    const hub = WEATHER_HUBS[idx];
+    setLoadingPredictive(true);
+    setPredictiveError(null);
+    try {
+      const roadId = (idx % 2) + 1;
+      const data = await mlClient.getPredictiveRisk(roadId, hub.lat, hub.lon);
+      setPredictiveRisk(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Predictive disruption risk unavailable";
+      setPredictiveError(msg);
+      setPredictiveRisk(null);
+    } finally {
+      setLoadingPredictive(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchHubWeather(selectedHubIdx);
-    const weatherInterval = window.setInterval(() => {
+    fetchPredictiveRisk(selectedHubIdx);
+    const interval = window.setInterval(() => {
       fetchHubWeather(selectedHubIdx);
+      fetchPredictiveRisk(selectedHubIdx);
     }, 60000);
-    return () => window.clearInterval(weatherInterval);
-  }, [selectedHubIdx]);
+    return () => window.clearInterval(interval);
+  }, [selectedHubIdx, fetchPredictiveRisk]);
 
   useEffect(() => {
     let mounted = true;
@@ -849,6 +875,14 @@ function Home() {
           </div>
         </div>
 
+        {/* Predictive Disruption Risk & TreeSHAP Explainability */}
+        <PredictiveRiskCard
+          result={predictiveRisk}
+          loading={loadingPredictive}
+          error={predictiveError}
+          onRefresh={() => fetchPredictiveRisk(selectedHubIdx)}
+          roadName={WEATHER_HUBS[selectedHubIdx].name}
+        />
 
         {/* Charts + alerts */}
         <div className="grid gap-6 lg:grid-cols-3">

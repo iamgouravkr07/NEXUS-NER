@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, Text
+from sqlalchemy import Column, Integer, String, Float, Text, DateTime
+from sqlalchemy.sql import func
 from geoalchemy2 import Geometry
 
 from app.database import Base
@@ -32,3 +33,6 @@ class Incident(Base):
         Integer,
         nullable=True
     )
+
+    reported_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

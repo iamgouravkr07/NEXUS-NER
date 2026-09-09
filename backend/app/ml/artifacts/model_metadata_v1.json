@@ -1,0 +1,84 @@
+{
+  "model_version": "v1.0",
+  "primary_model": "RandomForestClassifier",
+  "baseline_model": "LogisticRegression",
+  "target_variable": "disruption_within_6h",
+  "prediction_horizon_hours": 6,
+  "provenance": "prototype_training_augmentation",
+  "dataset_provenance": "prototype_training_augmentation",
+  "is_synthetic": true,
+  "data_honesty_notice": "CRITICAL DATA HONESTY: This dataset is a physics-informed prototype training/augmentation dataset constructed for SIH 2026 algorithmic demonstration. It must NEVER be represented as real historical government agency or field telemetry data.",
+  "features": {
+    "encoded_feature_count": 24,
+    "feature_names": [
+      "curr_precip_mm",
+      "forecast_rain_6h_sum_mm",
+      "forecast_rain_max_intensity_mm",
+      "forecast_precip_prob_max",
+      "wind_speed_kmh",
+      "wind_gust_kmh",
+      "visibility_km",
+      "antecedent_rain_24h_mm",
+      "antecedent_rain_72h_mm",
+      "elevation_m",
+      "slope_angle_deg",
+      "historical_vulnerability_score",
+      "active_incidents_nearby_15km",
+      "severe_weather_flag",
+      "is_monsoon_season",
+      "month_of_year",
+      "hour_of_day",
+      "terrain_type_Foothill",
+      "terrain_type_High Mountain Ridge",
+      "terrain_type_Plain",
+      "terrain_type_Steep Ghat",
+      "road_class_arterial",
+      "road_class_national_highway",
+      "road_class_state_highway"
+    ],
+    "numerical_features": [
+      "curr_precip_mm",
+      "forecast_rain_6h_sum_mm",
+      "forecast_rain_max_intensity_mm",
+      "forecast_precip_prob_max",
+      "wind_speed_kmh",
+      "wind_gust_kmh",
+      "visibility_km",
+      "antecedent_rain_24h_mm",
+      "antecedent_rain_72h_mm",
+      "elevation_m",
+      "slope_angle_deg",
+      "historical_vulnerability_score",
+      "active_incidents_nearby_15km"
+    ],
+    "categorical_features": [
+      "terrain_type",
+      "road_class"
+    ],
+    "binary_features": [
+      "severe_weather_flag",
+      "is_monsoon_season"
+    ],
+    "temporal_features": [
+      "month_of_year",
+      "hour_of_day"
+    ]
+  },
+  "operational_thresholds": {
+    "decision_threshold": 0.55,
+    "high_risk_threshold": 0.65,
+    "critical_risk_threshold": 0.8
+  },
+  "split_summary": {
+    "train_samples": 7000,
+    "val_samples": 1500,
+    "test_samples": 1500
+  },
+  "artifacts": {
+    "random_forest_bundle": "disruption_rf_v1.joblib",
+    "logistic_regression_bundle": "logistic_regression_v1.joblib",
+    "metrics_file": "training_metrics_v1.json",
+    "feature_importance_file": "feature_importance_v1.json"
+  },
+  "trained_at": "2026-09-09T13:45:00.870181+00:00"
+}

@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
+from datetime import datetime
 from typing import Optional
+from pydantic import BaseModel, Field
 
 
 class IncidentCreate(BaseModel):
@@ -10,6 +11,7 @@ class IncidentCreate(BaseModel):
     longitude: float = Field(..., ge=88, le=98)
     road_status: Optional[str] = "unknown"
     affected_road_id: Optional[int] = None
+    reported_at: Optional[datetime] = None
 
 
 class IncidentStatusUpdate(BaseModel):
@@ -23,3 +25,8 @@ class IncidentResponse(IncidentCreate):
     id: int
     status: str
     risk_score: float
+    reported_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True

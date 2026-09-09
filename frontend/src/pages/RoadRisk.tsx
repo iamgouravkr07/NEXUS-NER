@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   BrainCircuit,
@@ -12,6 +12,9 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
+import { PredictiveRiskCard } from "../components/PredictiveRiskCard";
+import { mlClient } from "../api/mlClient";
+import type { PredictiveRiskResult } from "../types/ml";
 
 const API_URL = "http://127.0.0.1:8000";
 
@@ -217,6 +220,25 @@ function RoadRisk() {
     }
   }
 
+  const [predictiveResult, setPredictiveResult] = useState<PredictiveRiskResult | null>(null);
+  const [loadingPredictive, setLoadingPredictive] = useState(false);
+  const [predictiveError, setPredictiveError] = useState<string | null>(null);
+
+  const loadPredictiveRisk = useCallback(async (roadId: number, lat?: number, lon?: number) => {
+    try {
+      setLoadingPredictive(true);
+      setPredictiveError(null);
+      const data = await mlClient.getPredictiveRisk(roadId, lat, lon);
+      setPredictiveResult(data);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Predictive risk evaluation unavailable";
+      setPredictiveError(msg);
+      setPredictiveResult(null);
+    } finally {
+      setLoadingPredictive(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadRisks();
 
@@ -224,6 +246,12 @@ function RoadRisk() {
 
     return () => window.clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (selectedRisk) {
+      loadPredictiveRisk(selectedRisk.id, selectedRisk.latitude, selectedRisk.longitude);
+    }
+  }, [selectedRisk, loadPredictiveRisk]);
 
   const critical = risks.filter(
     (risk) => (risk.risk_score ?? 0) >= 85
@@ -705,6 +733,23 @@ function RoadRisk() {
             )}
           </div>
         </div>
+
+        {/* Live Predictive Disruption Intelligence for Selected Corridor */}
+        {selectedRisk && (
+          <PredictiveRiskCard
+            result={predictiveResult}
+            loading={loadingPredictive}
+            error={predictiveError}
+            onRefresh={() =>
+              loadPredictiveRisk(
+                selectedRisk.id,
+                selectedRisk.latitude,
+                selectedRisk.longitude
+              )
+            }
+            roadName={selectedRisk.road || selectedRisk.highway || "Selected Corridor"}
+          />
+        )}
 
         {/* Risk table */}
         <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/70">

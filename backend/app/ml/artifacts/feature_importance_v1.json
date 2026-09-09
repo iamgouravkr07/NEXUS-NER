@@ -1,0 +1,156 @@
+{
+  "model": "RandomForestClassifier",
+  "dataset_version": "prototype-v1.0",
+  "provenance": "prototype_training_augmentation",
+  "is_synthetic": true,
+  "total_features": 24,
+  "ranked_features": [
+    {
+      "rank": 1,
+      "feature": "antecedent_rain_24h_mm",
+      "importance": 0.198
+    },
+    {
+      "rank": 2,
+      "feature": "antecedent_rain_72h_mm",
+      "importance": 0.1607
+    },
+    {
+      "rank": 3,
+      "feature": "forecast_rain_max_intensity_mm",
+      "importance": 0.1046
+    },
+    {
+      "rank": 4,
+      "feature": "is_monsoon_season",
+      "importance": 0.0913
+    },
+    {
+      "rank": 5,
+      "feature": "forecast_rain_6h_sum_mm",
+      "importance": 0.0819
+    },
+    {
+      "rank": 6,
+      "feature": "forecast_precip_prob_max",
+      "importance": 0.0764
+    },
+    {
+      "rank": 7,
+      "feature": "curr_precip_mm",
+      "importance": 0.0509
+    },
+    {
+      "rank": 8,
+      "feature": "slope_angle_deg",
+      "importance": 0.0387
+    },
+    {
+      "rank": 9,
+      "feature": "active_incidents_nearby_15km",
+      "importance": 0.0298
+    },
+    {
+      "rank": 10,
+      "feature": "month_of_year",
+      "importance": 0.0275
+    },
+    {
+      "rank": 11,
+      "feature": "historical_vulnerability_score",
+      "importance": 0.0257
+    },
+    {
+      "rank": 12,
+      "feature": "elevation_m",
+      "importance": 0.0247
+    },
+    {
+      "rank": 13,
+      "feature": "visibility_km",
+      "importance": 0.0226
+    },
+    {
+      "rank": 14,
+      "feature": "wind_speed_kmh",
+      "importance": 0.0209
+    },
+    {
+      "rank": 15,
+      "feature": "wind_gust_kmh",
+      "importance": 0.0158
+    },
+    {
+      "rank": 16,
+      "feature": "terrain_type_Plain",
+      "importance": 0.0152
+    },
+    {
+      "rank": 17,
+      "feature": "hour_of_day",
+      "importance": 0.0039
+    },
+    {
+      "rank": 18,
+      "feature": "terrain_type_High Mountain Ridge",
+      "importance": 0.0025
+    },
+    {
+      "rank": 19,
+      "feature": "terrain_type_Steep Ghat",
+      "importance": 0.0021
+    },
+    {
+      "rank": 20,
+      "feature": "terrain_type_Foothill",
+      "importance": 0.0017
+    },
+    {
+      "rank": 21,
+      "feature": "road_class_national_highway",
+      "importance": 0.0015
+    },
+    {
+      "rank": 22,
+      "feature": "severe_weather_flag",
+      "importance": 0.0013
+    },
+    {
+      "rank": 23,
+      "feature": "road_class_arterial",
+      "importance": 0.0012
+    },
+    {
+      "rank": 24,
+      "feature": "road_class_state_highway",
+      "importance": 0.0011
+    }
+  ],
+  "feature_importances": {
+    "curr_precip_mm": 0.0509,
+    "forecast_rain_6h_sum_mm": 0.0819,
+    "forecast_rain_max_intensity_mm": 0.1046,
+    "forecast_precip_prob_max": 0.0764,
+    "wind_speed_kmh": 0.0209,
+    "wind_gust_kmh": 0.0158,
+    "visibility_km": 0.0226,
+    "antecedent_rain_24h_mm": 0.198,
+    "antecedent_rain_72h_mm": 0.1607,
+    "elevation_m": 0.0247,
+    "slope_angle_deg": 0.0387,
+    "historical_vulnerability_score": 0.0257,
+    "active_incidents_nearby_15km": 0.0298,
+    "severe_weather_flag": 0.0013,
+    "is_monsoon_season": 0.0913,
+    "month_of_year": 0.0275,
+    "hour_of_day": 0.0039,
+    "terrain_type_Foothill": 0.0017,
+    "terrain_type_High Mountain Ridge": 0.0025,
+    "terrain_type_Plain": 0.0152,
+    "terrain_type_Steep Ghat": 0.0021,
+    "road_class_arterial": 0.0012,
+    "road_class_national_highway": 0.0015,
+    "road_class_state_highway": 0.0011
+  },
+  "physical_interpretation": "Antecedent soil saturation proxies (24h and 72h accumulated rain) and peak forecasted rain intensity are the dominant predictive signals, physically consistent with geotechnical slope instability and flash-washout mechanisms along steep North-Eastern Himalayan highway corridors."
+}
