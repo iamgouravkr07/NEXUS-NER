@@ -7,15 +7,21 @@ import {
   CheckCircle2,
   Clock3,
   CloudRain,
+  Droplets,
+  Eye,
   MapPin,
   Navigation,
   Package,
+  RefreshCw,
   Route,
   ShieldAlert,
+  Thermometer,
   Truck,
   Users,
   Wifi,
   WifiOff,
+
+  Wind,
 } from "lucide-react";
 import {
   Area,
@@ -27,7 +33,45 @@ import {
   YAxis,
 } from "recharts";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
+
+type WeatherRiskSignal = {
+  risk_score: number;
+  risk_level: string;
+  signal_type: string;
+  factors: string[];
+  warnings: string[];
+  recommendations: string[];
+};
+
+type WeatherCurrentData = {
+  latitude: number;
+  longitude: number;
+  temperature_c?: number;
+  feels_like_c?: number;
+  humidity_percent?: number;
+  rainfall_mm?: number;
+  precipitation_probability?: number;
+  wind_speed_kmh?: number;
+  wind_gust_kmh?: number;
+  pressure_hpa?: number;
+  visibility_km?: number;
+  weather_condition?: string;
+  observed_at?: string;
+  source?: string;
+  cached?: boolean;
+  risk_signal?: WeatherRiskSignal;
+};
+
+const WEATHER_HUBS = [
+  { name: "Guwahati Hub (NH-27)", state: "Assam", lat: 26.1445, lon: 91.7362 },
+  { name: "Shillong Corridor (NH-6)", state: "Meghalaya", lat: 25.5788, lon: 91.8933 },
+  { name: "Imphal East (NH-2)", state: "Manipur", lat: 24.8170, lon: 93.9368 },
+  { name: "Gangtok Pass (NH-10)", state: "Sikkim", lat: 27.3389, lon: 88.6065 },
+  { name: "Itanagar Mountain (NH-415)", state: "Arunachal", lat: 27.0844, lon: 93.6053 },
+  { name: "Dhemaji Floodplain (NH-15)", state: "Assam", lat: 27.4800, lon: 94.5800 },
+];
+
 
 type Vehicle = {
   id: number;
@@ -254,8 +298,46 @@ function Home() {
   const [alertsError, setAlertsError] = useState(false);
   const [backendOnline, setBackendOnline] = useState(true);
 
+
+  // Weather subsystem state
+  const [selectedHubIdx, setSelectedHubIdx] = useState(0);
+  const [weatherData, setWeatherData] = useState<WeatherCurrentData | null>(null);
+  const [loadingWeather, setLoadingWeather] = useState(true);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [weatherLastUpdated, setWeatherLastUpdated] = useState<string | null>(null);
+
+  const fetchHubWeather = async (idx: number) => {
+    const hub = WEATHER_HUBS[idx];
+    setLoadingWeather(true);
+    setWeatherError(null);
+    try {
+      const res = await fetch(
+        `${API_URL}/weather/current?latitude=${hub.lat}&longitude=${hub.lon}&location_name=${encodeURIComponent(hub.name)}`
+      );
+      if (!res.ok) {
+        throw new Error(`Weather service error (${res.status})`);
+      }
+      const data = await res.json();
+      setWeatherData(data);
+      setWeatherLastUpdated(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+    } catch (err: any) {
+      setWeatherError(err?.message || "Atmospheric data unavailable");
+    } finally {
+      setLoadingWeather(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchHubWeather(selectedHubIdx);
+    const weatherInterval = window.setInterval(() => {
+      fetchHubWeather(selectedHubIdx);
+    }, 60000);
+    return () => window.clearInterval(weatherInterval);
+  }, [selectedHubIdx]);
+
   useEffect(() => {
     let mounted = true;
+
 
     async function loadDashboard() {
       try {
@@ -543,69 +625,230 @@ function Home() {
             </div>
           </div>
 
-          {/* Regional risk */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/70">
-            <div className="border-b border-slate-800 px-5 py-4">
-              <h3 className="font-semibold text-white">
-                Regional Risk
-              </h3>
+          {/* Right column: Regional Risk + Corridor Weather Intelligence */}
+          <div className="space-y-6">
+            {/* Regional risk */}
+            <div className="rounded-xl border border-slate-800 bg-slate-900/70">
+              <div className="border-b border-slate-800 px-5 py-4">
+                <h3 className="font-semibold text-white">
+                  Regional Risk
+                </h3>
 
-              <p className="mt-1 text-xs text-slate-500">
-                Current accessibility risk by state
-              </p>
-            </div>
+                <p className="mt-1 text-xs text-slate-500">
+                  Current accessibility risk by state
+                </p>
+              </div>
 
-            <div className="space-y-1 p-3">
-              {regions.map((region) => (
-                <div
-                  key={region.name}
-                  className="rounded-lg p-3 transition hover:bg-slate-800/60"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-xs font-bold text-cyan-400">
-                        {region.short}
+              <div className="space-y-1 p-3">
+                {regions.map((region) => (
+                  <div
+                    key={region.name}
+                    className="rounded-lg p-3 transition hover:bg-slate-800/60"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-800 text-xs font-bold text-cyan-400">
+                          {region.short}
+                        </div>
+
+                        <div>
+                          <p className="text-sm font-medium text-slate-200">
+                            {region.name}
+                          </p>
+
+                          <p className="text-xs text-slate-500">
+                            {region.vehicles} vehicles
+                          </p>
+                        </div>
                       </div>
 
-                      <div>
-                        <p className="text-sm font-medium text-slate-200">
-                          {region.name}
-                        </p>
+                      <span
+                        className={`rounded-full border px-2 py-1 text-[10px] font-medium ${getRiskClass(
+                          region.risk
+                        )}`}
+                      >
+                        {region.risk}
+                      </span>
+                    </div>
 
-                        <p className="text-xs text-slate-500">
-                          {region.vehicles} vehicles
+                    <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                      <div
+                        className="h-full rounded-full bg-current"
+                        style={{
+                          width: `${region.riskValue}%`,
+                          color:
+                            region.risk === "High"
+                              ? "rgb(248 113 113)"
+                              : region.risk === "Moderate"
+                              ? "rgb(251 191 36)"
+                              : "rgb(52 211 153)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Corridor Weather Intelligence Panel */}
+            <div className="rounded-xl border border-slate-800 bg-slate-900/70">
+              <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CloudRain size={16} className="text-cyan-400" />
+                    <h3 className="font-semibold text-white">Corridor Weather</h3>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Real-time atmospheric conditions across NER routes</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fetchHubWeather(selectedHubIdx)}
+                  className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-slate-400 transition hover:border-slate-700 hover:text-white"
+                  title="Refresh weather"
+                >
+                  <RefreshCw size={13} className={loadingWeather ? "animate-spin text-cyan-400" : ""} />
+                </button>
+              </div>
+
+              {/* Hub Selector Dropdown */}
+              <div className="border-b border-slate-800/80 p-3">
+                <label className="block text-[11px] font-medium text-slate-400 mb-1.5">Monitored Corridor / Logistics Hub:</label>
+                <select
+                  value={selectedHubIdx}
+                  onChange={(e) => setSelectedHubIdx(Number(e.target.value))}
+                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"
+                >
+                  {WEATHER_HUBS.map((hub, idx) => (
+                    <option key={hub.name} value={idx}>
+                      {hub.name} ({hub.lat.toFixed(2)}°N, {hub.lon.toFixed(2)}°E)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Weather Data Display */}
+              <div className="p-4">
+                {loadingWeather && !weatherData ? (
+                  <div className="flex h-36 items-center justify-center text-xs text-slate-500">
+                    <RefreshCw size={16} className="animate-spin text-cyan-400 mr-2" />
+                    Fetching atmospheric telemetry...
+                  </div>
+                ) : weatherError && !weatherData ? (
+                  <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
+                    <p className="font-medium">Atmospheric Service Unavailable</p>
+                    <p className="mt-1 text-[11px] text-red-400/80">{weatherError}</p>
+                    <button
+                      type="button"
+                      onClick={() => fetchHubWeather(selectedHubIdx)}
+                      className="mt-2 text-[11px] underline hover:text-red-300"
+                    >
+                      Retry connection
+                    </button>
+                  </div>
+                ) : weatherData ? (
+                  <div className="space-y-4">
+                    {/* Primary condition banner */}
+                    <div className="flex items-center justify-between rounded-lg bg-slate-950/70 p-3.5 border border-slate-800/60">
+                      <div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold text-white">
+                            {weatherData.temperature_c !== undefined ? `${weatherData.temperature_c}°C` : "—"}
+                          </span>
+                          {weatherData.feels_like_c !== undefined && (
+                            <span className="text-xs text-slate-400">Feels {weatherData.feels_like_c}°C</span>
+                          )}
+                        </div>
+                        <p className="mt-0.5 text-xs font-medium text-cyan-400">
+                          {weatherData.weather_condition || "Clear"}
+                        </p>
+                      </div>
+
+                      {/* Deterministic Weather Risk Badge */}
+                      <div className="text-right">
+                        <span
+                          className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${
+                            weatherData.risk_signal?.risk_level === "Critical"
+                              ? "border-red-500/20 bg-red-500/10 text-red-400"
+                              : weatherData.risk_signal?.risk_level === "High"
+                              ? "border-orange-500/20 bg-orange-500/10 text-orange-400"
+                              : weatherData.risk_signal?.risk_level === "Moderate"
+                              ? "border-amber-500/20 bg-amber-500/10 text-amber-400"
+                              : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                          }`}
+                        >
+                          {weatherData.risk_signal?.risk_level || "Low"} Weather Risk
+                        </span>
+                        <p className="mt-1 text-[10px] text-slate-500">
+                          Deterministic Score: {weatherData.risk_signal?.risk_score ?? 0}/100
                         </p>
                       </div>
                     </div>
 
-                    <span
-                      className={`rounded-full border px-2 py-1 text-[10px] font-medium ${getRiskClass(
-                        region.risk
-                      )}`}
-                    >
-                      {region.risk}
-                    </span>
-                  </div>
+                    {/* Metrics grid */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/40">
+                        <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                          <Droplets size={13} className="text-cyan-400" />
+                          <span>Precipitation</span>
+                        </div>
+                        <p className="font-semibold text-white">
+                          {weatherData.rainfall_mm !== undefined ? `${weatherData.rainfall_mm} mm` : "0 mm"}
+                        </p>
+                      </div>
 
-                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-800">
-                    <div
-                      className="h-full rounded-full bg-current"
-                      style={{
-                        width: `${region.riskValue}%`,
-                        color:
-                          region.risk === "High"
-                            ? "rgb(248 113 113)"
-                            : region.risk === "Moderate"
-                            ? "rgb(251 191 36)"
-                            : "rgb(52 211 153)",
-                      }}
-                    />
+                      <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/40">
+                        <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                          <Wind size={13} className="text-cyan-400" />
+                          <span>Wind Speed</span>
+                        </div>
+                        <p className="font-semibold text-white">
+                          {weatherData.wind_speed_kmh !== undefined ? `${weatherData.wind_speed_kmh} km/h` : "—"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/40">
+                        <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                          <Eye size={13} className="text-cyan-400" />
+                          <span>Visibility</span>
+                        </div>
+                        <p className="font-semibold text-white">
+                          {weatherData.visibility_km !== undefined ? `${weatherData.visibility_km} km` : "—"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/40">
+                        <div className="flex items-center gap-1.5 text-slate-500 mb-1">
+                          <Thermometer size={13} className="text-cyan-400" />
+                          <span>Humidity</span>
+                        </div>
+                        <p className="font-semibold text-white">
+                          {weatherData.humidity_percent !== undefined ? `${weatherData.humidity_percent}%` : "—"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Operational warning if any */}
+                    {weatherData.risk_signal?.warnings && weatherData.risk_signal.warnings.length > 0 && (
+                      <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-[11px] text-amber-300">
+                        <div className="flex items-start gap-1.5">
+                          <AlertTriangle size={13} className="mt-0.5 shrink-0 text-amber-400" />
+                          <span>{weatherData.risk_signal.warnings[0]}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Metadata footer */}
+                    <div className="flex items-center justify-between border-t border-slate-800/60 pt-2 text-[10px] text-slate-500">
+                      <span>Source: {weatherData.source} {weatherData.cached ? "(Cached)" : "(Live)"}</span>
+                      <span>Updated: {weatherLastUpdated || "Just now"}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
+
 
         {/* Charts + alerts */}
         <div className="grid gap-6 lg:grid-cols-3">

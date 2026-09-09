@@ -35,6 +35,7 @@ def haversine_distance_km(
 def calculate_route_risk(
     db: Session,
     route_geometry: dict,
+    include_weather: bool = False,
 ):
     """
     Evaluate road and verified incident risk along a GeoJSON route.
@@ -46,17 +47,22 @@ def calculate_route_risk(
     - Blocked roads have critical risk.
     - Incidents have a tighter proximity radius so that
       a genuine detour is not incorrectly marked unsafe.
+    - If include_weather=True, appends deterministic weather risk signal.
     """
 
     coordinates = route_geometry.get("coordinates", [])
 
     if not coordinates:
-        return {
+        base_result = {
             "risk_score": 0,
             "risk_level": "low",
             "reroute_required": False,
             "warnings": [],
+            "blocked_road_ids": [],
         }
+        if include_weather:
+            base_result["weather_risk_signal"] = None
+        return base_result
 
     roads = db.query(Road).all()
 
@@ -193,10 +199,34 @@ def calculate_route_risk(
     else:
         risk_level = "low"
 
-    return {
+    result = {
         "risk_score": risk_score,
         "risk_level": risk_level,
         "reroute_required": reroute_required,
         "warnings": sorted(warnings),
-        "blocked_road_ids": blocked_roads
+        "blocked_road_ids": blocked_roads,
     }
+
+    # --------------------------------------------------------
+    # Additional Signal: Deterministic Weather Risk
+    # --------------------------------------------------------
+    if include_weather:
+        try:
+            from app.services.weather_service import get_weather_for_route
+            weather_summary = get_weather_for_route(db, route_geometry)
+            result["weather_risk_signal"] = weather_summary.composite_risk_signal.model_dump()
+            for w in weather_summary.composite_risk_signal.warnings:
+                if w not in result["warnings"]:
+                    result["warnings"].append(w)
+        except Exception:
+            result["weather_risk_signal"] = None
+
+    return result
+
+
+def calculate_route_risk_with_weather(
+    db: Session,
+    route_geometry: dict,
+):
+    """Convenience helper to evaluate route risk including deterministic weather exposure."""
+    return calculate_route_risk(db, route_geometry, include_weather=True)

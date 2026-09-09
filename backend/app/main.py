@@ -12,6 +12,7 @@ from app.api.risk import router as risk_router
 from app.api.alerts import router as alerts_router
 from app.api.auth import router as auth_router
 from app.api.sync import router as sync_router
+from app.api.weather import router as weather_router
 from app.database import Base, engine
 from app.models.incident import Incident
 from app.models.road import Road
@@ -20,8 +21,10 @@ from app.models.trip import Trip
 from app.models.alert import Alert
 from app.models.user import User
 from app.models.sync_event import SyncEvent
+from app.models.weather import WeatherRecord
 
 logger = logging.getLogger("nexus_ner")
+
 
 # Create the database tables if database is reachable
 try:
@@ -61,8 +64,10 @@ app.include_router(trips_router)
 app.include_router(routes_router)
 app.include_router(risk_router)
 app.include_router(alerts_router)
+app.include_router(weather_router)
 
 @app.get("/")
+
 def root():
     return {
         "name": "NEXUS-NER",

@@ -33,3 +33,34 @@ BOOTSTRAP_ADMIN_PASSWORD = os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "Admin@Nexus202
 BOOTSTRAP_OPERATOR_PASSWORD = os.getenv("BOOTSTRAP_OPERATOR_PASSWORD", "Operator@Nexus2026")
 BOOTSTRAP_FIELD_PASSWORD = os.getenv("BOOTSTRAP_FIELD_PASSWORD", "Field@Nexus2026")
 BOOTSTRAP_DRIVER_PASSWORD = os.getenv("BOOTSTRAP_DRIVER_PASSWORD", "Driver@Nexus2026")
+
+# Weather Integration Configuration
+WEATHER_PROVIDER = os.getenv("WEATHER_PROVIDER", "open-meteo").lower()
+WEATHER_CACHE_TTL_MINUTES = int(os.getenv("WEATHER_CACHE_TTL_MINUTES", "15"))
+WEATHER_REQUEST_TIMEOUT_SECONDS = int(os.getenv("WEATHER_REQUEST_TIMEOUT_SECONDS", "10"))
+
+# Operational NER Bounding Box (Engineering reference boundary for regional filtering)
+NER_BOUNDS = {
+    "min_lat": 20.0,
+    "max_lat": 30.0,
+    "min_lon": 88.0,
+    "max_lon": 98.0,
+}
+
+# Deterministic Weather Risk Configuration
+# Operational heuristic thresholds for transport safety (NOT scientifically calibrated or ML models)
+WEATHER_RISK_THRESHOLDS = {
+    "precipitation_mm": {
+        "moderate": float(os.getenv("WEATHER_THRESHOLD_RAIN_MODERATE", "5.0")),    # >= 5.0 mm preceding 1-hour sum
+        "heavy": float(os.getenv("WEATHER_THRESHOLD_RAIN_HEAVY", "15.0")),          # >= 15.0 mm preceding 1-hour sum
+        "extreme": float(os.getenv("WEATHER_THRESHOLD_RAIN_EXTREME", "50.0")),      # >= 50.0 mm preceding 1-hour sum
+    },
+    "wind_kmh": {
+        "strong": float(os.getenv("WEATHER_THRESHOLD_WIND_STRONG", "45.0")),        # >= 45.0 km/h sustained or 60 gust
+        "gale": float(os.getenv("WEATHER_THRESHOLD_WIND_GALE", "70.0")),            # >= 70.0 km/h sustained or 85 gust
+    },
+    "visibility_km": {
+        "dense_fog": float(os.getenv("WEATHER_THRESHOLD_VIS_DENSE_FOG", "0.8")),    # <= 0.8 km dense fog / severely impaired
+        "fog": float(os.getenv("WEATHER_THRESHOLD_VIS_FOG", "2.0")),                # <= 2.0 km reduced visibility
+    },
+}
