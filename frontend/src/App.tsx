@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import { syncWorker } from "./offline/syncWorker";
@@ -31,31 +32,33 @@ function App() {
   }, []);
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Authentication Route */}
-          <Route path="/login" element={<Login />} />
+      <LanguageProvider>
+        <BrowserRouter>
+          <Routes>
+            {/* Public Authentication Route */}
+            <Route path="/login" element={<Login />} />
 
-          {/* Protected Control Tower Dashboard Routes */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<Home />} />
-            <Route path="/control" element={<Home />} />
-            <Route path="/incidents" element={<Incidents />} />
-            <Route path="/vehicles" element={<Vehicles />} />
-            <Route path="/routes" element={<RoutePlanner />} />
-            <Route path="/road-risk" element={<RoadRisk />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/field-report" element={<FieldReport />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+            {/* Protected Control Tower Dashboard Routes */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/" element={<Home />} />
+              <Route path="/control" element={<Home />} />
+              <Route path="/incidents" element={<Incidents />} />
+              <Route path="/vehicles" element={<Vehicles />} />
+              <Route path="/routes" element={<RoutePlanner />} />
+              <Route path="/road-risk" element={<RoadRisk />} />
+              <Route path="/alerts" element={<Alerts />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/field-report" element={<FieldReport />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

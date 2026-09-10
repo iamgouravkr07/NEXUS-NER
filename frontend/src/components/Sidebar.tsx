@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 
 const navigation = [
   {
@@ -57,6 +58,13 @@ const navigation = [
 
 function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useLanguage();
+
+  const getLabel = (item: { name: string; path: string }) => {
+    if (item.path === "/") return t.nav.controlTower;
+    if (item.path === "/field-report") return t.nav.fieldReport;
+    return item.name;
+  };
 
   return (
     <aside
@@ -118,13 +126,14 @@ function Sidebar() {
         <div className="space-y-2">
           {navigation.map((item) => {
             const Icon = item.icon;
+            const label = getLabel(item);
 
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
                 end={item.path === "/"}
-                title={!isOpen ? item.name : undefined}
+                title={!isOpen ? label : undefined}
                 className={({ isActive }) =>
                   `group relative flex h-12 w-full cursor-pointer items-center rounded-lg text-sm font-medium transition-all duration-200 ${
                     isOpen ? "gap-3 px-4" : "justify-center px-2"
@@ -154,7 +163,7 @@ function Sidebar() {
                     {isOpen && (
                       <>
                         <span className="flex-1 text-left">
-                          {item.name}
+                          {label}
                         </span>
 
                         {isActive && (

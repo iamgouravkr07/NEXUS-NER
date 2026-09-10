@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Bell, Search, User, LogOut, UploadCloud } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
+import LanguageSelector from "./LanguageSelector";
 import { syncQueue } from "../offline/syncQueue";
 import { useWebSocket } from "../hooks/useWebSocket";
 
@@ -9,6 +11,7 @@ function Header() {
   const [criticalCount, setCriticalCount] = useState<number>(0);
   const [pendingOutboxCount, setPendingOutboxCount] = useState<number>(0);
   const { user, logout, apiUrl } = useAuth();
+  const { t } = useLanguage();
   const { isLive, subscribe } = useWebSocket();
   const navigate = useNavigate();
 
@@ -77,16 +80,16 @@ function Header() {
       {/* Left */}
       <div>
         <div className="flex items-center gap-2.5">
-          <h2 className="text-lg font-semibold">Control Tower</h2>
+          <h2 className="text-lg font-semibold">{t.nav.controlTower}</h2>
           {isLive ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Live
+              {t.nav.live}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-              Polling
+              {t.nav.polling}
             </span>
           )}
         </div>
@@ -97,13 +100,16 @@ function Header() {
 
       {/* Right */}
       <div className="flex items-center gap-4">
+        {/* Language Selector */}
+        <LanguageSelector variant="compact" />
+
         {/* Search */}
         <div className="hidden items-center gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-2 md:flex">
           <Search size={17} className="text-slate-500" />
 
           <input
             type="text"
-            placeholder="Search..."
+            placeholder={t.nav.searchPlaceholder}
             className="w-40 bg-transparent text-sm text-white outline-none placeholder:text-slate-600"
           />
         </div>
@@ -164,7 +170,7 @@ function Header() {
 
           <button
             onClick={handleLogout}
-            title="Sign out of NEXUS-NER"
+            title={t.nav.logout}
             className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-800 hover:text-red-400"
           >
             <LogOut size={16} />

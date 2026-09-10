@@ -2,20 +2,22 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, FileText, Bell, Route, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export const MobileBottomNav: React.FC = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const role = user?.role || '';
 
   const navItems = [
     {
-      name: 'Tower',
+      name: t.nav.controlTower,
       path: '/',
       icon: LayoutDashboard,
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER'],
     },
     {
-      name: 'Field',
+      name: t.nav.fieldReport,
       path: '/field-report',
       icon: FileText,
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER'],
