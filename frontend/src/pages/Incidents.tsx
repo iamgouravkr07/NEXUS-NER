@@ -11,6 +11,8 @@ import {
   Search,
   ShieldAlert,
   ShieldCheck,
+  Sparkles,
+  FileText,
   X,
   XCircle,
 } from "lucide-react";
@@ -101,6 +103,95 @@ function Incidents() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  // AI/NLP Ingestion State
+  const [showNlpPanel, setShowNlpPanel] = useState(false);
+  const [nlpText, setNlpText] = useState("");
+  const [isExtractingNlp, setIsExtractingNlp] = useState(false);
+  const [nlpCandidate, setNlpCandidate] = useState<any | null>(null);
+  const [nlpError, setNlpError] = useState<string | null>(null);
+  const [isCreatingIncident, setIsCreatingIncident] = useState(false);
+
+  async function handleExtractNlp() {
+    if (!nlpText.trim()) {
+      setNlpError("Please enter report text to analyze.");
+      return;
+    }
+    setIsExtractingNlp(true);
+    setNlpError(null);
+    try {
+      const res = await fetch(`${API_URL}/incidents/extract-from-text`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify({ text: nlpText }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Extraction failed with status ${res.status}`);
+      }
+      const data = await res.json();
+      setNlpCandidate(data);
+    } catch (err: any) {
+      setNlpError(err.message || "Failed to analyze incident text.");
+    } finally {
+      setIsExtractingNlp(false);
+    }
+  }
+
+  async function handleCreateIncidentFromNlp() {
+    if (!nlpCandidate?.extraction) return;
+    setIsCreatingIncident(true);
+    setActionMessage(null);
+    try {
+      const ext = nlpCandidate.extraction;
+      const lat = ext.latitude ?? 26.1445;
+      const lon = ext.longitude ?? 91.7362;
+
+      const payload = {
+        incident_type: ext.incident_type,
+        severity: ext.severity,
+        description: `[AI Ingested] ${ext.description}`,
+        latitude: lat,
+        longitude: lon,
+        road_status: "reported",
+      };
+
+      const res = await fetch(`${API_URL}/incidents/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Failed to create incident (${res.status})`);
+      }
+
+      const created = await res.json();
+      setActionMessage({
+        type: "success",
+        text: `Candidate Incident #${created.id} created with status "reported". Operator verification required.`,
+      });
+
+      setNlpText("");
+      setNlpCandidate(null);
+      setShowNlpPanel(false);
+      loadIncidents();
+    } catch (err: any) {
+      setActionMessage({
+        type: "error",
+        text: err.message || "Failed to create candidate incident.",
+      });
+    } finally {
+      setIsCreatingIncident(false);
+    }
+  }
 
   async function updateIncidentStatus(
     incidentId: number,
@@ -272,20 +363,174 @@ function Incidents() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => loadIncidents(true)}
-            disabled={refreshing}
-            className="flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-slate-300 transition hover:border-slate-600 hover:bg-slate-800 disabled:opacity-50"
-          >
-            <RefreshCw
-              size={16}
-              className={refreshing ? "animate-spin" : ""}
-            />
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowNlpPanel(!showNlpPanel)}
+              className="flex items-center justify-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-300 transition hover:bg-amber-500/20"
+            >
+              <Sparkles size={16} className="text-amber-400" />
+              {showNlpPanel ? "Close NLP Assistant" : "AI / NLP Ingestion"}
+            </button>
 
-            Refresh
-          </button>
+            <button
+              type="button"
+              onClick={() => loadIncidents(true)}
+              disabled={refreshing}
+              className="flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-slate-300 transition hover:border-slate-600 hover:bg-slate-800 disabled:opacity-50"
+            >
+              <RefreshCw
+                size={16}
+                className={refreshing ? "animate-spin" : ""}
+              />
+
+              Refresh
+            </button>
+          </div>
         </div>
+
+        {/* NLP Incident Ingestion Drawer / Card */}
+        {showNlpPanel && (
+          <div className="rounded-xl border border-amber-500/30 bg-slate-900/90 p-5 space-y-4 shadow-lg">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-amber-400" />
+                <h3 className="font-semibold text-white text-base">
+                  AI / NLP Incident Ingestion & Extraction
+                </h3>
+                <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs text-amber-400 border border-amber-500/20 font-medium">
+                  Advisory Ingestion
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNlpPanel(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Paste raw citizen dispatches, WhatsApp alerts, or field officer radio notes to extract candidate incident attributes.
+              Candidates are ingested as <strong className="text-amber-300">unverified (status: reported)</strong> and require explicit operator verification before escalating to road blocks or emergency alerts.
+            </p>
+
+            <div className="space-y-2">
+              <textarea
+                rows={3}
+                value={nlpText}
+                onChange={(e) => setNlpText(e.target.value)}
+                placeholder="e.g. Incessant rain triggered a massive landslide on NH-10 near Gangtok. Both lanes are impassable and multiple cargo trucks are stranded."
+                className="w-full rounded-lg border border-slate-800 bg-slate-950 p-3 text-sm text-white placeholder:text-slate-600 outline-none focus:border-amber-500/50"
+              />
+            </div>
+
+            {nlpError && (
+              <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-xs text-red-300">
+                <AlertTriangle size={15} className="shrink-0 text-red-400" />
+                <span>{nlpError}</span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleExtractNlp}
+                disabled={isExtractingNlp || !nlpText.trim()}
+                className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-slate-950 transition hover:bg-amber-400 disabled:opacity-50"
+              >
+                <Sparkles size={14} className={isExtractingNlp ? "animate-spin" : ""} />
+                {isExtractingNlp ? "Analyzing with NLP..." : "Analyze Report with AI"}
+              </button>
+
+              {nlpText && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNlpText("");
+                    setNlpCandidate(null);
+                    setNlpError(null);
+                  }}
+                  className="text-xs text-slate-400 hover:text-white"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Extraction Candidate Preview */}
+            {nlpCandidate?.extraction && (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/10 pb-2">
+                  <div className="flex items-center gap-2">
+                    <FileText size={16} className="text-amber-400" />
+                    <span className="font-semibold text-amber-300 text-sm">Extraction Candidate</span>
+                    <span className="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">
+                      Provider: {nlpCandidate.provider === "gemini" ? "Gemini 2.5 Flash" : "Deterministic Fallback Engine"}
+                    </span>
+                  </div>
+
+                  <span className="rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-400 border border-red-500/20">
+                    AI-extracted — requires operator verification
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <span className="text-slate-500 block">Incident Type:</span>
+                    <span className="font-semibold text-white capitalize">{nlpCandidate.extraction.incident_type?.replace("_", " ")}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Severity:</span>
+                    <span className="font-semibold text-white capitalize">{nlpCandidate.extraction.severity}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Confidence:</span>
+                    <span className="font-semibold text-amber-400">{(nlpCandidate.extraction.confidence * 100).toFixed(0)}%</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Corridor Reference:</span>
+                    <span className="font-semibold text-white">{nlpCandidate.extraction.road_corridor || "None detected"}</span>
+                  </div>
+                </div>
+
+                <div className="text-xs">
+                  <span className="text-slate-500 block">Description:</span>
+                  <p className="text-slate-200 mt-0.5">{nlpCandidate.extraction.description}</p>
+                </div>
+
+                {nlpCandidate.extraction.location_text && (
+                  <div className="text-xs">
+                    <span className="text-slate-500">Location Reference: </span>
+                    <span className="text-slate-200 font-medium">{nlpCandidate.extraction.location_text}</span>
+                  </div>
+                )}
+
+                {nlpCandidate.warning && (
+                  <p className="text-xs text-amber-400/90 italic">
+                    Notice: {nlpCandidate.warning}
+                  </p>
+                )}
+
+                <div className="pt-2 border-t border-amber-500/10 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCreateIncidentFromNlp}
+                    disabled={isCreatingIncident}
+                    className="flex items-center gap-2 rounded-lg bg-emerald-500/20 px-4 py-2 text-xs font-semibold text-emerald-300 border border-emerald-500/30 transition hover:bg-emerald-500/30 disabled:opacity-50"
+                  >
+                    <Check size={15} />
+                    {isCreatingIncident ? "Creating Candidate..." : "Create Candidate Incident (Unverified)"}
+                  </button>
+                  <span className="text-[11px] text-slate-500">
+                    Will be created with status: reported.
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Summary cards */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

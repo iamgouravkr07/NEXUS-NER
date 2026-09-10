@@ -27,3 +27,11 @@ from app.schemas.ml import (
     CorridorPredictiveRiskRequest,
 )
 from app.schemas.analytics import AnalyticsSummaryResponse
+from app.schemas.nlp_incident import (
+    IncidentTypeEnum,
+    SeverityEnum,
+    ExtractionStatusEnum,
+    IncidentExtractionRequest,
+    IncidentExtractionData,
+    IncidentExtractionResponse,
+)

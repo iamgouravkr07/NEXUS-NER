@@ -9,7 +9,12 @@ from app.schemas.incident import (
     IncidentResponse,
     IncidentStatusUpdate
 )
+from app.schemas.nlp_incident import (
+    IncidentExtractionRequest,
+    IncidentExtractionResponse,
+)
 from app.services import alert_service
+from app.services.nlp_extraction_service import get_nlp_extraction_service, ExtractionError
 from app.api.auth import require_roles
 
 
@@ -17,6 +22,30 @@ router = APIRouter(
     prefix="/incidents",
     tags=["Incidents"]
 )
+
+
+@router.post("/extract-from-text", response_model=IncidentExtractionResponse)
+def extract_incident_from_text(
+    payload: IncidentExtractionRequest,
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+):
+    """
+    Extract structured incident attributes from unstructured natural language reports using AI/NLP.
+    Advisory intelligence ingestion only: does NOT write to the database or trigger risk/alert actions.
+    """
+    service = get_nlp_extraction_service()
+    try:
+        return service.extract_incident(payload.text)
+    except ExtractionError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=str(err),
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"NLP extraction processing failed: {exc}",
+        )
 
 
 @router.post("/", response_model=IncidentResponse)

@@ -83,3 +83,9 @@ WEATHER_RISK_THRESHOLDS = {
         "fog": float(os.getenv("WEATHER_THRESHOLD_VIS_FOG", "2.0")),                # <= 2.0 km reduced visibility
     },
 }
+
+# AI / NLP Incident Intelligence Configuration
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+NLP_PROVIDER = os.getenv("NLP_PROVIDER", "gemini" if GEMINI_API_KEY else "fallback").lower()
+NLP_REQUEST_TIMEOUT_SECONDS = int(os.getenv("NLP_REQUEST_TIMEOUT_SECONDS", "12"))

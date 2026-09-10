@@ -12,7 +12,9 @@ import {
   X,
   AlertTriangle,
   RefreshCw,
+  Check,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import { syncQueue } from "../offline/syncQueue";
 import { syncWorker } from "../offline/syncWorker";
 import { getStorage } from "../offline/database";
@@ -21,6 +23,8 @@ import { geolocationService, validateNERCoordinates } from "../services/geolocat
 import { cameraService } from "../services/camera";
 import type { PhotoEvidence } from "../services/camera";
 import { networkService } from "../services/network";
+
+const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
 
 interface FieldReportItem {
   id: string;
@@ -72,6 +76,8 @@ function severityClass(severity: string) {
 }
 
 function FieldReport() {
+  const { getAuthHeader } = useAuth();
+
   // Form State
   const [incidentType, setIncidentType] = useState<string>("");
   const [severity, setSeverity] = useState<string>("Medium");
@@ -80,6 +86,13 @@ function FieldReport() {
   const [longitude, setLongitude] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [photo, setPhoto] = useState<PhotoEvidence | null>(null);
+
+  // AI / NLP Extraction State
+  const [nlpRawText, setNlpRawText] = useState<string>("");
+  const [isAnalyzingNlp, setIsAnalyzingNlp] = useState<boolean>(false);
+  const [nlpExtraction, setNlpExtraction] = useState<any | null>(null);
+  const [nlpError, setNlpError] = useState<string | null>(null);
+  const [showNlpAssistant, setShowNlpAssistant] = useState<boolean>(true);
 
   // Status & Hardware State
   const [isLocating, setIsLocating] = useState<boolean>(false);
@@ -91,6 +104,76 @@ function FieldReport() {
     type: "success" | "info" | "error";
     text: string;
   } | null>(null);
+
+  const handleAnalyzeNlp = async () => {
+    if (!nlpRawText.trim()) {
+      setNlpError("Please enter unstructured field report or citizen text to extract.");
+      return;
+    }
+    setIsAnalyzingNlp(true);
+    setNlpError(null);
+    try {
+      const res = await fetch(`${API_URL}/incidents/extract-from-text`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify({ text: nlpRawText }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Extraction failed (${res.status})`);
+      }
+      const data = await res.json();
+      setNlpExtraction(data);
+    } catch (err: any) {
+      setNlpError(err.message || "Failed to analyze incident text.");
+    } finally {
+      setIsAnalyzingNlp(false);
+    }
+  };
+
+  const handleApplyNlpToForm = () => {
+    if (!nlpExtraction?.extraction) return;
+    const ext = nlpExtraction.extraction;
+
+    const typeMap: Record<string, string> = {
+      landslide: "landslide",
+      flood: "flooding",
+      heavy_rain: "flooding",
+      road_damage: "road_damage",
+      bridge_damage: "bridge_damage",
+      traffic_congestion: "traffic_congestion",
+      accident: "accident",
+      blockage: "road_blockage",
+      other: "other",
+    };
+    setIncidentType(typeMap[ext.incident_type] || "other");
+
+    const sevMap: Record<string, string> = {
+      critical: "Critical",
+      high: "High",
+      medium: "Medium",
+      low: "Low",
+    };
+    setSeverity(sevMap[ext.severity] || "Medium");
+
+    if (ext.location_text) {
+      setLocationName(ext.location_text);
+    }
+    if (ext.description) {
+      setDescription(ext.description);
+    }
+    if (typeof ext.latitude === "number" && typeof ext.longitude === "number") {
+      setLatitude(ext.latitude.toFixed(5));
+      setLongitude(ext.longitude.toFixed(5));
+    }
+    setStatusMessage({
+      type: "info",
+      text: "AI-extracted candidate applied to form. Please review and verify all fields before submitting.",
+    });
+  };
 
   // Reports list
   const [reports, setReports] = useState<FieldReportItem[]>(initialReports);
@@ -445,6 +528,139 @@ function FieldReport() {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* AI/NLP Incident Extraction Assistant */}
+          <div className="border-b border-slate-800 bg-slate-950/60 p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles size={18} className="text-amber-400" />
+                <h3 className="text-sm font-semibold text-white">
+                  AI / NLP Incident Assistant
+                </h3>
+                <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-400 border border-amber-500/20">
+                  Advisory Ingestion
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNlpAssistant(!showNlpAssistant)}
+                className="text-xs text-slate-400 hover:text-white"
+              >
+                {showNlpAssistant ? "Hide Assistant" : "Show Assistant"}
+              </button>
+            </div>
+
+            {showNlpAssistant && (
+              <div className="mt-3 space-y-3">
+                <p className="text-xs text-slate-400">
+                  Paste unstructured field notes, radio dispatches, or citizen reports to automatically extract candidate incident parameters:
+                </p>
+
+                <div className="relative">
+                  <textarea
+                    rows={2}
+                    value={nlpRawText}
+                    onChange={(e) => setNlpRawText(e.target.value)}
+                    placeholder="e.g. Heavy landslide reported near NH-15 between Guwahati and Tezpur. Road completely blocked, multiple trucks stranded."
+                    className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 text-xs text-white placeholder:text-slate-600 outline-none focus:border-amber-500/40"
+                  />
+                </div>
+
+                {nlpError && (
+                  <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                    <AlertTriangle size={14} className="shrink-0 text-red-400" />
+                    <span>{nlpError}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleAnalyzeNlp}
+                    disabled={isAnalyzingNlp || !nlpRawText.trim()}
+                    className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3.5 py-2 text-xs font-medium text-amber-300 border border-amber-500/30 transition hover:bg-amber-500/20 disabled:opacity-50"
+                  >
+                    <Sparkles size={14} className={isAnalyzingNlp ? "animate-spin" : "text-amber-400"} />
+                    {isAnalyzingNlp ? "Extracting..." : "Analyze Report with AI"}
+                  </button>
+
+                  {nlpRawText && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNlpRawText("");
+                        setNlpExtraction(null);
+                        setNlpError(null);
+                      }}
+                      className="text-xs text-slate-500 hover:text-slate-300"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                {/* AI Extraction Preview */}
+                {nlpExtraction?.extraction && (
+                  <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-xs space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/10 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-amber-300">Extraction Candidate Preview</span>
+                        <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-300">
+                          Provider: {nlpExtraction.provider === "gemini" ? "Gemini 2.5 Flash" : "Deterministic Fallback Engine"}
+                        </span>
+                      </div>
+                      <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-400 border border-red-500/20">
+                        AI-extracted — requires operator verification
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <div>
+                        <span className="text-slate-500 block">Type:</span>
+                        <span className="font-medium text-white capitalize">{nlpExtraction.extraction.incident_type?.replace("_", " ")}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block">Severity:</span>
+                        <span className="font-medium text-white capitalize">{nlpExtraction.extraction.severity}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block">Confidence:</span>
+                        <span className="font-medium text-amber-400">{(nlpExtraction.extraction.confidence * 100).toFixed(0)}%</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500 block">Corridor:</span>
+                        <span className="font-medium text-white">{nlpExtraction.extraction.road_corridor || "Not detected"}</span>
+                      </div>
+                    </div>
+
+                    {nlpExtraction.extraction.location_text && (
+                      <div>
+                        <span className="text-slate-500">Location Reference: </span>
+                        <span className="text-slate-200">{nlpExtraction.extraction.location_text}</span>
+                      </div>
+                    )}
+
+                    {nlpExtraction.warning && (
+                      <p className="text-[11px] text-amber-400/80 italic">
+                        Notice: {nlpExtraction.warning}
+                      </p>
+                    )}
+
+                    <div className="pt-1">
+                      <button
+                        type="button"
+                        onClick={handleApplyNlpToForm}
+                        className="flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-300 border border-emerald-500/30 transition hover:bg-emerald-500/30"
+                      >
+                        <Check size={14} />
+                        Apply Extracted Draft to Form
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmitReport} className="space-y-6 p-5">

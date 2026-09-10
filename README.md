@@ -72,10 +72,11 @@ The North Eastern Region (NER) of India spans eight states characterized by rugg
 | **Backend Framework** | FastAPI (Python 3.11+), Starlette, Uvicorn, Pydantic v2 |
 | **Database & GIS** | PostgreSQL 15+, PostGIS, SQLAlchemy 2.0, GeoAlchemy2, psycopg2 |
 | **Machine Learning** | Scikit-learn, Random Forest (200 estimators), SHAP (TreeExplainer), Joblib, NumPy, Pandas |
+| **AI / NLP Extraction** | Google Gemini (gemini-2.5-flash) with Deterministic NER Regex & Heuristic Fallback |
 | **Authentication** | Passlib (Argon2id hashing), PyJWT (HS256 tokens), OAuth2 Bearer |
 | **Frontend Web** | React 18, TypeScript, Vite, TailwindCSS, Recharts, Lucide Icons, Leaflet |
 | **Mobile Runtime** | Capacitor 8 (Android target), Offline SQLite, Geolocation, Network Detection |
-| **External APIs** | Open-Meteo Weather API (non-commercial tier compliant, offline fallback built-in) |
+| **External APIs** | Open-Meteo Weather API (non-commercial tier compliant), Google Gemini REST API |
 
 ---
 
@@ -90,6 +91,7 @@ NEXUS-NER enforces four distinct operational personas:
 | Trigger Dynamic Reroute (`POST /trips/{id}/reroute`) | Yes | Yes | No | No |
 | Update Road Status (`PATCH /roads/{id}/status`) | Yes | Yes | No | No |
 | Verify / Reject Incidents (`PATCH /incidents/{id}/status`) | Yes | Yes | No | No |
+| AI/NLP Incident Extraction (`POST /incidents/extract-from-text`) | Yes | Yes | Yes | No |
 | Report New Incident (`POST /incidents/`) | Yes | Yes | Yes | No |
 | Submit Vehicle GPS Telemetry (`POST /vehicles/{id}/location`) | Yes | Yes | Yes | Yes (Assigned) |
 | Acknowledge / Resolve Alerts (`PATCH /alerts/{id}/status`) | Yes | Yes | No | No |
@@ -186,9 +188,10 @@ Default bootstrap accounts created automatically on first startup:
 - `POST /trips/{id}/reroute`: Compute and persist emergency dynamic reroute avoiding verified blockages.
 - `PATCH /vehicles/{id}/location`: Submit live GPS coordinates, speed, and heading.
 
-### Incident Management & Road Control
+### Incident Management, Road Control & AI/NLP Ingestion
 - `GET /incidents/`: List all reported and verified incidents.
-- `POST /incidents/`: Submit new field incident with GeoJSON location.
+- `POST /incidents/`: Submit new field incident with GeoJSON location (`status: reported`).
+- `POST /incidents/extract-from-text`: Extract candidate incident parameters from natural language reports using Google Gemini (or deterministic NER fallback). Purely advisory ingestion; creates zero database mutations.
 - `PATCH /incidents/{id}/status`: Verify or reject incident (`ADMIN` or `CONTROL_OPERATOR`). Verifying automatically escalates road risk to 95% and marks the corridor `blocked`.
 - `PATCH /roads/{id}/status`: Manually set corridor status (`open`, `restricted`, `under_repair`, `blocked`).
 
@@ -199,10 +202,13 @@ Default bootstrap accounts created automatically on first startup:
 NEXUS-NER includes a comprehensive automated test suite covering unit tests, integration tests, ML fidelity, RBAC, weather, and mobile sync:
 
 ```bash
-# 1. Run Backend Unit & Integration Tests (185 test cases)
+# 1. Run Complete Backend Regression Test Suite (203 test cases)
 python -m unittest discover -s tests -p "test_*.py"
 
-# 2. Run Analytics Endpoint Unit Tests
+# 2. Run Phase 5 AI/NLP Incident Extraction Tests (18 test cases)
+python -m unittest tests.test_nlp_incident_extraction
+
+# 3. Run Analytics Endpoint Unit Tests (5 test cases)
 python -m unittest tests.test_analytics
 
 # 3. Run Frontend ML & Integration Verification Checks
