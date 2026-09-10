@@ -35,3 +35,11 @@ from app.schemas.nlp_incident import (
     IncidentExtractionData,
     IncidentExtractionResponse,
 )
+from app.schemas.anomaly import (
+    AnomalyType,
+    AnomalySeverity,
+    TelemetrySnapshot,
+    VehicleAnomaly,
+    VehiclePositionData,
+    WebSocketEvent,
+)

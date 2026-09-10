@@ -3,11 +3,13 @@ import { Bell, Search, User, LogOut, UploadCloud } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { syncQueue } from "../offline/syncQueue";
+import { useWebSocket } from "../hooks/useWebSocket";
 
 function Header() {
   const [criticalCount, setCriticalCount] = useState<number>(0);
   const [pendingOutboxCount, setPendingOutboxCount] = useState<number>(0);
   const { user, logout, apiUrl } = useAuth();
+  const { isLive, subscribe } = useWebSocket();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -44,6 +46,18 @@ function Header() {
     fetchSummary();
     updatePending();
 
+    // Subscribe to real-time WebSocket alert creation
+    const unsubscribe = subscribe((event) => {
+      if (
+        event.type === "alert.created" &&
+        event.data?.severity?.toLowerCase() === "critical"
+      ) {
+        if (mounted) {
+          setCriticalCount((prev) => prev + 1);
+        }
+      }
+    });
+
     const interval = window.setInterval(fetchSummary, 10000);
     const handleQueueChange = () => {
       updatePending();
@@ -52,16 +66,30 @@ function Header() {
 
     return () => {
       mounted = false;
+      unsubscribe();
       window.clearInterval(interval);
       window.removeEventListener("nexus:sync_queue_changed", handleQueueChange);
     };
-  }, [apiUrl]);
+  }, [apiUrl, subscribe]);
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-800 bg-slate-950 px-6 text-white">
       {/* Left */}
       <div>
-        <h2 className="text-lg font-semibold">Control Tower</h2>
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-lg font-semibold">Control Tower</h2>
+          {isLive ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+              Polling
+            </span>
+          )}
+        </div>
         <p className="text-xs text-slate-500">
           North Eastern Region Logistics Intelligence
         </p>

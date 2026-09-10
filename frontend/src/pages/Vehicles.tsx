@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   Clock3,
   MapPin,
   Navigation,
@@ -9,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useWebSocket } from "../hooks/useWebSocket";
 
 type BackendVehicle = {
   id: number;
@@ -103,6 +105,11 @@ function Vehicles() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { subscribe } = useWebSocket();
+  const [anomalies, setAnomalies] = useState<
+    Record<number, { anomaly_type: string; severity: string; description: string }>
+  >({});
+
   useEffect(() => {
     async function loadVehicles() {
       try {
@@ -129,7 +136,59 @@ function Vehicles() {
     }
 
     loadVehicles();
-  }, []);
+
+    // Subscribe to live telemetry and anomaly events over WebSocket
+    const unsubscribe = subscribe((event) => {
+      if (event.type === "vehicle.position.updated") {
+        const updated = event.data;
+        if (updated && updated.vehicle_id) {
+          setVehicles((prev) =>
+            prev.map((v) =>
+              v.id === updated.vehicle_id
+                ? {
+                    ...v,
+                    latitude: updated.latitude,
+                    longitude: updated.longitude,
+                    status: updated.status || v.status,
+                    current_trip_id:
+                      updated.current_trip_id !== undefined
+                        ? updated.current_trip_id
+                        : v.current_trip_id,
+                  }
+                : v,
+            ),
+          );
+
+          setSelectedVehicle((curr) =>
+            curr && curr.id === updated.vehicle_id
+              ? {
+                  ...curr,
+                  latitude: updated.latitude,
+                  longitude: updated.longitude,
+                  status: updated.status || curr.status,
+                }
+              : curr,
+          );
+        }
+      } else if (event.type === "vehicle.anomaly.detected") {
+        const a = event.data;
+        if (a && a.vehicle_id) {
+          setAnomalies((prev) => ({
+            ...prev,
+            [a.vehicle_id]: {
+              anomaly_type: a.anomaly_type,
+              severity: a.severity,
+              description: a.description,
+            },
+          }));
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribe]);
 
   const filteredVehicles = useMemo(() => {
     return vehicles.filter((vehicle) => {
@@ -433,14 +492,28 @@ function Vehicles() {
 
                       {/* Status */}
                       <td className="px-5 py-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles(
-                            status,
-                          )}`}
-                        >
-                          <StatusIcon status={status} />
-                          {formatStatus(vehicle.status)}
-                        </span>
+                        <div className="flex flex-col items-start gap-1">
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles(
+                              status,
+                            )}`}
+                          >
+                            <StatusIcon status={status} />
+                            {formatStatus(vehicle.status)}
+                          </span>
+                          {anomalies[vehicle.id] && (
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
+                                anomalies[vehicle.id].severity === "critical"
+                                  ? "border-red-500/30 bg-red-500/10 text-red-400"
+                                  : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                              }`}
+                            >
+                              <AlertTriangle size={10} />
+                              {anomalies[vehicle.id].anomaly_type.replace("_", " ")}
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                       {/* Action */}
@@ -529,7 +602,28 @@ function Vehicles() {
             </div>
 
             {/* Modal Body */}
-            <div className="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
+            <div className="p-6">
+              {anomalies[selectedVehicle.id] && (
+                <div
+                  className={`mb-4 rounded-xl border p-4 ${
+                    anomalies[selectedVehicle.id].severity === "critical"
+                      ? "border-red-500/40 bg-red-500/10 text-red-400"
+                      : "border-amber-500/40 bg-amber-500/10 text-amber-400"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle size={16} />
+                    <p className="text-xs font-semibold uppercase tracking-wider">
+                      Active Anomaly: {anomalies[selectedVehicle.id].anomaly_type.replace("_", " ")}
+                    </p>
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-slate-300">
+                    {anomalies[selectedVehicle.id].description}
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
                 <p className="text-xs text-slate-600">Vehicle ID</p>
                 <p className="mt-2 text-sm font-medium text-white">
@@ -605,6 +699,7 @@ function Vehicles() {
                 </p>
               </div>
             </div>
+          </div>
 
             {/* Modal Footer */}
             <div className="flex justify-end border-t border-slate-800 px-6 py-4">

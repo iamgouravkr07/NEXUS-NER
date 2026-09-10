@@ -17,6 +17,7 @@ from app.api.sync import router as sync_router
 from app.api.weather import router as weather_router
 from app.api.ml import router as ml_router
 from app.api.analytics import router as analytics_router
+from app.api.websocket import router as websocket_router
 from app.database import Base, engine
 from app.models.incident import Incident
 from app.models.road import Road
@@ -71,6 +72,7 @@ app.include_router(alerts_router)
 app.include_router(weather_router)
 app.include_router(ml_router)
 app.include_router(analytics_router)
+app.include_router(websocket_router)
 
 @app.get("/")
 
