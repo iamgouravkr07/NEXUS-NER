@@ -366,6 +366,83 @@ def test_scenario_e_vehicle_current_gps_position():
     db.close()
 
 
+def test_scenario_f_reroute_auth_and_frontend_contract():
+    """TEST F: Verify RBAC authentication requirement on /trips/{id}/reroute and RoutePlanner.tsx contract."""
+    db = SessionLocal()
+    cleanup_test_data(db)
+
+    # 1. Create a trip
+    vehicle = Vehicle(
+        vehicle_number="TEST-VH-F",
+        vehicle_type="Truck",
+        cargo_type="Medical Supplies",
+        cargo_priority="critical",
+        status="in_transit",
+        latitude=26.1445,
+        longitude=91.7362,
+    )
+    db.add(vehicle)
+    db.commit()
+    db.refresh(vehicle)
+
+    trip = Trip(
+        vehicle_id=vehicle.id,
+        origin="TEST_Guwahati",
+        destination="TEST_Shillong",
+        origin_lat=26.1445,
+        origin_lon=91.7362,
+        destination_lat=25.5788,
+        destination_lon=91.8933,
+        cargo_type="Medical Supplies",
+        priority="critical",
+        status="in_transit",
+        eta_minutes=150,
+        route_distance_km=98.5,
+        route_duration_minutes=150,
+    )
+    db.add(trip)
+    db.commit()
+    db.refresh(trip)
+
+    # 2. Unauthenticated request MUST return 401 Unauthorized
+    unauth_client = TestClient(app)
+    unauth_resp = unauth_client.post(f"/trips/{trip.id}/reroute")
+    assert unauth_resp.status_code == 401, f"Expected 401 for unauthenticated reroute, got {unauth_resp.status_code}"
+
+    # 3. FIELD_OFFICER role MUST return 403 Forbidden
+    officer_login = client.post("/auth/login", json={"username": "officer", "password": "Officer@Nexus2026"})
+    if officer_login.status_code == 200:
+        officer_token = officer_login.json()["access_token"]
+        officer_resp = client.post(f"/trips/{trip.id}/reroute", headers={"Authorization": f"Bearer {officer_token}"})
+        assert officer_resp.status_code == 403, f"Expected 403 for FIELD_OFFICER reroute, got {officer_resp.status_code}"
+
+    # 4. CONTROL_OPERATOR or ADMIN role MUST succeed with 200 OK
+    operator_login = client.post("/auth/login", json={"username": "operator", "password": "Operator@Nexus2026"})
+    assert operator_login.status_code == 200
+    operator_token = operator_login.json()["access_token"]
+    op_resp = client.post(f"/trips/{trip.id}/reroute", headers={"Authorization": f"Bearer {operator_token}"})
+    assert op_resp.status_code == 200, f"Expected 200 for CONTROL_OPERATOR reroute, got {op_resp.status_code}"
+
+    # 5. Verify frontend RoutePlanner.tsx code integrity
+    frontend_path = backend_dir.parent / "frontend" / "src" / "pages" / "RoutePlanner.tsx"
+    assert frontend_path.exists(), "RoutePlanner.tsx file not found"
+    code = frontend_path.read_text(encoding="utf-8")
+
+    # Verify useAuth imported and used
+    assert 'import { useAuth } from "../context/AuthContext"' in code, "RoutePlanner must import useAuth"
+    assert "const { getAuthHeader } = useAuth()" in code, "RoutePlanner must consume getAuthHeader()"
+    assert "...getAuthHeader()" in code, "RoutePlanner reroute request must spread getAuthHeader()"
+
+    # Verify API_URL reads from environment without source-code localhost/127.0.0.1 fallback
+    assert "const API_URL = import.meta.env.VITE_API_URL" in code, "RoutePlanner must read VITE_API_URL"
+    assert "127.0.0.1" not in code, "127.0.0.1 must not remain in RoutePlanner.tsx"
+    assert "localhost" not in code, "localhost must not remain in RoutePlanner.tsx"
+
+    print("PASS: TEST F - Dynamic reroute RBAC authentication and frontend contract verified.")
+    cleanup_test_data(db)
+    db.close()
+
+
 def run_all():
     print("==================================================")
     print("EXECUTING PHASE 1 DYNAMIC REROUTING TEST SUITE")
@@ -375,8 +452,9 @@ def run_all():
     test_scenario_c_reject_alternative_intersecting_blockage()
     test_scenario_d_no_safe_alternative_exists()
     test_scenario_e_vehicle_current_gps_position()
+    test_scenario_f_reroute_auth_and_frontend_contract()
     print("\n==================================================")
-    print("ALL PHASE 1 SCENARIO TESTS (A, B, C, D, E) PASSED!")
+    print("ALL PHASE 1 SCENARIO TESTS (A, B, C, D, E, F) PASSED!")
     print("==================================================")
 
     db = SessionLocal()

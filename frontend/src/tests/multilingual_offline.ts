@@ -12,7 +12,7 @@
  */
 
 import { translations } from "../i18n/translations.ts";
-import type { Language, TranslationDict } from "../i18n/translations.ts";
+import type { Language } from "../i18n/translations.ts";
 
 let passedCount = 0;
 let totalCount = 0;

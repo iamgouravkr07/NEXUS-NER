@@ -26,6 +26,7 @@ import {
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import { useAuth } from "../context/AuthContext";
 
 type Trip = {
   id: number;
@@ -117,7 +118,7 @@ type LocationPoint = {
   position: [number, number];
 };
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const NER_LOCATIONS: Record<string, [number, number]> = {
   Guwahati: [26.1445, 91.7362],
@@ -270,6 +271,7 @@ function parseCoordinates(geometry: any): [number, number][] {
 }
 
 function RoutePlanner() {
+  const { getAuthHeader } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
@@ -587,6 +589,7 @@ function RoutePlanner() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...getAuthHeader(),
           },
         }
       );
