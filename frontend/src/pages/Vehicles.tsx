@@ -88,6 +88,8 @@ function formatStatus(status: string) {
     .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
+
 function Vehicles() {
   const [vehicles, setVehicles] = useState<BackendVehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] =
@@ -107,7 +109,7 @@ function Vehicles() {
         setLoading(true);
         setError("");
 
-        const response = await fetch("http://127.0.0.1:8000/vehicles/");
+        const response = await fetch(`${API_URL}/vehicles/`);
 
         if (!response.ok) {
           throw new Error(`Failed to load vehicles (${response.status})`);
@@ -167,7 +169,7 @@ function Vehicles() {
       setError("");
 
       const response = await fetch(
-        `http://127.0.0.1:8000/vehicles/${vehicle.id}`,
+        `${API_URL}/vehicles/${vehicle.id}`,
       );
 
       if (!response.ok) {

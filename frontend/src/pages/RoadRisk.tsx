@@ -9,14 +9,16 @@ import {
   RefreshCw,
   Route,
   ShieldAlert,
+  ShieldCheck,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
 import { PredictiveRiskCard } from "../components/PredictiveRiskCard";
 import { mlClient } from "../api/mlClient";
 import type { PredictiveRiskResult } from "../types/ml";
+import { useAuth } from "../context/AuthContext";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
 
 type RiskItem = {
   id: number;
@@ -24,6 +26,7 @@ type RiskItem = {
   highway?: string;
   state?: string;
   district?: string;
+  status?: string;
   risk_score?: number;
   risk_level?: string;
   probability?: number;
@@ -238,6 +241,80 @@ function RoadRisk() {
       setLoadingPredictive(false);
     }
   }, []);
+
+  const { user, getAuthHeader } = useAuth();
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const updateRoadStatus = useCallback(
+    async (roadId: number, newStatus: string) => {
+      try {
+        setStatusUpdating(true);
+        setStatusMessage(null);
+
+        const response = await fetch(`${API_URL}/roads/${roadId}/status`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeader(),
+          },
+          body: JSON.stringify({ status: newStatus }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to update road status (${response.status})`);
+        }
+
+        const updated = await response.json();
+
+        setRisks((prev) =>
+          prev.map((r) =>
+            r.id === roadId
+              ? {
+                  ...r,
+                  status: updated.status,
+                  risk_score: Math.round(updated.risk_score),
+                  risk_level: getRiskLevel(updated.risk_score),
+                }
+              : r
+          )
+        );
+
+        setSelectedRisk((prev) =>
+          prev && prev.id === roadId
+            ? {
+                ...prev,
+                status: updated.status,
+                risk_score: Math.round(updated.risk_score),
+                risk_level: getRiskLevel(updated.risk_score),
+              }
+            : prev
+        );
+
+        setStatusMessage({
+          type: "success",
+          text: `Road status set to "${updated.status}" (Risk: ${Math.round(updated.risk_score)}%).`,
+        });
+
+        // Re-evaluate predictive risk if selected
+        if (selectedRisk && selectedRisk.id === roadId) {
+          loadPredictiveRisk(roadId, selectedRisk.latitude, selectedRisk.longitude);
+        }
+      } catch (err: any) {
+        console.error("Update road status error:", err);
+        setStatusMessage({
+          type: "error",
+          text: err.message || "Failed to update road status.",
+        });
+      } finally {
+        setStatusUpdating(false);
+      }
+    },
+    [getAuthHeader, selectedRisk, loadPredictiveRisk]
+  );
 
   useEffect(() => {
     loadRisks();
@@ -1133,6 +1210,71 @@ function RoadRisk() {
                       elevated.
                     </p>
                   </div>
+                </div>
+              </div>
+
+              {/* Operator Corridor Status Control */}
+              <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-cyan-400" />
+                    <p className="text-sm font-semibold text-white">
+                      Operator Corridor Status Control
+                    </p>
+                  </div>
+
+                  <span className="text-[11px] text-slate-500">
+                    Role: <span className="font-semibold text-slate-300">{user?.role || "GUEST"}</span>
+                  </span>
+                </div>
+
+                <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                  Update live corridor operational status to adjust deterministic network risk and recalculate predictive models.
+                </p>
+
+                {statusMessage && (
+                  <div
+                    className={`mt-3 rounded-lg border p-3 text-xs ${
+                      statusMessage.type === "success"
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                        : "border-rose-500/30 bg-rose-500/10 text-rose-300"
+                    }`}
+                  >
+                    {statusMessage.text}
+                  </div>
+                )}
+
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {[
+                    { id: "open", label: "Open", score: "0%", color: "emerald" },
+                    { id: "restricted", label: "Restricted", score: "50%", color: "amber" },
+                    { id: "under_repair", label: "Under Repair", score: "70%", color: "orange" },
+                    { id: "blocked", label: "Blocked", score: "95%", color: "red" },
+                  ].map((st) => {
+                    const isActive = (selectedRisk.status || "open").toLowerCase() === st.id;
+                    return (
+                      <button
+                        key={st.id}
+                        type="button"
+                        disabled={statusUpdating}
+                        onClick={() => updateRoadStatus(selectedRisk.id, st.id)}
+                        className={`flex flex-col items-center justify-center rounded-lg border p-2.5 text-xs transition ${
+                          isActive
+                            ? st.color === "emerald"
+                              ? "border-emerald-500 bg-emerald-500/20 text-emerald-300 font-semibold"
+                              : st.color === "amber"
+                              ? "border-amber-500 bg-amber-500/20 text-amber-300 font-semibold"
+                              : st.color === "orange"
+                              ? "border-orange-500 bg-orange-500/20 text-orange-300 font-semibold"
+                              : "border-red-500 bg-red-500/20 text-red-300 font-semibold"
+                            : "border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        } disabled:opacity-50`}
+                      >
+                        <span>{st.label}</span>
+                        <span className="mt-0.5 text-[10px] opacity-70">Risk: {st.score}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

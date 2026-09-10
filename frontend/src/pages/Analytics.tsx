@@ -1,3 +1,4 @@
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -6,6 +7,7 @@ import {
   BarChart3,
   Clock3,
   Map,
+  RefreshCw,
   ShieldCheck,
   Truck,
 } from "lucide-react";
@@ -21,7 +23,10 @@ import {
   YAxis,
 } from "recharts";
 
-const incidentTrend = [
+const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
+
+// Fallback baseline demonstration data
+const defaultIncidentTrend = [
   { day: "Mon", incidents: 8 },
   { day: "Tue", incidents: 11 },
   { day: "Wed", incidents: 7 },
@@ -31,7 +36,7 @@ const incidentTrend = [
   { day: "Sun", incidents: 9 },
 ];
 
-const deliveryTrend = [
+const defaultDeliveryTrend = [
   { day: "Mon", time: 8.7 },
   { day: "Tue", time: 8.2 },
   { day: "Wed", time: 8.5 },
@@ -41,7 +46,7 @@ const deliveryTrend = [
   { day: "Sun", time: 8.1 },
 ];
 
-const regionalData = [
+const defaultRegionalData = [
   { region: "Assam", vehicles: 18, incidents: 5 },
   { region: "Arunachal", vehicles: 9, incidents: 3 },
   { region: "Meghalaya", vehicles: 7, incidents: 4 },
@@ -50,21 +55,21 @@ const regionalData = [
   { region: "Tripura", vehicles: 4, incidents: 2 },
 ];
 
-const riskData = [
-  { name: "Critical", value: 2 },
-  { name: "High", value: 5 },
-  { name: "Medium", value: 11 },
-  { name: "Low", value: 36 },
+const defaultRiskData = [
+  { name: "Critical", value: 2, percentage: 10, color_class: "bg-red-500" },
+  { name: "High", value: 5, percentage: 25, color_class: "bg-orange-500" },
+  { name: "Medium", value: 11, percentage: 44, color_class: "bg-amber-500" },
+  { name: "Low", value: 36, percentage: 72, color_class: "bg-emerald-500" },
 ];
 
-const kpis = [
+const defaultKpis = [
   {
     title: "Routes Completed",
     value: "1,284",
     change: "+12.4%",
     trend: "up",
     description: "vs previous week",
-    icon: Map,
+    icon: "Map",
     iconClass: "bg-cyan-500/10 text-cyan-400",
   },
   {
@@ -73,7 +78,7 @@ const kpis = [
     change: "-6.8%",
     trend: "down",
     description: "faster than last week",
-    icon: Clock3,
+    icon: "Clock3",
     iconClass: "bg-purple-500/10 text-purple-400",
   },
   {
@@ -82,7 +87,7 @@ const kpis = [
     change: "+8.2%",
     trend: "up",
     description: "fleet utilization",
-    icon: Truck,
+    icon: "Truck",
     iconClass: "bg-emerald-500/10 text-emerald-400",
   },
   {
@@ -91,12 +96,128 @@ const kpis = [
     change: "+3.1%",
     trend: "up",
     description: "regional average",
-    icon: ShieldCheck,
+    icon: "ShieldCheck",
     iconClass: "bg-amber-500/10 text-amber-400",
   },
 ];
 
+type KPICardItem = {
+  title: string;
+  value: string;
+  change: string;
+  trend: string;
+  description: string;
+  icon: string;
+  iconClass: string;
+};
+
+type TrendPoint = {
+  day: string;
+  incidents: number;
+};
+
+type DeliveryPoint = {
+  day: string;
+  time: number;
+};
+
+type RegionalPoint = {
+  region: string;
+  vehicles: number;
+  incidents: number;
+};
+
+type RiskPoint = {
+  name: string;
+  value: number;
+  percentage: number;
+  color_class: string;
+};
+
+type OperationalInsights = {
+  fleet_utilization: number;
+  route_safety: number;
+  incident_resolution: number;
+};
+
+type RoadsSummary = {
+  total: number;
+  open: number;
+  restricted: number;
+  blocked: number;
+  under_repair: number;
+  safe_percentage: number;
+};
+
+type AnalyticsResponse = {
+  kpis: KPICardItem[];
+  incident_trend: TrendPoint[];
+  delivery_trend: DeliveryPoint[];
+  regional_data: RegionalPoint[];
+  risk_data: RiskPoint[];
+  operational_insights: OperationalInsights;
+  roads_summary: RoadsSummary;
+};
+
+const iconMap: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  Map,
+  Clock3,
+  Truck,
+  ShieldCheck,
+  Activity,
+  AlertTriangle,
+  BarChart3,
+};
+
 function Analytics() {
+  const [days, setDays] = useState("7");
+  const [data, setData] = useState<AnalyticsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchAnalytics = useCallback(async (selectedDays: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${API_URL}/analytics/summary?days=${selectedDays}`);
+      if (!response.ok) {
+        throw new Error(`Failed to load analytics (${response.status})`);
+      }
+
+      const summaryData: AnalyticsResponse = await response.json();
+      setData(summaryData);
+    } catch (err) {
+      console.warn("Analytics endpoint unavailable or returned error, using fallback data:", err);
+      setError("Analytics backend currently unreachable. Displaying operational baseline.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAnalytics(days);
+  }, [days, fetchAnalytics]);
+
+  const kpis = data?.kpis || defaultKpis;
+  const incidentTrend = data?.incident_trend || defaultIncidentTrend;
+  const deliveryTrend = data?.delivery_trend || defaultDeliveryTrend;
+  const regionalData = data?.regional_data || defaultRegionalData;
+  const riskData = data?.risk_data || defaultRiskData;
+  const insights = data?.operational_insights || {
+    fleet_utilization: 82,
+    route_safety: 91,
+    incident_resolution: 74,
+  };
+  const roadsSummary = data?.roads_summary || {
+    total: 54,
+    open: 47,
+    restricted: 5,
+    blocked: 2,
+    under_repair: 0,
+    safe_percentage: 66.7,
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -112,20 +233,47 @@ function Analytics() {
           </p>
         </div>
 
-        <select
-          defaultValue="7"
-          className="rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs text-slate-400 outline-none"
-        >
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="90">Last 90 days</option>
-        </select>
+        <div className="flex items-center gap-3">
+          {loading && (
+            <div className="flex items-center gap-2 text-xs text-cyan-400">
+              <RefreshCw size={14} className="animate-spin" />
+              <span>Updating...</span>
+            </div>
+          )}
+
+          <select
+            value={days}
+            onChange={(e) => setDays(e.target.value)}
+            className="rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs text-slate-400 outline-none focus:border-cyan-500/50"
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
       </div>
+
+      {/* Error / Offline Banner */}
+      {error && (
+        <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-300">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={16} className="text-amber-400" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={() => fetchAnalytics(days)}
+            className="flex items-center gap-1 font-semibold text-amber-400 underline hover:text-amber-300"
+          >
+            <RefreshCw size={12} />
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((kpi) => {
-          const Icon = kpi.icon;
+          const IconComponent = iconMap[kpi.icon] || BarChart3;
 
           return (
             <div
@@ -166,7 +314,7 @@ function Analytics() {
                 </div>
 
                 <div className={`rounded-lg p-3 ${kpi.iconClass}`}>
-                  <Icon size={21} />
+                  <IconComponent size={21} />
                 </div>
               </div>
             </div>
@@ -449,15 +597,7 @@ function Analytics() {
 
           <div className="mt-7 space-y-5">
             {riskData.map((risk) => {
-              const percentage =
-                risk.value === 36
-                  ? 72
-                  : risk.value === 11
-                    ? 44
-                    : risk.value === 5
-                      ? 25
-                      : 10;
-
+              const percentage = risk.percentage ?? 25;
               const barClass =
                 risk.name === "Critical"
                   ? "bg-red-500"
@@ -500,7 +640,7 @@ function Analytics() {
                     <div
                       className={`h-2 rounded-full ${barClass}`}
                       style={{
-                        width: `${percentage}%`,
+                        width: `${Math.min(Math.max(percentage, 5), 100)}%`,
                       }}
                     />
                   </div>
@@ -516,7 +656,7 @@ function Analytics() {
               </span>
 
               <span className="text-sm font-semibold text-white">
-                54
+                {roadsSummary.total}
               </span>
             </div>
 
@@ -526,7 +666,7 @@ function Analytics() {
               </span>
 
               <span className="text-sm font-semibold text-emerald-400">
-                66.7%
+                {roadsSummary.safe_percentage}%
               </span>
             </div>
           </div>
@@ -550,7 +690,7 @@ function Analytics() {
               </p>
 
               <p className="mt-1 text-2xl font-bold text-white">
-                82%
+                {insights.fleet_utilization}%
               </p>
             </div>
           </div>
@@ -576,7 +716,7 @@ function Analytics() {
               </p>
 
               <p className="mt-1 text-2xl font-bold text-white">
-                91%
+                {insights.route_safety}%
               </p>
             </div>
           </div>
@@ -602,7 +742,7 @@ function Analytics() {
               </p>
 
               <p className="mt-1 text-2xl font-bold text-white">
-                74%
+                {insights.incident_resolution}%
               </p>
             </div>
           </div>
@@ -628,11 +768,9 @@ function Analytics() {
             </p>
 
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              These visualizations currently use demonstration
-              data. Once the backend is connected, analytics will
-              be calculated from vehicle telemetry, verified
-              incidents, road-risk predictions, route history and
-              regional logistics activity.
+              Live operational analytics computed from vehicle telemetry, verified
+              incidents, road-risk assessments, route history and regional
+              logistics activity across the North Eastern Region.
             </p>
           </div>
         </div>

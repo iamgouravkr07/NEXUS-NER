@@ -26,3 +26,4 @@ from app.schemas.ml import (
     PredictiveRiskResult,
     CorridorPredictiveRiskRequest,
 )
+from app.schemas.analytics import AnalyticsSummaryResponse

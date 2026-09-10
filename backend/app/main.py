@@ -3,6 +3,8 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import config
+
 from app.api.incidents import router as incidents_router
 from app.api.roads import router as roads_router
 from app.api.vehicles import router as vehicles_router
@@ -14,6 +16,7 @@ from app.api.auth import router as auth_router
 from app.api.sync import router as sync_router
 from app.api.weather import router as weather_router
 from app.api.ml import router as ml_router
+from app.api.analytics import router as analytics_router
 from app.database import Base, engine
 from app.models.incident import Incident
 from app.models.road import Road
@@ -49,7 +52,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=config.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -67,6 +70,7 @@ app.include_router(risk_router)
 app.include_router(alerts_router)
 app.include_router(weather_router)
 app.include_router(ml_router)
+app.include_router(analytics_router)
 
 @app.get("/")
 

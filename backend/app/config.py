@@ -28,6 +28,25 @@ else:
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"))  # 8 hours
 
+# CORS Configuration
+raw_cors = os.getenv("CORS_ORIGINS", "")
+if raw_cors:
+    CORS_ORIGINS = [orig.strip() for orig in raw_cors.split(",") if orig.strip()]
+else:
+    if ENVIRONMENT in ("production", "staging"):
+        CORS_ORIGINS = ["https://nexus-ner.gov.in"]
+    else:
+        CORS_ORIGINS = [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:8000",
+            "http://127.0.0.1:8000",
+            "capacitor://localhost",
+            "http://localhost",
+        ]
+
 # Demo / Bootstrap credentials (isolated for SIH development / demonstration only)
 BOOTSTRAP_ADMIN_PASSWORD = os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "Admin@Nexus2026")
 BOOTSTRAP_OPERATOR_PASSWORD = os.getenv("BOOTSTRAP_OPERATOR_PASSWORD", "Operator@Nexus2026")

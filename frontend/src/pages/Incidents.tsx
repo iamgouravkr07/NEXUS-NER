@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  Check,
   CheckCircle2,
   Clock3,
   Eye,
@@ -9,10 +10,13 @@ import {
   RefreshCw,
   Search,
   ShieldAlert,
+  ShieldCheck,
+  X,
   XCircle,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
 
 type Incident = {
   id: number;
@@ -50,11 +54,15 @@ function severityStyle(severity?: string) {
 function statusStyle(status?: string) {
   const value = status?.toLowerCase();
 
-  if (value === "resolved" || value === "closed") {
+  if (value === "verified" || value === "resolved" || value === "closed") {
     return "text-emerald-400";
   }
 
-  if (value === "investigating" || value === "active") {
+  if (value === "rejected") {
+    return "text-rose-400";
+  }
+
+  if (value === "investigating" || value === "active" || value === "reported") {
     return "text-amber-400";
   }
 
@@ -79,6 +87,7 @@ function formatDate(value?: string) {
 }
 
 function Incidents() {
+  const { user, getAuthHeader } = useAuth();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -87,6 +96,66 @@ function Incidents() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedIncident, setSelectedIncident] =
     useState<Incident | null>(null);
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const [actionMessage, setActionMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  async function updateIncidentStatus(
+    incidentId: number,
+    newStatus: "verified" | "rejected" | "resolved"
+  ) {
+    try {
+      setActionLoadingId(incidentId);
+      setActionMessage(null);
+
+      const response = await fetch(`${API_URL}/incidents/${incidentId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(
+            "Permission denied: ADMIN or CONTROL_OPERATOR role required to verify/reject incidents."
+          );
+        }
+        throw new Error(`Failed to update incident status (${response.status})`);
+      }
+
+      const updated = await response.json();
+
+      setIncidents((prev) =>
+        prev.map((item) =>
+          item.id === incidentId ? { ...item, status: updated.status } : item
+        )
+      );
+
+      if (selectedIncident?.id === incidentId) {
+        setSelectedIncident((prev) =>
+          prev ? { ...prev, status: updated.status } : null
+        );
+      }
+
+      setActionMessage({
+        type: "success",
+        text: `Incident #${incidentId} status updated to "${updated.status}".`,
+      });
+    } catch (err: any) {
+      console.error("Incident action error:", err);
+      setActionMessage({
+        type: "error",
+        text: err.message || "Failed to update incident status.",
+      });
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
 
   async function loadIncidents(showRefresh = false) {
     try {
@@ -572,16 +641,50 @@ function Incidents() {
                       </td>
 
                       <td className="px-5 py-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSelectedIncident(incident)
-                          }
-                          className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-300 transition hover:border-cyan-500/30 hover:text-cyan-400"
-                        >
-                          <Eye size={14} />
-                          View
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          {(!incident.status ||
+                            incident.status.toLowerCase() === "reported" ||
+                            incident.status.toLowerCase() === "active") && (
+                            <>
+                              <button
+                                type="button"
+                                disabled={actionLoadingId === incident.id}
+                                onClick={() =>
+                                  updateIncidentStatus(incident.id, "verified")
+                                }
+                                title="Verify incident and escalate road risk"
+                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                              >
+                                <Check size={13} />
+                                Verify
+                              </button>
+
+                              <button
+                                type="button"
+                                disabled={actionLoadingId === incident.id}
+                                onClick={() =>
+                                  updateIncidentStatus(incident.id, "rejected")
+                                }
+                                title="Reject incident as false report"
+                                className="inline-flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs font-medium text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+                              >
+                                <X size={13} />
+                                Reject
+                              </button>
+                            </>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setSelectedIncident(incident)
+                            }
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-slate-300 transition hover:border-cyan-500/30 hover:text-cyan-400"
+                          >
+                            <Eye size={13} />
+                            View
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -785,6 +888,68 @@ function Incidents() {
                     </p>
                   </div>
                 )}
+
+              {/* Operator Action Controls */}
+              <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-cyan-400" />
+                    <p className="text-sm font-semibold text-white">Operator Validation & Control</p>
+                  </div>
+                  <span className="text-[11px] text-slate-500">
+                    Role: <span className="font-semibold text-slate-300">{user?.role || "GUEST"}</span>
+                  </span>
+                </div>
+
+                <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                  Verifying escalates road disruption risk to critical (95%) and triggers an operational alert.
+                  Rejecting marks the report as invalid.
+                </p>
+
+                {actionMessage && (
+                  <div
+                    className={`mt-3 rounded-lg border p-3 text-xs ${
+                      actionMessage.type === "success"
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                        : "border-rose-500/30 bg-rose-500/10 text-rose-300"
+                    }`}
+                  >
+                    {actionMessage.text}
+                  </div>
+                )}
+
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={actionLoadingId === selectedIncident.id || selectedIncident.status === "verified"}
+                    onClick={() => updateIncidentStatus(selectedIncident.id, "verified")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/15 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/25 disabled:opacity-40"
+                  >
+                    <Check size={14} />
+                    {selectedIncident.status === "verified" ? "Verified" : "Verify Disruption"}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={actionLoadingId === selectedIncident.id || selectedIncident.status === "rejected"}
+                    onClick={() => updateIncidentStatus(selectedIncident.id, "rejected")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/15 px-3.5 py-2 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/25 disabled:opacity-40"
+                  >
+                    <X size={14} />
+                    {selectedIncident.status === "rejected" ? "Rejected" : "Reject Report"}
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={actionLoadingId === selectedIncident.id || selectedIncident.status === "resolved"}
+                    onClick={() => updateIncidentStatus(selectedIncident.id, "resolved")}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-medium text-slate-300 transition hover:bg-slate-700 disabled:opacity-40"
+                  >
+                    <CheckCircle2 size={14} />
+                    {selectedIncident.status === "resolved" ? "Resolved" : "Mark Resolved"}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
