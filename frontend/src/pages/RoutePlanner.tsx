@@ -120,8 +120,17 @@ type LocationPoint = {
   name: string;
   position: [number, number];
 };
+function getApiBaseUrl(): string {
+  if (typeof window !== "undefined") {
+    const envUrl = (import.meta as any).env?.VITE_API_URL;
+    if (envUrl && typeof envUrl === "string" && envUrl.trim().length > 0) {
+      return envUrl.replace(/\/+$/, "");
+    }
+  }
+  return "http://127.0.0.1:8000";
+}
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = getApiBaseUrl();
 
 const NER_LOCATIONS: Record<string, [number, number]> = {
   Guwahati: [26.1445, 91.7362],
@@ -446,17 +455,55 @@ function RoutePlanner() {
       setLoadingTrips(true);
       setLoadingVehicles(true);
 
-      const [tripsResponse, vehiclesResponse] = await Promise.all([
-        fetch(`${API_URL}/trips/`),
-        fetch(`${API_URL}/vehicles/`),
-      ]);
+      let tripsResponse: Response;
+      let vehiclesResponse: Response;
+
+      try {
+        [tripsResponse, vehiclesResponse] = await Promise.all([
+          fetch(`${API_URL}/trips/`),
+          fetch(`${API_URL}/vehicles/`),
+        ]);
+      } catch (networkErr) {
+        console.error("RoutePlanner network connectivity error:", networkErr);
+        throw new TypeError(
+          "Unable to connect to the backend. Make sure FastAPI and PostgreSQL are running."
+        );
+      }
 
       if (!tripsResponse.ok) {
-        throw new Error("Failed to load trips");
+        const status = tripsResponse.status;
+        let detail = "";
+        const ct = tripsResponse.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+          const errData = await tripsResponse.json().catch(() => null);
+          detail = errData?.detail ? `: ${errData.detail}` : "";
+        }
+        throw new Error(`Failed to load trips (HTTP ${status})${detail}`);
       }
 
       if (!vehiclesResponse.ok) {
-        throw new Error("Failed to load vehicles");
+        const status = vehiclesResponse.status;
+        let detail = "";
+        const ct = vehiclesResponse.headers.get("content-type") || "";
+        if (ct.includes("application/json")) {
+          const errData = await vehiclesResponse.json().catch(() => null);
+          detail = errData?.detail ? `: ${errData.detail}` : "";
+        }
+        throw new Error(`Failed to load vehicles (HTTP ${status})${detail}`);
+      }
+
+      const tripsContentType = tripsResponse.headers.get("content-type") || "";
+      if (!tripsContentType.includes("application/json")) {
+        throw new Error(
+          `Invalid response format from /trips/: Expected JSON, received ${tripsContentType || "unknown format"}`
+        );
+      }
+
+      const vehiclesContentType = vehiclesResponse.headers.get("content-type") || "";
+      if (!vehiclesContentType.includes("application/json")) {
+        throw new Error(
+          `Invalid response format from /vehicles/: Expected JSON, received ${vehiclesContentType || "unknown format"}`
+        );
       }
 
       const tripsData: Trip[] = await tripsResponse.json();
@@ -472,12 +519,21 @@ function RoutePlanner() {
       if (vehiclesData.length > 0) {
         setSelectedVehicle((current) => current ?? vehiclesData[0]);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      console.error("RoutePlanner error:", err);
 
-      setError(
-        "Unable to connect to the backend. Make sure FastAPI and PostgreSQL are running."
-      );
+      if (
+        err instanceof TypeError &&
+        err.message.includes("Unable to connect to the backend")
+      ) {
+        setError(
+          "Unable to connect to the backend. Make sure FastAPI and PostgreSQL are running."
+        );
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred while loading Route Planner data.");
+      }
     } finally {
       setLoadingTrips(false);
       setLoadingVehicles(false);
@@ -757,7 +813,9 @@ function RoutePlanner() {
 
           <div>
             <p className="font-medium text-red-400">
-              Backend connection error
+              {error.includes("Unable to connect")
+                ? "Backend connection error"
+                : "Route Planner Error"}
             </p>
 
             <p className="mt-1 text-sm text-red-400/80">

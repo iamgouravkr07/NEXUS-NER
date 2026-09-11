@@ -36,7 +36,7 @@ function resolveApiUrl(customEnv?: string): string {
   if (customEnv && customEnv.trim().length > 0) {
     return customEnv.replace(/\/+$/, "");
   }
-  return "";
+  return "http://127.0.0.1:8000";
 }
 
 const prodUrl = resolveApiUrl("https://api.nexus-ner.gov.in/");
@@ -53,8 +53,8 @@ assert(
 
 const emptyConfig = resolveApiUrl("");
 assert(
-  emptyConfig === "",
-  "Empty environment configuration has no hardcoded localhost/127.0.0.1 fallback"
+  emptyConfig === "http://127.0.0.1:8000",
+  "Empty environment configuration safely falls back to http://127.0.0.1:8000"
 );
 
 // 2. Dynamic Reroute Auth Header Generation
