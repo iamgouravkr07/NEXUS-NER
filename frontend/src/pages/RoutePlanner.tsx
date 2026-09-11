@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Truck,
+  WifiOff,
 } from "lucide-react";
 import {
   CircleMarker,
@@ -27,6 +28,8 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useAuth } from "../context/AuthContext";
+import { MapErrorBoundary } from "../components/MapErrorBoundary";
+import { networkService } from "../services/network";
 
 type Trip = {
   id: number;
@@ -304,6 +307,22 @@ function RoutePlanner() {
     type: string;
     description?: string;
   } | null>(null);
+
+  // Network & Offline Map Safeguard
+  const [isOnline, setIsOnline] = useState<boolean>(networkService.getStatus().connected);
+  const [tileError, setTileError] = useState<boolean>(false);
+
+  useEffect(() => {
+    const unsub = networkService.subscribe((status) => {
+      setIsOnline(status.connected);
+      if (!status.connected) {
+        setTileError(true);
+      } else {
+        setTileError(false);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // GPS Tracking & Simulation state
   const [isSimulating, setIsSimulating] = useState(false);
@@ -1255,16 +1274,23 @@ function RoutePlanner() {
           </div>
 
           <div className="relative h-[650px]">
-            <MapContainer
-              center={[26.2, 92.5]}
-              zoom={6}
-              scrollWheelZoom={true}
-              className="h-full w-full"
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+            <MapErrorBoundary fallbackMessage="Map tiles unavailable — offline mode">
+              <MapContainer
+                center={[26.2, 92.5]}
+                zoom={6}
+                scrollWheelZoom={true}
+                className="h-full w-full"
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  eventHandlers={{
+                    tileerror: () => setTileError(true),
+                    load: () => {
+                      if (isOnline) setTileError(false);
+                    },
+                  }}
+                />
 
               <MapController
                 origin={origin?.position ?? null}
@@ -1525,6 +1551,18 @@ function RoutePlanner() {
                 </>
               )}
             </MapContainer>
+          </MapErrorBoundary>
+
+          {/* OFFLINE MAP TILE INDICATOR */}
+          {(!isOnline || tileError) && (
+            <div
+              data-testid="map-offline-banner"
+              className="absolute top-4 right-4 z-[1000] flex items-center gap-2 rounded-lg border border-amber-500/30 bg-slate-900/90 backdrop-blur-sm px-3.5 py-2 text-xs font-medium text-amber-400 shadow-lg pointer-events-auto"
+            >
+              <WifiOff size={15} className="shrink-0 text-amber-400" />
+              <span>Map tiles unavailable — offline mode</span>
+            </div>
+          )}
 
             {/* MAP STATUS */}
             <div className="absolute left-4 top-4 z-[1000] rounded-lg border border-slate-700 bg-slate-900/95 px-4 py-3 shadow-xl backdrop-blur">

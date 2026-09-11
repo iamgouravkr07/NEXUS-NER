@@ -1,0 +1,62 @@
+{
+  "seeded_at": "2026-09-11T03:21:07.554291+00:00",
+  "demo_users": [
+    {
+      "role": "ADMIN",
+      "username": "admin",
+      "demo_password": "Admin@Nexus2026"
+    },
+    {
+      "role": "CONTROL_OPERATOR",
+      "username": "operator",
+      "demo_password": "Operator@Nexus2026"
+    },
+    {
+      "role": "FIELD_OFFICER",
+      "username": "field_officer",
+      "demo_password": "Field@Nexus2026"
+    },
+    {
+      "role": "DRIVER",
+      "username": "driver",
+      "demo_password": "Driver@Nexus2026"
+    }
+  ],
+  "vehicle": {
+    "id": 472,
+    "vehicle_number": "AS-01-BX-4091",
+    "vehicle_type": "Heavy Carrier",
+    "cargo_type": "Critical Vaccines & Cold-Chain Supplies",
+    "status": "in_transit",
+    "latitude": 26.1445,
+    "longitude": 91.7362
+  },
+  "trip": {
+    "id": 318,
+    "vehicle_id": 472,
+    "origin": "Guwahati, Assam",
+    "destination": "Tezpur, Assam",
+    "status": "active",
+    "eta_minutes": 126,
+    "distance_km": 157.76,
+    "reroute_count": 0
+  },
+  "incident": {
+    "id": 15,
+    "incident_type": "landslide",
+    "severity": "critical",
+    "status": "reported",
+    "description": "[DEMO-SIH-2026] Major landslide blocking NH-15 corridor near Kharupetia",
+    "latitude": 26.40463,
+    "longitude": 91.925314,
+    "affected_road_id": 135
+  },
+  "road": {
+    "id": 135,
+    "road_name": "NH-15 Guwahati-Tezpur Corridor",
+    "status": "open",
+    "risk_score": 15.0,
+    "latitude": 26.40463,
+    "longitude": 91.925314
+  }
+}

@@ -28,6 +28,24 @@ except ImportError:
     from app.services.gps_simulator import DeterministicGPSSimulator
 
 
+def get_auth_token(api_url: str, username: str = "driver", password: str = "Driver@Nexus2026") -> str | None:
+    """Fetch JWT token from /auth/login for authenticated telemetry ingestion."""
+    try:
+        url = f"{api_url.rstrip('/')}/auth/login"
+        payload = json.dumps({"username": username, "password": password}).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=payload,
+            headers={"Content-Type": "application/json", "User-Agent": "NEXUS-NER-GPS-Simulator/1.0"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=5) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            return data.get("access_token")
+    except Exception:
+        return None
+
+
 def send_location_update(
     api_url: str,
     vehicle_id: int,
@@ -35,6 +53,7 @@ def send_location_update(
     longitude: float,
     timestamp: str,
     status: str = "in_transit",
+    token: str | None = None,
 ) -> dict:
     url = f"{api_url.rstrip('/')}/vehicles/{vehicle_id}/location"
     payload = json.dumps({
@@ -44,10 +63,17 @@ def send_location_update(
         "status": status,
     }).encode("utf-8")
 
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "NEXUS-NER-GPS-Simulator/1.0",
+    }
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
     req = urllib.request.Request(
         url,
         data=payload,
-        headers={"Content-Type": "application/json", "User-Agent": "NEXUS-NER-GPS-Simulator/1.0"},
+        headers=headers,
         method="POST",
     )
     with urllib.request.urlopen(req, timeout=10) as response:
@@ -64,6 +90,9 @@ def main():
     parser.add_argument("--steps", type=int, default=20, help="Total steps across the journey (default: 20)")
     parser.add_argument("--interval", type=float, default=2.0, help="Interval seconds between steps (default: 2.0s)")
     parser.add_argument("--api-url", type=str, default="http://127.0.0.1:8000", help="FastAPI backend URL")
+    parser.add_argument("--token", type=str, default=None, help="Explicit JWT bearer token")
+    parser.add_argument("--username", type=str, default="driver", help="Demo user for authentication (default: driver)")
+    parser.add_argument("--password", type=str, default="Driver@Nexus2026", help="Demo password for authentication")
     parser.add_argument("--dry-run", action="store_true", help="Print steps without sending API calls")
     parser.add_argument("--loop", action="store_true", help="Loop journey repeatedly")
 
@@ -87,6 +116,14 @@ def main():
         total_steps=args.steps,
         interval_seconds=args.interval,
     )
+
+    token = args.token
+    if not token and not args.dry_run:
+        token = get_auth_token(args.api_url, args.username, args.password)
+        if token:
+            print(f"Authenticated as: {args.username} (JWT acquired)")
+        else:
+            print(f"Notice: Could not acquire JWT token for {args.username}; sending unauthenticated")
 
     steps = simulator.generate_all_steps()
 
@@ -115,6 +152,7 @@ def main():
                         longitude=lon,
                         timestamp=iso_time,
                         status=status_str,
+                        token=token,
                     )
                     server_status = f"HTTP 200 (status: {res.get('status')})"
                 except Exception as e:

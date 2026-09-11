@@ -129,6 +129,22 @@ class Phase3AlertTests(unittest.TestCase):
 
     def test_scenario_c_reroute_alert_generation(self):
         """Scenario C: Test dynamic reroute alert generation when safe detour is selected."""
+        # Create test verified incident on path
+        inc = Incident(
+            incident_type="landslide",
+            severity="critical",
+            description=f"TEST_P3_REROUTE_INC_{int(datetime.now().timestamp())}",
+            latitude=26.40463,
+            longitude=91.925314,
+            location=WKTElement("POINT(91.925314 26.40463)", srid=4326),
+            road_status="blocked",
+            status="verified",
+            risk_score=95.0,
+        )
+        self.db.add(inc)
+        self.db.commit()
+        self.db.refresh(inc)
+
         # Create test vehicle and trip with verified incident on path
         veh = Vehicle(
             vehicle_number=f"P3_REROUTE_{int(datetime.now().timestamp())}",
