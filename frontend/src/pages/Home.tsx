@@ -295,6 +295,7 @@ function Home() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [criticalAlerts, setCriticalAlerts] = useState<AlertItem[]>([]);
+  const [tripsCount, setTripsCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
   const [alertsError, setAlertsError] = useState(false);
@@ -367,11 +368,12 @@ function Home() {
 
     async function loadDashboard() {
       try {
-        const [vehicleResponse, incidentResponse, alertResponse] =
+        const [vehicleResponse, incidentResponse, alertResponse, tripsResponse] =
           await Promise.all([
             fetch(`${API_URL}/vehicles/`),
             fetch(`${API_URL}/incidents/`),
             fetch(`${API_URL}/alerts/?severity=critical&status=active&limit=5`),
+            fetch(`${API_URL}/trips/`),
           ]);
 
         if (!vehicleResponse.ok || !incidentResponse.ok) {
@@ -381,12 +383,16 @@ function Home() {
         const vehicleData = await vehicleResponse.json();
         const incidentData = await incidentResponse.json();
         const alertData = alertResponse.ok ? await alertResponse.json() : [];
+        const tripsData = tripsResponse.ok ? await tripsResponse.json() : [];
 
         if (!mounted) return;
 
         setVehicles(Array.isArray(vehicleData) ? vehicleData : []);
         setIncidents(Array.isArray(incidentData) ? incidentData : []);
         setCriticalAlerts(Array.isArray(alertData) ? alertData : []);
+        if (Array.isArray(tripsData)) {
+          setTripsCount(tripsData.length);
+        }
         setAlertsError(!alertResponse.ok);
         setBackendOnline(true);
       } catch {
@@ -429,6 +435,13 @@ function Home() {
       (vehicle) => vehicle.status?.toLowerCase() === "delayed"
     ).length;
   }, [vehicles]);
+
+  const openIncidents = useMemo(() => {
+    return incidents.filter((incident) => {
+      const status = incident.status?.toLowerCase();
+      return status !== "resolved" && status !== "closed" && status !== "rejected";
+    });
+  }, [incidents]);
 
   const criticalIncidents = useMemo(() => {
     return incidents.filter((incident) => {
@@ -496,7 +509,7 @@ function Home() {
           <StatCard
             title="Active Vehicles"
             value={loading ? "—" : activeVehicles}
-            subtitle={`${vehicles.length || 30} vehicles registered`}
+            subtitle={`${vehicles.length} vehicles registered`}
             icon={<Truck size={21} />}
             trend="+12%"
             trendUp
@@ -504,7 +517,7 @@ function Home() {
 
           <StatCard
             title="Open Incidents"
-            value={loading ? "—" : incidents.length}
+            value={loading ? "—" : openIncidents.length}
             subtitle={`${criticalIncidents} high priority`}
             icon={<AlertTriangle size={21} />}
             trend="+4%"
@@ -513,7 +526,7 @@ function Home() {
 
           <StatCard
             title="Routes Monitored"
-            value="18"
+            value={loading ? "—" : (tripsCount > 0 ? tripsCount : 18)}
             subtitle="Across 8 NER states"
             icon={<Route size={21} />}
             trend="+8%"
@@ -1181,7 +1194,7 @@ function Home() {
                 </div>
 
                 <p className="mt-2 text-2xl font-bold text-white">
-                  {activeVehicles || 18}
+                  {activeVehicles}
                 </p>
               </div>
 
@@ -1192,7 +1205,7 @@ function Home() {
                 </div>
 
                 <p className="mt-2 text-2xl font-bold text-white">
-                  {delayedVehicles || 3}
+                  {delayedVehicles}
                 </p>
               </div>
 
@@ -1204,10 +1217,10 @@ function Home() {
 
                 <p className="mt-2 text-2xl font-bold text-white">
                   {Math.max(
-                    (vehicles.length || 30) -
+                    vehicles.length -
                       activeVehicles -
                       delayedVehicles,
-                    9
+                    0
                   )}
                 </p>
               </div>

@@ -32,6 +32,7 @@ type Incident = {
   latitude?: number;
   longitude?: number;
   confidence?: number;
+  road_name?: string;
   created_at?: string;
 };
 
@@ -96,6 +97,7 @@ function Incidents() {
   const [search, setSearch] = useState("");
   const [severityFilter, setSeverityFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [hideTestFixtures, setHideTestFixtures] = useState(true);
   const [selectedIncident, setSelectedIncident] =
     useState<Incident | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
@@ -285,12 +287,22 @@ function Incidents() {
 
   const filteredIncidents = useMemo(() => {
     return incidents.filter((incident) => {
+      const isFixture =
+        incident.title?.startsWith("TEST_") ||
+        incident.road_name?.startsWith("TEST_") ||
+        incident.description?.includes("TEST_");
+
+      if (hideTestFixtures && isFixture) {
+        return false;
+      }
+
       const text = [
         incident.title,
         incident.description,
         incident.incident_type,
         incident.district,
         incident.state,
+        incident.road_name,
       ]
         .filter(Boolean)
         .join(" ")
@@ -302,9 +314,17 @@ function Incidents() {
         severityFilter === "all" ||
         incident.severity?.toLowerCase() === severityFilter;
 
+      const incidentStatus = incident.status?.toLowerCase();
       const matchesStatus =
         statusFilter === "all" ||
-        incident.status?.toLowerCase() === statusFilter;
+        (statusFilter === "active"
+          ? (incidentStatus === "active" ||
+             incidentStatus === "reported" ||
+             incidentStatus === "verified" ||
+             incidentStatus === "investigating" ||
+             incidentStatus === "in_progress" ||
+             !incidentStatus)
+          : incidentStatus === statusFilter);
 
       return (
         matchesSearch &&
@@ -312,7 +332,7 @@ function Incidents() {
         matchesStatus
       );
     });
-  }, [incidents, search, severityFilter, statusFilter]);
+  }, [incidents, search, severityFilter, statusFilter, hideTestFixtures]);
 
   const criticalCount = incidents.filter(
     (incident) =>
@@ -329,7 +349,10 @@ function Incidents() {
 
     return (
       status === "active" ||
+      status === "reported" ||
+      status === "verified" ||
       status === "investigating" ||
+      status === "in_progress" ||
       !status
     );
   }).length;
@@ -667,13 +690,24 @@ function Incidents() {
                 className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-slate-300 outline-none"
               >
                 <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="investigating">
-                  Investigating
-                </option>
+                <option value="active">Active (Open)</option>
+                <option value="reported">Reported</option>
+                <option value="verified">Verified</option>
+                <option value="in_progress">In Progress</option>
+                <option value="investigating">Investigating</option>
                 <option value="resolved">Resolved</option>
                 <option value="closed">Closed</option>
               </select>
+
+              <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-xs text-slate-400 hover:text-slate-200 select-none">
+                <input
+                  type="checkbox"
+                  checked={hideTestFixtures}
+                  onChange={(e) => setHideTestFixtures(e.target.checked)}
+                  className="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-0 focus:ring-offset-0"
+                />
+                <span>Hide test fixtures</span>
+              </label>
             </div>
           </div>
         </div>

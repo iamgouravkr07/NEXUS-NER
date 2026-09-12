@@ -14,8 +14,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
-const API_URL = "http://127.0.0.1:8000";
+import { useAuth, getAuthApiUrl } from "../context/AuthContext";
 
 type AlertSeverity = "Critical" | "High" | "Medium" | "Low";
 type AlertStatus = "Active" | "Acknowledged" | "Resolved";
@@ -31,6 +30,9 @@ type AlertItem = {
   rawType: string;
   time: string;
   status: AlertStatus;
+  sourceEntity?: string | null;
+  sourceEntityId?: number | null;
+  isTestFixture?: boolean;
 };
 
 type AlertSummaryData = {
@@ -110,21 +112,27 @@ function alertIcon(type: string) {
 }
 
 function Alerts() {
+  const { getAuthHeader } = useAuth();
+  const apiBase = getAuthApiUrl();
+
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [summary, setSummary] = useState<AlertSummaryData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [actionError, setActionError] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedSeverity, setSelectedSeverity] = useState<string>("All");
   const [selectedType, setSelectedType] = useState<string>("All");
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
+  const [hideTestFixtures, setHideTestFixtures] = useState<boolean>(true);
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
   const fetchAlertsData = useCallback(async () => {
     try {
       setError("");
       const [alertsRes, summaryRes] = await Promise.all([
-        fetch(`${API_URL}/alerts/?limit=100`),
-        fetch(`${API_URL}/alerts/summary`),
+        fetch(`${apiBase}/alerts/?limit=100`),
+        fetch(`${apiBase}/alerts/summary`),
       ]);
 
       if (!alertsRes.ok) {
@@ -157,6 +165,17 @@ function Alerts() {
               : "Active";
 
         const rawAlertsType = (a.alert_type || "general").toLowerCase();
+        const titleStr = a.title || "";
+        const descStr = a.description || "";
+        const dedupStr = a.dedup_key || "";
+        const isFixture =
+          titleStr.includes("Lifecycle Test") ||
+          titleStr.includes("Duplicate Test") ||
+          titleStr.includes("RBAC Alert") ||
+          titleStr.startsWith("TEST_") ||
+          descStr.includes("TEST_") ||
+          dedupStr.startsWith("TEST_") ||
+          dedupStr.includes("TEST_RD_");
 
         return {
           rawId: a.id,
@@ -169,6 +188,9 @@ function Alerts() {
           rawType: rawAlertsType,
           time: formatRelativeTime(a.created_at),
           status: statFormatted,
+          sourceEntity: a.source_entity || null,
+          sourceEntityId: a.source_entity_id || null,
+          isTestFixture: Boolean(isFixture),
         };
       });
 
@@ -179,7 +201,7 @@ function Alerts() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [apiBase]);
 
   useEffect(() => {
     fetchAlertsData();
@@ -192,11 +214,21 @@ function Alerts() {
   const handleAcknowledge = async (rawId: number) => {
     try {
       setActionLoadingId(rawId);
-      const res = await fetch(`${API_URL}/alerts/${rawId}/acknowledge`, {
+      setActionError("");
+      const authHeaders = getAuthHeader();
+      const res = await fetch(`${apiBase}/alerts/${rawId}/acknowledge`, {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
       });
       if (!res.ok) {
-        throw new Error("Failed to acknowledge alert");
+        if (res.status === 401 || res.status === 403) {
+          throw new Error("Authorization required: You must be logged in as a Control Operator or Admin to acknowledge alerts.");
+        }
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Failed to acknowledge alert (${res.status})`);
       }
       setAlerts((prev) =>
         prev.map((item) =>
@@ -213,7 +245,7 @@ function Alerts() {
           : prev
       );
     } catch (err: any) {
-      alert(err.message || "Could not acknowledge alert");
+      setActionError(err.message || "Could not acknowledge alert");
     } finally {
       setActionLoadingId(null);
     }
@@ -222,11 +254,21 @@ function Alerts() {
   const handleResolve = async (rawId: number) => {
     try {
       setActionLoadingId(rawId);
-      const res = await fetch(`${API_URL}/alerts/${rawId}/resolve`, {
+      setActionError("");
+      const authHeaders = getAuthHeader();
+      const res = await fetch(`${apiBase}/alerts/${rawId}/resolve`, {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
+        },
       });
       if (!res.ok) {
-        throw new Error("Failed to resolve alert");
+        if (res.status === 401 || res.status === 403) {
+          throw new Error("Authorization required: You must be logged in as a Control Operator or Admin to resolve alerts.");
+        }
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Failed to resolve alert (${res.status})`);
       }
       setAlerts((prev) =>
         prev.map((item) =>
@@ -243,7 +285,7 @@ function Alerts() {
           : prev
       );
     } catch (err: any) {
-      alert(err.message || "Could not resolve alert");
+      setActionError(err.message || "Could not resolve alert");
     } finally {
       setActionLoadingId(null);
     }
@@ -251,7 +293,13 @@ function Alerts() {
 
   const filteredAlerts = useMemo(() => {
     return alerts.filter((item) => {
+      if (hideTestFixtures && item.isTestFixture) {
+        return false;
+      }
       if (selectedSeverity !== "All" && item.severity !== selectedSeverity) {
+        return false;
+      }
+      if (selectedStatus !== "All" && item.status !== selectedStatus) {
         return false;
       }
       if (selectedType !== "All" && item.type !== selectedType) {
@@ -268,7 +316,7 @@ function Alerts() {
       }
       return true;
     });
-  }, [alerts, selectedSeverity, selectedType, searchQuery]);
+  }, [alerts, selectedSeverity, selectedStatus, selectedType, searchQuery, hideTestFixtures]);
 
   const summaryCards = useMemo(() => {
     const totalCount = summary?.total ?? alerts.length;
@@ -348,6 +396,22 @@ function Alerts() {
         </div>
       )}
 
+      {actionError && (
+        <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-xs text-amber-400">
+          <div className="flex items-center gap-3">
+            <AlertTriangle size={18} className="shrink-0" />
+            <span>{actionError}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionError("")}
+            className="text-amber-400/70 hover:text-amber-300 ml-4 font-semibold"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((item) => {
@@ -409,7 +473,7 @@ function Alerts() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2">
               <Search size={16} className="text-slate-600" />
               <input
@@ -417,9 +481,20 @@ function Alerts() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search alerts..."
-                className="w-full bg-transparent text-xs text-white outline-none placeholder:text-slate-600 sm:w-48"
+                className="w-full bg-transparent text-xs text-white outline-none placeholder:text-slate-600 sm:w-44"
               />
             </div>
+
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-300 outline-none"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Acknowledged">Acknowledged</option>
+              <option value="Resolved">Resolved</option>
+            </select>
 
             <select
               value={selectedSeverity}
@@ -448,6 +523,16 @@ function Alerts() {
               <option value="Weather">Weather</option>
               <option value="Vehicle">Vehicle</option>
             </select>
+
+            <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs text-slate-400 hover:text-slate-200 select-none">
+              <input
+                type="checkbox"
+                checked={hideTestFixtures}
+                onChange={(e) => setHideTestFixtures(e.target.checked)}
+                className="rounded border-slate-700 bg-slate-900 text-cyan-500 focus:ring-0 focus:ring-offset-0"
+              />
+              <span>Hide test fixtures</span>
+            </label>
           </div>
         </div>
       </div>
@@ -521,6 +606,16 @@ function Alerts() {
                         <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">
                           {alert.type}
                         </span>
+                        {alert.sourceEntity && alert.sourceEntityId ? (
+                          <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2 py-0.5 text-[10px] font-mono text-cyan-300">
+                            {alert.sourceEntity.replace(/_/g, " ").toUpperCase()} #{alert.sourceEntityId}
+                          </span>
+                        ) : null}
+                        {alert.isTestFixture ? (
+                          <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-mono text-yellow-300">
+                            TEST FIXTURE
+                          </span>
+                        ) : null}
                       </div>
 
                       <p className="mt-2 max-w-2xl text-xs leading-5 text-slate-400">
