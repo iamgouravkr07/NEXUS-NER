@@ -51,6 +51,7 @@ function App() {
               <Route path="/incidents" element={<Incidents />} />
               <Route path="/vehicles" element={<Vehicles />} />
               <Route path="/routes" element={<RoutePlanner />} />
+              <Route path="/route-planner" element={<RoutePlanner />} />
               <Route path="/road-risk" element={<RoadRisk />} />
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/analytics" element={<Analytics />} />
