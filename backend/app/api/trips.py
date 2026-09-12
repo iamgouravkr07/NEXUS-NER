@@ -427,9 +427,18 @@ def reroute_trip(
         [],
     )
 
-    verified_incidents = (
+    # Phase 6B: Include verified incidents OR reported incidents carrying explicit corridor-blocking evidence
+    blocking_incidents = (
         db.query(Incident)
-        .filter(Incident.status == "verified")
+        .filter(
+            (Incident.status == "verified") |
+            (
+                (Incident.status == "reported") &
+                (Incident.severity.in_(["critical", "high"])) &
+                (Incident.affected_road_id.isnot(None)) &
+                ((Incident.road_status == "blocked") | (Incident.risk_score >= 80))
+            )
+        )
         .all()
     )
 
@@ -441,7 +450,7 @@ def reroute_trip(
 
     candidates = []
 
-    for incident in verified_incidents:
+    for incident in blocking_incidents:
 
         if coordinates:
 
@@ -460,7 +469,7 @@ def reroute_trip(
                     distance,
                     incident.latitude,
                     incident.longitude,
-                    f"Verified {incident.incident_type}",
+                    f"Verified {incident.incident_type}" if incident.status == "verified" else f"Reported {incident.incident_type} (blocking)",
                 )
             )
 

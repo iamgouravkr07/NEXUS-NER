@@ -66,9 +66,22 @@ def calculate_route_risk(
 
     roads = db.query(Road).all()
 
+    # Phase 6B: Narrow safe rule for canonical blocking incidents.
+    # Evaluates verified incidents, OR reported incidents that carry explicit
+    # blocking evidence (high/critical severity, associated with a monitored road,
+    # and marked as blocked or risk_score >= 80). Low-severity or unassociated
+    # reports do not trigger route risks.
     incidents = (
         db.query(Incident)
-        .filter(Incident.status == "verified")
+        .filter(
+            (Incident.status == "verified") |
+            (
+                (Incident.status == "reported") &
+                (Incident.severity.in_(["critical", "high"])) &
+                (Incident.affected_road_id.isnot(None)) &
+                ((Incident.road_status == "blocked") | (Incident.risk_score >= 80))
+            )
+        )
         .all()
     )
 
@@ -176,9 +189,14 @@ def calculate_route_risk(
                 incident_risk,
             )
 
-            warnings.add(
-                f"Verified {incident.incident_type} reported nearby"
-            )
+            if incident.status == "verified":
+                warnings.add(
+                    f"Verified {incident.incident_type} reported nearby"
+                )
+            else:
+                warnings.add(
+                    f"Reported {incident.incident_type} blocking corridor nearby"
+                )
 
             if incident.severity.lower() == "critical":
                 reroute_required = True

@@ -37,32 +37,6 @@ interface FieldReportItem {
   time: string;
 }
 
-const initialReports: FieldReportItem[] = [
-  {
-    id: "FR-021",
-    type: "Landslide",
-    location: "NH-15, Dhemaji, Assam",
-    severity: "Critical",
-    status: "Verified",
-    time: "12 min ago",
-  },
-  {
-    id: "FR-020",
-    type: "Road Blockage",
-    location: "NH-10, Gangtok, Sikkim",
-    severity: "High",
-    status: "Under Review",
-    time: "31 min ago",
-  },
-  {
-    id: "FR-019",
-    type: "Flooding",
-    location: "Shillong, Meghalaya",
-    severity: "Medium",
-    status: "Verified",
-    time: "1 hr ago",
-  },
-];
 
 function severityClass(severity: string) {
   switch (severity?.toLowerCase()) {
@@ -181,7 +155,7 @@ function FieldReport() {
   };
 
   // Reports list
-  const [reports, setReports] = useState<FieldReportItem[]>(initialReports);
+  const [reports, setReports] = useState<FieldReportItem[]>([]);
 
   const updatePendingCount = async () => {
     try {
@@ -247,7 +221,7 @@ function FieldReport() {
       const storage = getStorage();
       await storage.init();
       const localDrafts = await storage.getIncidentDrafts();
-      const mapped: FieldReportItem[] = localDrafts.map((draft) => ({
+      const mappedLocal: FieldReportItem[] = localDrafts.map((draft) => ({
         id: draft.client_id ? `FR-${draft.client_id.substring(0, 6).toUpperCase()}` : "FR-LOCAL",
         type: draft.incident_type.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase()),
         location: draft.location_name || `${draft.latitude.toFixed(4)}, ${draft.longitude.toFixed(4)}`,
@@ -256,9 +230,31 @@ function FieldReport() {
         time: "Recently queued",
       }));
 
-      // Combine local outbox reports with initial demonstration reports
-      setReports([...mapped, ...initialReports]);
-    } catch {}
+      // Load genuine server incidents
+      let serverIncidents: FieldReportItem[] = [];
+      try {
+        const res = await fetch(`${API_URL}/incidents/`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            serverIncidents = data.map((inc: any) => ({
+              id: `INC-#${inc.id}`,
+              type: (inc.incident_type || "Incident").replace("_", " ").replace(/\b\w/g, (c: string) => c.toUpperCase()),
+              location: inc.title || `${inc.latitude ? Number(inc.latitude).toFixed(4) : "26.4046"}, ${inc.longitude ? Number(inc.longitude).toFixed(4) : "91.9253"}`,
+              severity: (inc.severity || "medium").charAt(0).toUpperCase() + (inc.severity || "medium").slice(1),
+              status: inc.status === "verified" ? "Verified" : "Reported",
+              time: inc.created_at ? new Date(inc.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Active",
+            }));
+          }
+        }
+      } catch {
+        // Offline or backend unreachable
+      }
+
+      setReports([...mappedLocal, ...serverIncidents]);
+    } catch {
+      setReports([]);
+    }
   };
 
   // On-demand GPS acquisition

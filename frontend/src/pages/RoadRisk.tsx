@@ -13,6 +13,15 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
+import {
+  CircleMarker,
+  MapContainer,
+  Polyline,
+  Popup,
+  TileLayer,
+} from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import { MapErrorBoundary } from "../components/MapErrorBoundary";
 import { PredictiveRiskCard } from "../components/PredictiveRiskCard";
 import { mlClient } from "../api/mlClient";
 import type { PredictiveRiskResult } from "../types/ml";
@@ -41,87 +50,20 @@ type RiskItem = {
 
 const demoRisks: RiskItem[] = [
   {
-    id: 1,
-    road: "NH-415",
-    highway: "NH-415",
-    state: "Arunachal Pradesh",
-    district: "Papum Pare",
-    risk_score: 82,
-    risk_level: "High",
-    probability: 0.82,
-    confidence: 0.91,
-    material: "Rock",
-    movement_type: "Landslide",
-    latitude: 27.1,
-    longitude: 93.6,
-    surface: "Paved",
-    smoothness: "Poor",
-  },
-  {
-    id: 2,
-    road: "NH-6",
-    highway: "NH-6",
-    state: "Mizoram",
-    district: "Aizawl",
-    risk_score: 76,
-    risk_level: "High",
-    probability: 0.76,
+    id: 135,
+    road: "NH-15 Guwahati-Tezpur Corridor",
+    highway: "NH-15",
+    state: "Assam / Northeast India",
+    district: "Darrang / Sonitpur",
+    status: "open",
+    risk_score: 15,
+    risk_level: "Low",
+    probability: 0.15,
     confidence: 0.88,
     material: "Earth",
-    movement_type: "Slope movement",
-    latitude: 23.7,
-    longitude: 92.7,
-    surface: "Paved",
-    smoothness: "Intermediate",
-  },
-  {
-    id: 3,
-    road: "NH-10",
-    highway: "NH-10",
-    state: "Sikkim",
-    district: "East Sikkim",
-    risk_score: 68,
-    risk_level: "Moderate",
-    probability: 0.68,
-    confidence: 0.84,
-    material: "Debris",
-    movement_type: "Rockfall",
-    latitude: 27.3,
-    longitude: 88.6,
-    surface: "Paved",
-    smoothness: "Poor",
-  },
-  {
-    id: 4,
-    road: "NH-27",
-    highway: "NH-27",
-    state: "Assam",
-    district: "Kamrup",
-    risk_score: 43,
-    risk_level: "Moderate",
-    probability: 0.43,
-    confidence: 0.79,
-    material: "Earth",
-    movement_type: "Flooding",
-    latitude: 26.1,
-    longitude: 91.7,
-    surface: "Paved",
-    smoothness: "Good",
-  },
-  {
-    id: 5,
-    road: "NH-208",
-    highway: "NH-208",
-    state: "Tripura",
-    district: "West Tripura",
-    risk_score: 29,
-    risk_level: "Low",
-    probability: 0.29,
-    confidence: 0.87,
-    material: "Earth",
-    movement_type: "Minor",
-    latitude: 23.8,
-    longitude: 91.3,
+    movement_type: "Normal",
+    latitude: 26.40463,
+    longitude: 91.925314,
     surface: "Paved",
     smoothness: "Good",
   },
@@ -574,132 +516,148 @@ function RoadRisk() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 text-[10px] text-slate-500">
-                <span className="flex items-center gap-1">
+              <div className="flex items-center gap-3 text-[10px] text-slate-400">
+                <span className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                  Low
+                  Corridor NH-15 (Open)
                 </span>
 
-                <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-amber-400" />
-                  Medium
-                </span>
-
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-red-400" />
-                  High
+                  Hazard #15 (Risk 95)
+                </span>
+
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                  Vehicle #472
                 </span>
               </div>
             </div>
 
             <div className="relative h-[440px] overflow-hidden bg-slate-950">
-              <div
-                className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(rgba(148,163,184,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.12) 1px, transparent 1px)",
-                  backgroundSize: "35px 35px",
-                }}
-              />
-
-              <div className="absolute left-[30%] top-[8%] h-[80%] w-[46%] rotate-[-8deg] rounded-[45%] border border-cyan-500/20 bg-cyan-500/[0.025]" />
-
-              {/* roads */}
-              <div className="absolute left-[18%] top-[52%] h-px w-[58%] rotate-[-16deg] bg-slate-600/60" />
-              <div className="absolute left-[34%] top-[48%] h-px w-[40%] rotate-[30deg] bg-slate-600/60" />
-              <div className="absolute left-[38%] top-[65%] h-px w-[37%] rotate-[-5deg] bg-slate-600/60" />
-
-              {/* hotspots */}
-              <div className="absolute left-[62%] top-[25%]">
-                <div className="relative">
-                  <span className="absolute -inset-5 animate-pulse rounded-full bg-red-500/10" />
-                  <span className="absolute -inset-3 rounded-full bg-red-500/15" />
-                  <span className="relative block h-5 w-5 rounded-full border-2 border-slate-950 bg-red-500" />
-                </div>
-
-                <div className="absolute left-7 top-[-5px] whitespace-nowrap">
-                  <p className="text-xs font-medium text-slate-300">
-                    Arunachal Pradesh
-                  </p>
-                  <p className="text-[10px] text-red-400">
-                    Risk 82
-                  </p>
-                </div>
-              </div>
-
-              <div className="absolute left-[69%] top-[58%]">
-                <div className="relative">
-                  <span className="absolute -inset-5 animate-pulse rounded-full bg-red-500/10" />
-                  <span className="absolute -inset-3 rounded-full bg-red-500/15" />
-                  <span className="relative block h-5 w-5 rounded-full border-2 border-slate-950 bg-red-500" />
-                </div>
-
-                <div className="absolute left-7 top-[-5px] whitespace-nowrap">
-                  <p className="text-xs font-medium text-slate-300">
-                    Mizoram
-                  </p>
-                  <p className="text-[10px] text-red-400">
-                    Risk 76
-                  </p>
-                </div>
-              </div>
-
-              <div className="absolute left-[54%] top-[45%]">
-                <div className="relative">
-                  <span className="absolute -inset-4 rounded-full bg-amber-400/10" />
-                  <span className="relative block h-4 w-4 rounded-full border-2 border-slate-950 bg-amber-400" />
-                </div>
-
-                <div className="absolute left-6 top-[-5px] whitespace-nowrap">
-                  <p className="text-xs text-slate-400">
-                    Sikkim
-                  </p>
-                  <p className="text-[10px] text-amber-400">
-                    Risk 68
-                  </p>
-                </div>
-              </div>
-
-              <div className="absolute left-[35%] top-[53%]">
-                <div className="relative">
-                  <span className="relative block h-4 w-4 rounded-full border-2 border-slate-950 bg-amber-400" />
-                </div>
-
-                <div className="absolute left-6 top-[-5px] whitespace-nowrap">
-                  <p className="text-xs text-slate-400">
-                    Assam
-                  </p>
-                  <p className="text-[10px] text-amber-400">
-                    Risk 43
-                  </p>
-                </div>
-              </div>
-
-              <div className="absolute left-[65%] top-[75%]">
-                <div className="relative">
-                  <span className="relative block h-3.5 w-3.5 rounded-full border-2 border-slate-950 bg-emerald-400" />
-                </div>
-
-                <div className="absolute left-5 top-[-5px] whitespace-nowrap">
-                  <p className="text-xs text-slate-400">
-                    Tripura
-                  </p>
-                  <p className="text-[10px] text-emerald-400">
-                    Risk 29
-                  </p>
-                </div>
-              </div>
-
-              <div className="absolute bottom-4 left-4 rounded-lg border border-slate-800 bg-slate-900/90 px-3 py-2 backdrop-blur">
-                <div className="flex items-center gap-2">
-                  <MapPin
-                    size={14}
-                    className="text-cyan-400"
+              <MapErrorBoundary fallbackMessage="Road risk GIS map tiles offline">
+                <MapContainer
+                  center={[26.40, 92.20]}
+                  zoom={8}
+                  scrollWheelZoom={false}
+                  className="h-full w-full"
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
 
-                  <span className="text-xs text-slate-400">
-                    AI Risk Heatmap
-                  </span>
+                  {/* NH-15 Monitored Corridor Polyline */}
+                  <Polyline
+                    positions={[
+                      [26.1445, 91.7362],
+                      [26.40463, 91.925314],
+                      [26.6528, 92.7926],
+                    ]}
+                    pathOptions={{
+                      color: selectedRisk?.status === "blocked" ? "#ef4444" : "#06b6d4",
+                      weight: 4,
+                      opacity: 0.85,
+                      dashArray: selectedRisk?.status === "blocked" ? "6, 6" : undefined,
+                    }}
+                  />
+
+                  {/* Guwahati Hub */}
+                  <CircleMarker
+                    center={[26.1445, 91.7362]}
+                    radius={7}
+                    pathOptions={{ color: "#10b981", fillColor: "#059669", fillOpacity: 0.9, weight: 2 }}
+                  >
+                    <Popup>
+                      <div className="text-xs">
+                        <strong className="text-emerald-500">Guwahati Logistics Hub</strong>
+                        <br />Origin Terminal (26.14°N, 91.74°E)
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+
+                  {/* Tezpur Logistics Center */}
+                  <CircleMarker
+                    center={[26.6528, 92.7926]}
+                    radius={7}
+                    pathOptions={{ color: "#3b82f6", fillColor: "#2563eb", fillOpacity: 0.9, weight: 2 }}
+                  >
+                    <Popup>
+                      <div className="text-xs">
+                        <strong className="text-blue-500">Tezpur Logistics Center</strong>
+                        <br />Destination Terminal (26.65°N, 92.79°E)
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+
+                  {/* Critical Landslide Hazard Marker at Kharupetia (Incident #15) */}
+                  <CircleMarker
+                    center={[26.40463, 91.925314]}
+                    radius={16}
+                    pathOptions={{
+                      color: "#ef4444",
+                      fillColor: "#ef4444",
+                      fillOpacity: 0.25,
+                      weight: 1.5,
+                      dashArray: "4 3",
+                    }}
+                  />
+                  <CircleMarker
+                    center={[26.40463, 91.925314]}
+                    radius={9}
+                    pathOptions={{
+                      color: "#991b1b",
+                      fillColor: "#ef4444",
+                      fillOpacity: 0.95,
+                      weight: 2,
+                    }}
+                  >
+                    <Popup>
+                      <div className="text-xs space-y-1">
+                        <strong className="text-red-600 font-bold">Landslide Hazard — Incident #15</strong>
+                        <br />NH-15 near Kharupetia (26.40°N, 91.93°E)
+                        <br /><strong>Status:</strong> Reported Blockage (Risk 95.0)
+                        <br /><strong>Corridor:</strong> NH-15 Guwahati-Tezpur
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+
+                  {/* Active Vehicle Marker: AS-01-BX-4091 */}
+                  <CircleMarker
+                    center={[26.1445, 91.7362]}
+                    radius={14}
+                    pathOptions={{
+                      color: "#06b6d4",
+                      fillColor: "#22d3ee",
+                      fillOpacity: 0.2,
+                      weight: 1.5,
+                    }}
+                  />
+                  <CircleMarker
+                    center={[26.1445, 91.7362]}
+                    radius={6}
+                    pathOptions={{
+                      color: "#0e7490",
+                      fillColor: "#06b6d4",
+                      fillOpacity: 0.95,
+                      weight: 2,
+                    }}
+                  >
+                    <Popup>
+                      <div className="text-xs space-y-1">
+                        <strong className="text-cyan-600 font-bold">Vehicle #472 (AS-01-BX-4091)</strong>
+                        <br />Cargo: Critical Vaccines & Cold-Chain
+                        <br />Status: in transit
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                </MapContainer>
+              </MapErrorBoundary>
+
+              <div className="absolute bottom-4 left-4 z-[1000] rounded-lg border border-slate-800 bg-slate-900/90 px-3 py-2 backdrop-blur">
+                <div className="flex items-center gap-2">
+                  <MapPin size={14} className="text-cyan-400" />
+                  <span className="text-xs text-slate-300 font-medium">GIS Corridors & Hazard Layer</span>
                 </div>
               </div>
             </div>

@@ -27,75 +27,75 @@ const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000
 
 // Fallback baseline demonstration data
 const defaultIncidentTrend = [
-  { day: "Mon", incidents: 8 },
-  { day: "Tue", incidents: 11 },
-  { day: "Wed", incidents: 7 },
-  { day: "Thu", incidents: 14 },
-  { day: "Fri", incidents: 10 },
-  { day: "Sat", incidents: 6 },
-  { day: "Sun", incidents: 9 },
+  { day: "Mon", incidents: 0 },
+  { day: "Tue", incidents: 0 },
+  { day: "Wed", incidents: 1 },
+  { day: "Thu", incidents: 0 },
+  { day: "Fri", incidents: 0 },
+  { day: "Sat", incidents: 0 },
+  { day: "Sun", incidents: 0 },
 ];
 
 const defaultDeliveryTrend = [
-  { day: "Mon", time: 8.7 },
-  { day: "Tue", time: 8.2 },
-  { day: "Wed", time: 8.5 },
-  { day: "Thu", time: 9.1 },
-  { day: "Fri", time: 8.4 },
-  { day: "Sat", time: 7.9 },
-  { day: "Sun", time: 8.1 },
+  { day: "Mon", time: 0.0 },
+  { day: "Tue", time: 0.0 },
+  { day: "Wed", time: 2.3 },
+  { day: "Thu", time: 0.0 },
+  { day: "Fri", time: 0.0 },
+  { day: "Sat", time: 0.0 },
+  { day: "Sun", time: 0.0 },
 ];
 
 const defaultRegionalData = [
-  { region: "Assam", vehicles: 18, incidents: 5 },
-  { region: "Arunachal", vehicles: 9, incidents: 3 },
-  { region: "Meghalaya", vehicles: 7, incidents: 4 },
-  { region: "Sikkim", vehicles: 5, incidents: 2 },
-  { region: "Manipur", vehicles: 5, incidents: 3 },
-  { region: "Tripura", vehicles: 4, incidents: 2 },
+  { region: "Assam", vehicles: 1, incidents: 1 },
+  { region: "Arunachal", vehicles: 0, incidents: 0 },
+  { region: "Meghalaya", vehicles: 0, incidents: 0 },
+  { region: "Sikkim", vehicles: 0, incidents: 0 },
+  { region: "Manipur", vehicles: 0, incidents: 0 },
+  { region: "Tripura", vehicles: 0, incidents: 0 },
 ];
 
 const defaultRiskData = [
-  { name: "Critical", value: 2, percentage: 10, color_class: "bg-red-500" },
-  { name: "High", value: 5, percentage: 25, color_class: "bg-orange-500" },
-  { name: "Medium", value: 11, percentage: 44, color_class: "bg-amber-500" },
-  { name: "Low", value: 36, percentage: 72, color_class: "bg-emerald-500" },
+  { name: "Critical", value: 0, percentage: 0, color_class: "bg-red-500" },
+  { name: "High", value: 0, percentage: 0, color_class: "bg-orange-500" },
+  { name: "Medium", value: 0, percentage: 0, color_class: "bg-amber-500" },
+  { name: "Low", value: 1, percentage: 100, color_class: "bg-emerald-500" },
 ];
 
 const defaultKpis = [
   {
     title: "Routes Completed",
-    value: "1,284",
-    change: "+12.4%",
-    trend: "up",
-    description: "vs previous week",
+    value: "0",
+    change: "0 completed",
+    trend: "neutral",
+    description: "0 in transit • 0 completed",
     icon: "Map",
     iconClass: "bg-cyan-500/10 text-cyan-400",
   },
   {
     title: "Average ETA",
-    value: "8h 14m",
-    change: "-6.8%",
-    trend: "down",
-    description: "faster than last week",
+    value: "2h 20m",
+    change: "Direct OSRM calculation",
+    trend: "neutral",
+    description: "Guwahati → Tezpur mission",
     icon: "Clock3",
     iconClass: "bg-purple-500/10 text-purple-400",
   },
   {
     title: "Active Vehicles",
-    value: "48",
-    change: "+8.2%",
+    value: "1",
+    change: "1 in transit",
     trend: "up",
-    description: "fleet utilization",
+    description: "AS-01-BX-4091 transmitting",
     icon: "Truck",
     iconClass: "bg-emerald-500/10 text-emerald-400",
   },
   {
     title: "Road Accessibility",
-    value: "87.4%",
-    change: "+3.1%",
-    trend: "up",
-    description: "regional average",
+    value: "100.0%",
+    change: "1/1 open corridors",
+    trend: "neutral",
+    description: "monitored highway network",
     icon: "ShieldCheck",
     iconClass: "bg-amber-500/10 text-amber-400",
   },
@@ -205,17 +205,17 @@ function Analytics() {
   const regionalData = data?.regional_data || defaultRegionalData;
   const riskData = data?.risk_data || defaultRiskData;
   const insights = data?.operational_insights || {
-    fleet_utilization: 82,
-    route_safety: 91,
-    incident_resolution: 74,
+    fleet_utilization: 100,
+    route_safety: 100,
+    incident_resolution: 0,
   };
   const roadsSummary = data?.roads_summary || {
-    total: 54,
-    open: 47,
-    restricted: 5,
-    blocked: 2,
+    total: 1,
+    open: 1,
+    restricted: 0,
+    blocked: 0,
     under_repair: 0,
-    safe_percentage: 66.7,
+    safe_percentage: 100.0,
   };
 
   return (
@@ -345,9 +345,9 @@ function Analytics() {
             </div>
           </div>
 
-          <div className="mt-6 h-[280px]">
+          <div className="mt-6 h-[280px] w-full overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={incidentTrend}>
+              <LineChart data={incidentTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="#1e293b"
@@ -364,6 +364,8 @@ function Analytics() {
                 />
 
                 <YAxis
+                  domain={[0, "auto"]}
+                  allowDecimals={false}
                   tick={{
                     fill: "#64748b",
                     fontSize: 11,
@@ -421,9 +423,9 @@ function Analytics() {
             </div>
           </div>
 
-          <div className="mt-6 h-[280px]">
+          <div className="mt-6 h-[280px] w-full overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={deliveryTrend}>
+              <LineChart data={deliveryTrend} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="#1e293b"
@@ -440,7 +442,7 @@ function Analytics() {
                 />
 
                 <YAxis
-                  domain={[7, 10]}
+                  domain={[0, "auto"]}
                   tick={{
                     fill: "#64748b",
                     fontSize: 11,
@@ -503,9 +505,9 @@ function Analytics() {
             />
           </div>
 
-          <div className="mt-6 h-[300px]">
+          <div className="mt-6 h-[300px] w-full overflow-hidden">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={regionalData}>
+              <BarChart data={regionalData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   stroke="#1e293b"
@@ -522,6 +524,7 @@ function Analytics() {
                 />
 
                 <YAxis
+                  allowDecimals={false}
                   tick={{
                     fill: "#64748b",
                     fontSize: 11,
