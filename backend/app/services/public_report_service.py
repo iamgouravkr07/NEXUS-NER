@@ -18,7 +18,7 @@ from app.schemas.public_report import (
 )
 from app.services import alert_service
 from app.services.websocket_manager import manager
-from backend.app.schemas import road
+from app.schemas import road
 
 logger = logging.getLogger("nexus_ner.public_report_service")
 
