@@ -194,13 +194,19 @@ class TestPhase8Integration(unittest.TestCase):
         self.db.commit()
 
         # REST polling fetch vehicles
-        res_veh = self.client.get("/vehicles/")
+        res_veh = self.client.get(
+            "/vehicles/",
+            headers=self.auth_headers,
+        )
         self.assertEqual(res_veh.status_code, 200)
         vehicles = res_veh.json()
         self.assertTrue(any(v["id"] == 88881 for v in vehicles))
 
         # REST polling fetch alert summary
-        res_alert = self.client.get("/alerts/summary")
+        res_alert = self.client.get(
+            "/alerts/summary",
+            headers=self.auth_headers,
+        )
         self.assertEqual(res_alert.status_code, 200)
         summary = res_alert.json()
         self.assertIn("total", summary)

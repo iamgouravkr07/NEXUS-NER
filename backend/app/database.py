@@ -2,10 +2,12 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-raw_db_url = os.getenv(
-    "DATABASE_URL",
-    "postgresql://nexus:nexus_password@127.0.0.1:5433/nexus_ner",
-)
+raw_db_url = os.getenv("DATABASE_URL")
+
+if not raw_db_url:
+    raise RuntimeError(
+        "DATABASE_URL environment variable is not configured."
+    )
 
 # Normalize legacy postgres:// scheme to postgresql:// for SQLAlchemy 2.0 compatibility
 if raw_db_url.startswith("postgres://"):

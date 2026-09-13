@@ -23,18 +23,22 @@ import os
 import sys
 import unittest
 from datetime import datetime, timedelta
-import jwt
-from fastapi.testclient import TestClient
 
-backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend"))
+backend_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "backend")
+)
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
+
+import jwt
+from fastapi.testclient import TestClient
 
 from app.main import app
 from app.database import SessionLocal
 from app.models.user import User
 from app.models.vehicle import Vehicle
 from app.models.alert import Alert
+from app.models.assignment import DriverVehicleAssignment
 from app.services import auth_service, alert_service
 
 
@@ -231,32 +235,49 @@ class AuthRBACTests(unittest.TestCase):
 
     def test_scenario_m_driver_can_submit_gps(self):
         """Scenario M: Test DRIVER can submit permitted vehicle GPS update."""
-        # Create a test vehicle
-        veh = Vehicle(
-            vehicle_number=f"TEST_GPS_{int(datetime.now().timestamp())}",
-            vehicle_type="Truck",
-            cargo_type="Medical Supplies",
-            cargo_priority="critical",
-            latitude=26.14,
-            longitude=91.73
-        )
-        self.db.add(veh)
-        self.db.commit()
-        self.db.refresh(veh)
 
-        gps_payload = {"latitude": 26.1550, "longitude": 91.7450}
-        resp = self.client.patch(
-            f"/vehicles/{veh.id}/location",
-            json=gps_payload,
-            headers={"Authorization": f"Bearer {self.driver_token}"}
+        driver_user = self.db.query(User).filter(
+            User.username == "driver"
+        ).first()
+
+        self.assertIsNotNone(driver_user)
+
+        active_assignment = (
+            self.db.query(DriverVehicleAssignment)
+            .filter(
+                DriverVehicleAssignment.driver_id == driver_user.id,
+                DriverVehicleAssignment.is_active.is_(True)
+            )
+            .first()
         )
+
+        self.assertIsNotNone(active_assignment)
+
+        vehicle_id = active_assignment.vehicle_id
+
+        gps_payload = {
+            "latitude": 26.1550,
+            "longitude": 91.7450
+        }
+
+        resp = self.client.patch(
+            f"/vehicles/{vehicle_id}/location",
+            json=gps_payload,
+            headers={"Authorization": f"Bearer {self.driver_token}"},
+        )
+
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["latitude"], 26.1550)
+        self.assertEqual(resp.json()["longitude"], 91.7450)
 
         # Unauthenticated GPS update must receive 401
-        unauth_resp = self.client.patch(f"/vehicles/{veh.id}/location", json=gps_payload)
+        unauth_resp = self.client.patch(
+            f"/vehicles/{vehicle_id}/location",
+            json=gps_payload
+        )
+
         self.assertEqual(unauth_resp.status_code, 401)
-        print("PASS: Scenario M - DRIVER can submit GPS updates; anonymous rejected with 401.")
+
 
     def test_scenario_n_unauthorized_role_cannot_manage_alerts(self):
         """Scenario N: Test DRIVER and FIELD_OFFICER cannot acknowledge/resolve alerts."""

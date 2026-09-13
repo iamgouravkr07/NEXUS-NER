@@ -73,15 +73,7 @@ def calculate_route_risk(
     # reports do not trigger route risks.
     incidents = (
         db.query(Incident)
-        .filter(
-            (Incident.status == "verified") |
-            (
-                (Incident.status == "reported") &
-                (Incident.severity.in_(["critical", "high"])) &
-                (Incident.affected_road_id.isnot(None)) &
-                ((Incident.road_status == "blocked") | (Incident.risk_score >= 80))
-            )
-        )
+        .filter(Incident.status == "verified")
         .all()
     )
 

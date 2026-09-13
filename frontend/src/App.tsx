@@ -18,6 +18,8 @@ import Analytics from "./pages/Analytics";
 import FieldReport from "./pages/FieldReport";
 import Login from "./pages/Login";
 import Unauthorized from "./pages/Unauthorized";
+import PublicReport from "./pages/PublicReport";
+import MyReports from "./pages/MyReports";
 
 function App() {
   useEffect(() => {
@@ -56,6 +58,32 @@ function App() {
                 element={
                   <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"]}>
                     <RoadRisk />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Public Citizen Reporting Routes */}
+              <Route
+                path="/report-problem"
+                element={
+                  <ProtectedRoute allowedRoles={["PUBLIC"]}>
+                    <PublicReport />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/public-report"
+                element={
+                  <ProtectedRoute allowedRoles={["PUBLIC"]}>
+                    <PublicReport />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-reports"
+                element={
+                  <ProtectedRoute allowedRoles={["PUBLIC"]}>
+                    <MyReports />
                   </ProtectedRoute>
                 }
               />

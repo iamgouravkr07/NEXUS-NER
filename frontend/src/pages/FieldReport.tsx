@@ -157,6 +157,102 @@ function FieldReport() {
   // Reports list
   const [reports, setReports] = useState<FieldReportItem[]>([]);
 
+  // Phase 7D: Incoming Citizen Reports queue
+  const [publicReports, setPublicReports] = useState<any[]>([]);
+  const [loadingPublicReports, setLoadingPublicReports] = useState(false);
+  const [publicReportActionId, setPublicReportActionId] = useState<number | null>(null);
+
+  const loadPublicReports = async () => {
+    setLoadingPublicReports(true);
+    try {
+      const res = await fetch(`${API_URL}/public-reports/?status_filter=UNVERIFIED`, {
+        headers: getAuthHeader(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPublicReports(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Failed to load incoming public reports:", err);
+    } finally {
+      setLoadingPublicReports(false);
+    }
+  };
+
+  const handleVerifyPublicReport = async (reportId: number) => {
+    setPublicReportActionId(reportId);
+    try {
+      const res = await fetch(`${API_URL}/public-reports/${reportId}/verify`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify({
+          verification_notes: "Verified by Field Command inspection",
+          severity: "high",
+        }),
+      });
+      if (res.ok) {
+        setStatusMessage({
+          type: "success",
+          text: `Citizen Report #${reportId} verified and promoted to Official Incident!`,
+        });
+        loadPublicReports();
+        loadLocalReports();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setStatusMessage({
+          type: "error",
+          text: err.detail || `Failed to verify report #${reportId}`,
+        });
+      }
+    } catch (err: any) {
+      setStatusMessage({
+        type: "error",
+        text: err.message || "Failed to verify report",
+      });
+    } finally {
+      setPublicReportActionId(null);
+    }
+  };
+
+  const handleRejectPublicReport = async (reportId: number) => {
+    setPublicReportActionId(reportId);
+    try {
+      const res = await fetch(`${API_URL}/public-reports/${reportId}/reject`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify({
+          rejection_reason: "Ground assessment did not confirm critical obstruction",
+        }),
+      });
+      if (res.ok) {
+        setStatusMessage({
+          type: "info",
+          text: `Citizen Report #${reportId} rejected and archived.`,
+        });
+        loadPublicReports();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setStatusMessage({
+          type: "error",
+          text: err.detail || `Failed to reject report #${reportId}`,
+        });
+      }
+    } catch (err: any) {
+      setStatusMessage({
+        type: "error",
+        text: err.message || "Failed to reject report",
+      });
+    } finally {
+      setPublicReportActionId(null);
+    }
+  };
+
   const updatePendingCount = async () => {
     try {
       const count = await syncQueue.countPending();
@@ -202,10 +298,12 @@ function FieldReport() {
     });
 
     loadLocalReports();
+    loadPublicReports();
     updatePendingCount();
 
     const handleQueueChange = () => {
       loadLocalReports();
+      loadPublicReports();
       updatePendingCount();
     };
     window.addEventListener("nexus:sync_queue_changed", handleQueueChange);
@@ -1125,6 +1223,103 @@ function FieldReport() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* INCOMING PUBLIC REPORTS (Phase 7D Citizen Review Queue) */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900 overflow-hidden">
+        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <div className="rounded-lg bg-amber-500/10 p-2 text-amber-400 border border-amber-500/20">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <h2 className="font-semibold text-white">Incoming Citizen Reports (Under Review)</h2>
+              <p className="mt-0.5 text-xs text-slate-400">
+                Ground observations submitted by citizens awaiting field verification
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={loadPublicReports}
+            disabled={loadingPublicReports}
+            className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-300 transition"
+          >
+            <RefreshCw size={13} className={loadingPublicReports ? "animate-spin" : ""} />
+            <span>Refresh Queue</span>
+          </button>
+        </div>
+
+        <div className="divide-y divide-slate-800">
+          {publicReports.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-400">
+              <CheckCircle2 size={24} className="mx-auto mb-2 text-emerald-400/80" />
+              <span>No pending unverified citizen reports in queue. All observations processed.</span>
+            </div>
+          ) : (
+            publicReports.map((p) => (
+              <div key={p.id} className="p-4 sm:p-5 hover:bg-slate-800/30 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-xs font-bold text-cyan-400">
+                      Report #{p.id}
+                    </span>
+                    <span className="rounded bg-slate-800 px-2 py-0.5 text-[11px] font-bold text-white uppercase tracking-wide">
+                      {p.report_type.replace(/_/g, " ")}
+                    </span>
+                    {p.severity_hint && (
+                      <span className="rounded-full bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-[10px] font-semibold text-amber-300 capitalize">
+                        Perceived: {p.severity_hint}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-slate-500">
+                      Submitted {new Date(p.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-200">
+                    {p.description}
+                  </p>
+
+                  <div className="flex items-center gap-3 text-[11px] text-slate-400 font-mono">
+                    <span className="flex items-center gap-1">
+                      <MapPin size={12} className="text-cyan-400" />
+                      {p.latitude.toFixed(4)}°N, {p.longitude.toFixed(4)}°E
+                    </span>
+                    {p.road_name && (
+                      <span className="text-slate-300 font-sans font-medium">
+                        • Corridor: {p.road_name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions: Verify & Reject */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleVerifyPublicReport(p.id)}
+                    disabled={publicReportActionId === p.id}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3.5 py-2 text-xs font-bold text-white shadow-lg transition disabled:opacity-50"
+                  >
+                    <CheckCircle2 size={14} />
+                    <span>{publicReportActionId === p.id ? "Processing..." : "Verify & Escalate"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleRejectPublicReport(p.id)}
+                    disabled={publicReportActionId === p.id}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/10 hover:bg-red-500/20 px-3 py-2 text-xs font-semibold text-red-300 transition disabled:opacity-50"
+                  >
+                    <X size={14} />
+                    <span>Reject</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import {
   Activity,
+  AlertTriangle,
   Bell,
   ChevronLeft,
   ChevronRight,
@@ -68,6 +69,18 @@ const navigation = [
     path: "/field-report",
     icon: FileText,
     roles: ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"],
+  },
+  {
+    name: "Report Problem",
+    path: "/report-problem",
+    icon: AlertTriangle,
+    roles: ["PUBLIC"],
+  },
+  {
+    name: "My Reports",
+    path: "/my-reports",
+    icon: FileText,
+    roles: ["PUBLIC"],
   },
 ];
 

@@ -850,6 +850,13 @@ function Home() {
   const [driverVehicle, setDriverVehicle] = useState<Vehicle | null>(null);
   const [driverTrip, setDriverTrip] = useState<Trip | null>(null);
   const [vehicleAssignments, setVehicleAssignments] = useState<Record<number, string>>({});
+  // Phase 7D: Public Reports Summary indicator
+  const [publicReportSummary, setPublicReportSummary] = useState<{
+    unverified: number;
+    verified: number;
+    rejected: number;
+    total: number;
+  } | null>(null);
 
   const loadDriverMission = useCallback(async () => {
     try {
@@ -920,7 +927,7 @@ function Home() {
   const loadDashboard = useCallback(async () => {
     try {
       const authHeaders = getAuthHeader();
-      const [vehicleResponse, incidentResponse, alertResponse, tripsResponse, roadsResponse, assignResponse] =
+      const [vehicleResponse, incidentResponse, alertResponse, tripsResponse, roadsResponse, assignResponse, summaryResponse] =
         await Promise.all([
           fetch(`${API_URL}/vehicles/`, { headers: authHeaders }),
           fetch(`${API_URL}/incidents/`, { headers: authHeaders }),
@@ -928,6 +935,7 @@ function Home() {
           fetch(`${API_URL}/trips/`, { headers: authHeaders }),
           fetch(`${API_URL}/roads/`, { headers: authHeaders }),
           fetch(`${API_URL}/assignments/?active_only=true`, { headers: authHeaders }).catch(() => null),
+          fetch(`${API_URL}/public-reports/summary`, { headers: authHeaders }).catch(() => null),
         ]);
 
       if (!vehicleResponse.ok || !incidentResponse.ok) {
@@ -961,6 +969,13 @@ function Home() {
             }
           }
           setVehicleAssignments(map);
+        }
+      }
+
+      if (summaryResponse && summaryResponse.ok) {
+        const sData = await summaryResponse.json().catch(() => null);
+        if (sData && typeof sData.unverified === "number") {
+          setPublicReportSummary(sData);
         }
       }
 
@@ -1179,6 +1194,25 @@ function Home() {
           <span className="rounded bg-cyan-500/10 border border-cyan-500/25 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
             PostGIS Geofencing Active
           </span>
+          {publicReportSummary && (
+            <>
+              <span className="text-slate-600 hidden sm:inline">•</span>
+              <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-300">
+                <span className="text-slate-400">Citizen Reports:</span>
+                <span className="rounded bg-amber-500/20 text-amber-300 px-1.5 py-0.5 font-bold font-mono">
+                  {publicReportSummary.unverified} Unverified
+                </span>
+                <span className="rounded bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 font-bold font-mono">
+                  {publicReportSummary.verified} Verified
+                </span>
+                {publicReportSummary.rejected > 0 && (
+                  <span className="rounded bg-slate-800 text-slate-400 px-1.5 py-0.5 font-mono">
+                    {publicReportSummary.rejected} Rejected
+                  </span>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-3 self-start sm:self-center">
@@ -1411,7 +1445,7 @@ function Home() {
       )}
 
       {/* REAL OPERATIONAL KPI CARDS (No fake SaaS percentages) */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           title="Active Logistics Units"
           value={loading ? "—" : activeVehicles}
@@ -1428,6 +1462,15 @@ function Home() {
           icon={<AlertTriangle size={21} />}
           badgeText={openIncidents.length > 0 ? "Immediate Intervention" : "Optimal"}
           badgeType={openIncidents.length > 0 ? "critical" : "success"}
+        />
+
+        <StatCard
+          title="Citizen Field Reports"
+          value={loading ? "—" : (publicReportSummary?.unverified ?? 0)}
+          subtitle={`${publicReportSummary?.total ?? 0} observations (${publicReportSummary?.verified ?? 0} verified)`}
+          icon={<AlertTriangle size={21} />}
+          badgeText={(publicReportSummary?.unverified ?? 0) > 0 ? "Under Review" : "Nominal"}
+          badgeType={(publicReportSummary?.unverified ?? 0) > 0 ? "warning" : "success"}
         />
 
         <StatCard

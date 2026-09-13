@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, Bell, Route, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Route, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -27,6 +27,18 @@ export const MobileBottomNav: React.FC = () => {
       path: '/road-risk',
       icon: LayoutDashboard,
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER', 'PUBLIC'],
+    },
+    {
+      name: 'Report',
+      path: '/report-problem',
+      icon: AlertTriangle,
+      roles: ['PUBLIC'],
+    },
+    {
+      name: 'My Reports',
+      path: '/my-reports',
+      icon: FileText,
+      roles: ['PUBLIC'],
     },
     {
       name: t.nav.alerts,
