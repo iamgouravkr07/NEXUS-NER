@@ -1,8 +1,8 @@
-﻿import logging
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user, require_roles
 from app.database import get_db
 from app.models.user import User
 from app.schemas.sync import SyncBatchRequest, SyncBatchResponse
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/sync", tags=["Offline Synchronization"])
 def synchronize_batch(
     batch_req: SyncBatchRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     """
     Ingest a batch of offline captured events (incident reports, vehicle GPS updates).

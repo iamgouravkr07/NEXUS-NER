@@ -11,16 +11,22 @@ export const MobileBottomNav: React.FC = () => {
 
   const navItems = [
     {
-      name: t.nav.controlTower,
+      name: role === 'DRIVER' ? 'Mission' : t.nav.controlTower,
       path: '/',
       icon: LayoutDashboard,
-      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER'],
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'DRIVER'],
     },
     {
       name: t.nav.fieldReport,
       path: '/field-report',
       icon: FileText,
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER'],
+    },
+    {
+      name: 'Road Risk',
+      path: '/road-risk',
+      icon: LayoutDashboard,
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER', 'PUBLIC'],
     },
     {
       name: t.nav.alerts,
@@ -32,7 +38,7 @@ export const MobileBottomNav: React.FC = () => {
       name: t.nav.routes,
       path: '/routes',
       icon: Route,
-      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER'],
+      roles: ['ADMIN', 'CONTROL_OPERATOR'],
     },
     {
       name: t.nav.incidents,

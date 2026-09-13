@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 
 const navigation = [
@@ -18,53 +19,75 @@ const navigation = [
     name: "Control Tower",
     path: "/",
     icon: LayoutDashboard,
+    roles: ["ADMIN", "CONTROL_OPERATOR"],
+  },
+  {
+    name: "Mission Cockpit",
+    path: "/",
+    icon: LayoutDashboard,
+    roles: ["DRIVER"],
   },
   {
     name: "Incidents",
     path: "/incidents",
     icon: ShieldAlert,
+    roles: ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"],
   },
   {
     name: "Vehicles",
     path: "/vehicles",
     icon: Truck,
+    roles: ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"],
   },
   {
     name: "Route Planner",
     path: "/routes",
     icon: Route,
+    roles: ["ADMIN", "CONTROL_OPERATOR"],
   },
   {
     name: "Road Risk",
     path: "/road-risk",
     icon: Activity,
+    roles: ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"],
   },
   {
     name: "Alerts",
     path: "/alerts",
     icon: Bell,
+    roles: ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"],
   },
   {
     name: "Analytics",
     path: "/analytics",
     icon: Activity,
+    roles: ["ADMIN", "CONTROL_OPERATOR"],
   },
   {
     name: "Field Report",
     path: "/field-report",
     icon: FileText,
+    roles: ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"],
   },
 ];
 
 function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
   const { t } = useLanguage();
+  const role = (user?.role || "").toUpperCase();
 
-  const getLabel = (item: { name: string; path: string }) => {
-    if (item.path === "/") return t.nav.controlTower;
+  const getLabel = (item: { name: string; path: string; roles: string[] }) => {
+    if (item.path === "/") {
+      return role === "DRIVER" ? "Mission Cockpit" : t.nav.controlTower;
+    }
     if (item.path === "/field-report") return t.nav.fieldReport;
     return item.name;
   };
+
+  const visibleNavigation = navigation.filter(
+    (item) => !item.roles || item.roles.includes(role)
+  );
 
   return (
     <aside
@@ -124,13 +147,13 @@ function Sidebar() {
         )}
 
         <div className="space-y-2">
-          {navigation.map((item) => {
+          {visibleNavigation.map((item) => {
             const Icon = item.icon;
             const label = getLabel(item);
 
             return (
               <NavLink
-                key={item.path}
+                key={`${item.name}-${item.path}`}
                 to={item.path}
                 end={item.path === "/"}
                 title={!isOpen ? label : undefined}

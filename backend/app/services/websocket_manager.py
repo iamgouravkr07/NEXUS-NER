@@ -99,6 +99,12 @@ class ConnectionManager:
                     # Do not leak other vehicles' telemetry or anomalies to driver
                     continue
 
+            # Role-based filtering for PUBLIC
+            if role == "PUBLIC":
+                # Public users must not receive vehicle GPS, vehicle anomalies, or trip rerouting
+                if event_type in ("vehicle.position.updated", "vehicle.anomaly.detected", "trip.rerouted"):
+                    continue
+
             ws: WebSocket = conn["ws"]
             try:
                 await ws.send_text(json_str)

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useWebSocket } from "../hooks/useWebSocket";
+import { useAuth } from "../context/AuthContext";
 
 type BackendVehicle = {
   id: number;
@@ -105,6 +106,7 @@ function Vehicles() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const { getAuthHeader } = useAuth();
   const { subscribe } = useWebSocket();
   const [anomalies, setAnomalies] = useState<
     Record<number, { anomaly_type: string; severity: string; description: string }>
@@ -116,7 +118,9 @@ function Vehicles() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_URL}/vehicles/`);
+        const response = await fetch(`${API_URL}/vehicles/`, {
+          headers: getAuthHeader(),
+        });
 
         if (!response.ok) {
           throw new Error(`Failed to load vehicles (${response.status})`);

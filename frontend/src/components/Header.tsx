@@ -10,7 +10,7 @@ import { useWebSocket } from "../hooks/useWebSocket";
 function Header() {
   const [criticalCount, setCriticalCount] = useState<number>(0);
   const [pendingOutboxCount, setPendingOutboxCount] = useState<number>(0);
-  const { user, logout, apiUrl } = useAuth();
+  const { user, logout, apiUrl, getAuthHeader } = useAuth();
   const { t } = useLanguage();
   const { isLive, subscribe } = useWebSocket();
   const navigate = useNavigate();
@@ -24,8 +24,11 @@ function Header() {
     let mounted = true;
 
     async function fetchSummary() {
+      if (!user || user.role === "PUBLIC") return;
       try {
-        const res = await fetch(`${apiUrl}/alerts/summary`);
+        const res = await fetch(`${apiUrl}/alerts/summary`, {
+          headers: getAuthHeader(),
+        });
         if (res.ok) {
           const data = await res.json();
           if (mounted) {

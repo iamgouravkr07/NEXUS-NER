@@ -310,12 +310,13 @@ function Incidents() {
         setLoading(true);
       }
 
+      const authHeaders = getAuthHeader();
       const [incidentRes, roadsRes, vehiclesRes, tripsRes, alertsRes] = await Promise.all([
-        fetch(`${API_URL}/incidents/`),
-        fetch(`${API_URL}/roads/`),
-        fetch(`${API_URL}/vehicles/`),
-        fetch(`${API_URL}/trips/`),
-        fetch(`${API_URL}/alerts/`),
+        fetch(`${API_URL}/incidents/`, { headers: authHeaders }),
+        fetch(`${API_URL}/roads/`, { headers: authHeaders }),
+        fetch(`${API_URL}/vehicles/`, { headers: authHeaders }),
+        fetch(`${API_URL}/trips/`, { headers: authHeaders }),
+        fetch(`${API_URL}/alerts/`, { headers: authHeaders }),
       ]);
 
       if (!incidentRes.ok) {

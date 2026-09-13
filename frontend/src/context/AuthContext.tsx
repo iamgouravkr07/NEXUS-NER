@@ -8,6 +8,16 @@ export function getAuthApiUrl(): string {
   return "http://127.0.0.1:8000";
 }
 
+export function getStoredAuthHeader(): Record<string, string> {
+  if (typeof localStorage !== "undefined") {
+    const token = localStorage.getItem("nexus_token");
+    if (token) {
+      return { Authorization: `Bearer ${token}` };
+    }
+  }
+  return {};
+}
+
 function isTokenExpired(jwtToken: string): boolean {
   try {
     const parts = jwtToken.split(".");
@@ -156,7 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (token) {
       return { Authorization: `Bearer ${token}` };
     }
-    return {};
+    return getStoredAuthHeader();
   };
 
   return (

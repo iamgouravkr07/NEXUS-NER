@@ -233,7 +233,9 @@ function FieldReport() {
       // Load genuine server incidents
       let serverIncidents: FieldReportItem[] = [];
       try {
-        const res = await fetch(`${API_URL}/incidents/`);
+        const res = await fetch(`${API_URL}/incidents/`, {
+          headers: getAuthHeader(),
+        });
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) {

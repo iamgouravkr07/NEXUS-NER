@@ -27,7 +27,8 @@ def list_alerts(
     search: Optional[str] = Query(None, description="Search term in title, description, or location"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     """Retrieve operational alerts with optional multi-criteria filters."""
     return alert_service.get_alerts(
@@ -43,7 +44,8 @@ def list_alerts(
 
 @router.get("/summary", response_model=AlertSummary)
 def get_alerts_summary(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     """Retrieve aggregated counts across severities and lifecycle states."""
     return alert_service.get_alert_summary(db=db)
@@ -52,7 +54,8 @@ def get_alerts_summary(
 @router.post("/", response_model=AlertResponse, status_code=201)
 def create_manual_alert(
     alert_in: AlertCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     """Create a new alert with duplicate suppression."""
     return alert_service.create_alert(
@@ -123,7 +126,8 @@ def resolve_alert_endpoint(
 @router.get("/{alert_id}", response_model=AlertResponse)
 def get_alert(
     alert_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     """Fetch single alert by ID."""
     from app.models.alert import Alert

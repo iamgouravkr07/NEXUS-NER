@@ -117,7 +117,8 @@ def create_incident(
 
 @router.get("/", response_model=list[IncidentResponse])
 def get_incidents(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     return db.query(Incident).order_by(Incident.id.desc()).all()
 

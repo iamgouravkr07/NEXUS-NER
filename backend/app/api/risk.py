@@ -6,7 +6,7 @@ from app.database import get_db
 from app.models.incident import Incident
 from app.models.road import Road
 from app.models.user import User
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user, require_roles
 from app.schemas.ml import PredictiveRiskResult
 from app.services import ml_prediction_service
 
@@ -223,7 +223,7 @@ def get_road_risks(db: Session = Depends(get_db)):
 def get_corridor_predictive_risk(
     road_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ) -> PredictiveRiskResult:
     """
     Retrieve predictive risk evaluation for a monitored road corridor.

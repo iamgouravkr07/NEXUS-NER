@@ -11,7 +11,7 @@ from typing import Dict, Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user, require_roles
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -73,7 +73,7 @@ def get_explainer() -> DisruptionExplainer:
 )
 def predict_corridor_disruption(
     request: DisruptionPredictionRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
     explainer: DisruptionExplainer = Depends(get_explainer),
 ) -> DisruptionPredictionResponse:
     """
@@ -175,7 +175,7 @@ def predict_corridor_disruption(
     include_in_schema=False,
 )
 def get_model_metadata(
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
 ) -> Dict[str, Any]:
     """
     Return persisted architecture, operational thresholds, and data provenance metadata.
@@ -210,7 +210,7 @@ def get_model_metadata(
 def evaluate_corridor_predictive_risk_endpoint(
     request: CorridorPredictiveRiskRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
 ) -> PredictiveRiskResult:
     """
     Execute authenticated corridor predictive risk evaluation.

@@ -74,14 +74,18 @@ def create_vehicle(
 
 
 @router.get("/", response_model=list[VehicleResponse])
-def get_vehicles(db: Session = Depends(get_db)):
+def get_vehicles(
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+):
     return db.query(Vehicle).order_by(Vehicle.id.desc()).all()
 
 
 @router.get("/{vehicle_id}", response_model=VehicleResponse)
 def get_vehicle(
     vehicle_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
@@ -102,7 +106,8 @@ def get_vehicle(
 )
 def get_vehicle_location(
     vehicle_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
@@ -265,7 +270,7 @@ def update_vehicle_location_patch(
     vehicle_id: int,
     location_update: VehicleLocationUpdate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "DRIVER")),
 ):
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
@@ -288,7 +293,7 @@ def update_vehicle_location_post(
     vehicle_id: int,
     location_update: VehicleLocationUpdate,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "DRIVER")),
 ):
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
@@ -310,7 +315,8 @@ def update_vehicle_location_post(
 def update_vehicle_status(
     vehicle_id: int,
     status_update: VehicleStatusUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id

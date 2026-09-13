@@ -242,3 +242,19 @@ def list_all_users(
     """Admin-only endpoint to list all user accounts."""
     users = auth_service.list_users(db, offset=offset, limit=limit)
     return [UserResponse.model_validate(u) for u in users]
+
+
+@router.get("/users/{user_id}", response_model=UserResponse)
+def get_user_by_id_endpoint(
+    user_id: int,
+    current_user: User = Depends(require_roles("ADMIN")),
+    db: Session = Depends(get_db)
+):
+    """Admin-only endpoint to inspect a specific user account."""
+    target_user = auth_service.get_user_by_id(db, user_id)
+    if not target_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User ID #{user_id} not found",
+        )
+    return UserResponse.model_validate(target_user)

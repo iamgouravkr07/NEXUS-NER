@@ -9,6 +9,7 @@ from app.schemas.road import (
     RoadResponse,
     RoadStatusUpdate
 )
+from app.api.auth import require_roles
 
 
 router = APIRouter(
@@ -20,7 +21,8 @@ router = APIRouter(
 @router.post("/", response_model=RoadResponse)
 def create_road(
     road: RoadCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN")),
 ):
     db_road = Road(
         road_name=road.road_name,
@@ -71,7 +73,8 @@ def get_road(
 def update_road_status(
     road_id: int,
     status_update: RoadStatusUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     road = db.query(Road).filter(
         Road.id == road_id

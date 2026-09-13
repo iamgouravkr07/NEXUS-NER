@@ -17,6 +17,7 @@ import Alerts from "./pages/Alerts";
 import Analytics from "./pages/Analytics";
 import FieldReport from "./pages/FieldReport";
 import Login from "./pages/Login";
+import Unauthorized from "./pages/Unauthorized";
 
 function App() {
   useEffect(() => {
@@ -38,7 +39,10 @@ function App() {
             {/* Public Authentication Route */}
             <Route path="/login" element={<Login />} />
 
-            {/* Protected Control Tower Dashboard Routes */}
+            {/* Access Denied Route */}
+            <Route path="/unauthorized" element={<Unauthorized />} />
+
+            {/* Protected Operational & Public Routes */}
             <Route
               element={
                 <ProtectedRoute>
@@ -46,16 +50,101 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<Home />} />
-              <Route path="/control" element={<Home />} />
-              <Route path="/incidents" element={<Incidents />} />
-              <Route path="/vehicles" element={<Vehicles />} />
-              <Route path="/routes" element={<RoutePlanner />} />
-              <Route path="/route-planner" element={<RoutePlanner />} />
-              <Route path="/road-risk" element={<RoadRisk />} />
-              <Route path="/alerts" element={<Alerts />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/field-report" element={<FieldReport />} />
+              {/* Public-Safe for all authenticated roles */}
+              <Route
+                path="/road-risk"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"]}>
+                    <RoadRisk />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Control Tower & Driver Mission */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "DRIVER"]}>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/control"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "DRIVER"]}>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Operational Incident Management */}
+              <Route
+                path="/incidents"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"]}>
+                    <Incidents />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Fleet Vehicles */}
+              <Route
+                path="/vehicles"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"]}>
+                    <Vehicles />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Route Planning & P0 Deep-Link */}
+              <Route
+                path="/routes"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR"]}>
+                    <RoutePlanner />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/route-planner"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR"]}>
+                    <RoutePlanner />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Alerts */}
+              <Route
+                path="/alerts"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"]}>
+                    <Alerts />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Analytics */}
+              <Route
+                path="/analytics"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR"]}>
+                    <Analytics />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Field Report */}
+              <Route
+                path="/field-report"
+                element={
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"]}>
+                    <FieldReport />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
           </Routes>
         </BrowserRouter>

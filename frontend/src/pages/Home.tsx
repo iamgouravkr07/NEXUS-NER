@@ -841,13 +841,14 @@ function Home() {
 
   const loadDashboard = useCallback(async () => {
     try {
+      const authHeaders = getAuthHeader();
       const [vehicleResponse, incidentResponse, alertResponse, tripsResponse, roadsResponse] =
         await Promise.all([
-          fetch(`${API_URL}/vehicles/`),
-          fetch(`${API_URL}/incidents/`),
-          fetch(`${API_URL}/alerts/?severity=critical&status=active&limit=5`),
-          fetch(`${API_URL}/trips/`),
-          fetch(`${API_URL}/roads/`),
+          fetch(`${API_URL}/vehicles/`, { headers: authHeaders }),
+          fetch(`${API_URL}/incidents/`, { headers: authHeaders }),
+          fetch(`${API_URL}/alerts/?severity=critical&status=active&limit=5`, { headers: authHeaders }),
+          fetch(`${API_URL}/trips/`, { headers: authHeaders }),
+          fetch(`${API_URL}/roads/`, { headers: authHeaders }),
         ]);
 
       if (!vehicleResponse.ok || !incidentResponse.ok) {

@@ -9,6 +9,7 @@ from app.models.vehicle import Vehicle
 from app.models.incident import Incident
 from app.models.road import Road
 from app.models.alert import Alert
+from app.api.auth import require_roles
 from app.schemas.analytics import (
     AnalyticsSummaryResponse,
     KPICard,
@@ -36,7 +37,8 @@ DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 @router.get("/summary", response_model=AnalyticsSummaryResponse)
 def get_analytics_summary(
     days: int = Query(7, ge=1, le=90, description="Time window in days"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     """
     Returns live operational summary metrics and trends derived from the database:

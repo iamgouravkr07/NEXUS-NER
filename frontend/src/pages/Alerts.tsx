@@ -132,9 +132,10 @@ function Alerts() {
   const fetchAlertsData = useCallback(async () => {
     try {
       setError("");
+      const authHeaders = getAuthHeader();
       const [alertsRes, summaryRes] = await Promise.all([
-        fetch(`${apiBase}/alerts/?limit=100`),
-        fetch(`${apiBase}/alerts/summary`),
+        fetch(`${apiBase}/alerts/?limit=100`, { headers: authHeaders }),
+        fetch(`${apiBase}/alerts/summary`, { headers: authHeaders }),
       ]);
 
       if (!alertsRes.ok) {

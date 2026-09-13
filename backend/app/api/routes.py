@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.api.auth import require_roles
 from app.services.risk import calculate_route_risk, haversine_distance_km
 from app.services.routing import (
     calculate_bearing,
@@ -39,6 +40,7 @@ class AlternativeRouteRequest(RouteRequest):
 def calculate_route_endpoint(
     request: RouteRequest,
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     try:
         return calculate_route(
@@ -60,6 +62,7 @@ def calculate_route_endpoint(
 def route_risk_check(
     request: RouteRequest,
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     try:
         route = calculate_route(
@@ -86,6 +89,7 @@ def route_risk_check(
 def calculate_alternative_routes(
     request: AlternativeRouteRequest,
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     try:
         primary_route = calculate_route(

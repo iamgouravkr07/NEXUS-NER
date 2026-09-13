@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   Activity,
   AlertTriangle,
@@ -170,6 +171,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; className?: s
 };
 
 function Analytics() {
+  const { getAuthHeader } = useAuth();
   const [days, setDays] = useState("7");
   const [data, setData] = useState<AnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -180,7 +182,9 @@ function Analytics() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${API_URL}/analytics/summary?days=${selectedDays}`);
+      const response = await fetch(`${API_URL}/analytics/summary?days=${selectedDays}`, {
+        headers: getAuthHeader(),
+      });
       if (!response.ok) {
         throw new Error(`Failed to load analytics (${response.status})`);
       }

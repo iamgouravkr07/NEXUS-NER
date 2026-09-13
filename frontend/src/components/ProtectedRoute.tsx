@@ -1,9 +1,18 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import type { UserRole } from "../context/AuthContext";
 
-export const ProtectedRoute: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+export interface ProtectedRouteProps {
+  children?: React.ReactNode;
+  allowedRoles?: (UserRole | string)[];
+}
+
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  allowedRoles,
+}) => {
+  const { user, isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -19,6 +28,16 @@ export const ProtectedRoute: React.FC<{ children?: React.ReactNode }> = ({ child
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (allowedRoles && allowedRoles.length > 0) {
+    const userRole = (user?.role || "").toUpperCase();
+    const isAllowed = allowedRoles.some(
+      (r) => r.toUpperCase() === userRole
+    );
+    if (!isAllowed) {
+      return <Navigate to="/unauthorized" replace />;
+    }
   }
 
   return children ? <>{children}</> : <Outlet />;

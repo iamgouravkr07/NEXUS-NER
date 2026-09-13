@@ -97,6 +97,7 @@ router = APIRouter(
 def create_trip(
     trip: TripCreate,
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     vehicle = (
         db.query(Vehicle)
@@ -150,6 +151,7 @@ def create_trip(
 @router.get("/", response_model=list[TripResponse])
 def get_trips(
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     return (
         db.query(Trip)
@@ -166,6 +168,7 @@ def get_trips(
 def get_trip(
     trip_id: int,
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
 ):
     trip = (
         db.query(Trip)
@@ -194,6 +197,7 @@ def update_trip_status(
     trip_id: int,
     status_update: TripStatusUpdate,
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     trip = (
         db.query(Trip)
@@ -247,6 +251,7 @@ def update_trip_eta(
     trip_id: int,
     eta_update: TripEtaUpdate,
     db: Session = Depends(get_db),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
 ):
     trip = (
         db.query(Trip)

@@ -505,7 +505,10 @@ function RoutePlanner() {
     try {
       await fetch(`${API_URL}/vehicles/${selectedVehicle.id}/location`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
         body: JSON.stringify({
           latitude: startLat,
           longitude: startLon,
@@ -553,7 +556,10 @@ function RoutePlanner() {
       try {
         await fetch(`${API_URL}/vehicles/${selectedVehicle.id}/location`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeader(),
+          },
           body: JSON.stringify({
             latitude: nextCoord[0],
             longitude: nextCoord[1],
@@ -589,9 +595,10 @@ function RoutePlanner() {
       let vehiclesResponse: Response;
 
       try {
+        const authHeaders = getAuthHeader();
         [tripsResponse, vehiclesResponse] = await Promise.all([
-          fetch(`${API_URL}/trips/`),
-          fetch(`${API_URL}/vehicles/`),
+          fetch(`${API_URL}/trips/`, { headers: authHeaders }),
+          fetch(`${API_URL}/vehicles/`, { headers: authHeaders }),
         ]);
       } catch (networkErr) {
         console.error("RoutePlanner network connectivity error:", networkErr);
@@ -843,6 +850,7 @@ function RoutePlanner() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeader(),
         },
         body: JSON.stringify({
           origin_lat: originLat,
