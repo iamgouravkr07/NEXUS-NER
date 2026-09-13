@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRight,
@@ -47,6 +48,7 @@ type Trip = {
   origin_lon?: number | null;
   destination_lat?: number | null;
   destination_lon?: number | null;
+  current_route_geometry?: string | any | null;
   reroute_count?: number;
   last_reroute_reason?: string | null;
 };
@@ -269,7 +271,15 @@ function MapController({
 
 function parseCoordinates(geometry: any): [number, number][] {
   if (!geometry) return [];
-  const coords = Array.isArray(geometry) ? geometry : geometry.coordinates;
+  let parsed = geometry;
+  if (typeof geometry === "string") {
+    try {
+      parsed = JSON.parse(geometry);
+    } catch {
+      return [];
+    }
+  }
+  const coords = Array.isArray(parsed) ? parsed : parsed?.coordinates;
   if (!Array.isArray(coords)) return [];
   return coords.map((pt: any) => {
     if (typeof pt[0] === "number" && typeof pt[1] === "number") {
@@ -284,6 +294,7 @@ function parseCoordinates(geometry: any): [number, number][] {
 }
 
 function RoutePlanner() {
+  const [searchParams] = useSearchParams();
   const { getAuthHeader } = useAuth();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -321,6 +332,107 @@ function RoutePlanner() {
   // Network & Offline Map Safeguard
   const [isOnline, setIsOnline] = useState<boolean>(networkService.getStatus().connected);
   const [tileError, setTileError] = useState<boolean>(false);
+
+  const prevParamsRef = useRef<string>("");
+
+  const applyTripSelection = (
+    tripsList: Trip[],
+    vehiclesList: Vehicle[],
+    tripIdStr: string | null,
+    vehicleIdStr: string | null
+  ) => {
+    let targetTrip: Trip | null = null;
+    let targetVehicle: Vehicle | null = null;
+
+    if (tripIdStr !== null && tripIdStr.trim() !== "") {
+      const parsedTripId = Number(tripIdStr);
+      if (!isNaN(parsedTripId) && Number.isInteger(parsedTripId) && parsedTripId > 0) {
+        const foundTrip = tripsList.find((t) => t.id === parsedTripId);
+        if (foundTrip) {
+          targetTrip = foundTrip;
+        } else {
+          setSelectedTrip(null);
+          setRouteCalculated(false);
+          setMainRoute([]);
+          setBlockedRoute([]);
+          setDetourRoute([]);
+          setBlockagePoint(null);
+          setIsRerouted(false);
+          setRerouteResult(null);
+          setRouteDistanceKm(null);
+          setRouteDurationMinutes(null);
+          setRouteError(`Trip #${parsedTripId} not found.`);
+
+          if (vehicleIdStr !== null && vehicleIdStr.trim() !== "") {
+            const parsedVehicleId = Number(vehicleIdStr);
+            if (!isNaN(parsedVehicleId) && Number.isInteger(parsedVehicleId) && parsedVehicleId > 0) {
+              const foundVehicle = vehiclesList.find((v) => v.id === parsedVehicleId);
+              if (foundVehicle) {
+                setSelectedVehicle(foundVehicle);
+              }
+            }
+          }
+          return;
+        }
+      } else {
+        setSelectedTrip(null);
+        setRouteCalculated(false);
+        setMainRoute([]);
+        setBlockedRoute([]);
+        setDetourRoute([]);
+        setBlockagePoint(null);
+        setIsRerouted(false);
+        setRerouteResult(null);
+        setRouteDistanceKm(null);
+        setRouteDurationMinutes(null);
+        setRouteError(`Invalid trip ID: "${tripIdStr}"`);
+        return;
+      }
+    }
+
+    if (vehicleIdStr !== null && vehicleIdStr.trim() !== "") {
+      const parsedVehicleId = Number(vehicleIdStr);
+      if (!isNaN(parsedVehicleId) && Number.isInteger(parsedVehicleId) && parsedVehicleId > 0) {
+        const foundVehicle = vehiclesList.find((v) => v.id === parsedVehicleId);
+        if (foundVehicle) {
+          targetVehicle = foundVehicle;
+        }
+      }
+    }
+
+    if (!targetTrip && tripsList.length > 0) {
+      targetTrip = tripsList[0];
+    }
+
+    if (targetTrip && !targetVehicle) {
+      targetVehicle =
+        vehiclesList.find((v) => v.id === targetTrip!.vehicle_id) ??
+        (vehiclesList.length > 0 ? vehiclesList[0] : null);
+    }
+
+    setSelectedTrip(targetTrip);
+    if (targetVehicle) {
+      setSelectedVehicle(targetVehicle);
+    }
+
+    if (tripIdStr !== null && tripIdStr.trim() !== "" && targetTrip?.current_route_geometry) {
+      const coords = parseCoordinates(targetTrip.current_route_geometry);
+      if (coords.length > 0) {
+        setMainRoute(coords);
+        setRouteCalculated(true);
+        setRouteError("");
+        setRouteDistanceKm(targetTrip.route_distance_km ?? null);
+        setRouteDurationMinutes(
+          targetTrip.route_duration_minutes ?? targetTrip.eta_minutes ?? null
+        );
+        setIsRerouted(false);
+        setDetourRoute([]);
+        setBlockedRoute([]);
+        setBlockagePoint(null);
+        setRerouteResult(null);
+      }
+    }
+  };
 
   useEffect(() => {
     const unsub = networkService.subscribe((status) => {
@@ -513,13 +625,10 @@ function RoutePlanner() {
       setTrips(tripsData);
       setVehicles(vehiclesData);
 
-      if (tripsData.length > 0) {
-        setSelectedTrip((current) => current ?? tripsData[0]);
-      }
-
-      if (vehiclesData.length > 0) {
-        setSelectedVehicle((current) => current ?? vehiclesData[0]);
-      }
+      const tripIdParam = searchParams.get("trip_id");
+      const vehicleIdParam = searchParams.get("vehicle_id");
+      prevParamsRef.current = searchParams.toString();
+      applyTripSelection(tripsData, vehiclesData, tripIdParam, vehicleIdParam);
     } catch (err: unknown) {
       console.error("RoutePlanner error:", err);
 
@@ -544,6 +653,21 @@ function RoutePlanner() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Synchronize selection when URL query parameters change after initial load
+  useEffect(() => {
+    if (trips.length === 0) return;
+    const currentParamsStr = searchParams.toString();
+    if (prevParamsRef.current === currentParamsStr) return;
+    prevParamsRef.current = currentParamsStr;
+
+    const tripIdParam = searchParams.get("trip_id");
+    const vehicleIdParam = searchParams.get("vehicle_id");
+
+    if (tripIdParam !== null || vehicleIdParam !== null) {
+      applyTripSelection(trips, vehicles, tripIdParam, vehicleIdParam);
+    }
+  }, [searchParams, trips, vehicles]);
 
   /*
    * When a trip is selected, automatically find its vehicle.
