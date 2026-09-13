@@ -154,10 +154,12 @@ class GeolocationService {
   startThrottledTracking(
     callback: (pos: GpsPosition) => void,
     intervalMs = 60000, // Minimum 60s
-    minDistanceMeters = 100 // Minimum 100m displacement
+    minDistanceMeters = 100, // Minimum 100m displacement
+    onError?: (err: Error) => void
   ): () => void {
     if (this.trackingIntervalId !== null) {
       clearInterval(this.trackingIntervalId);
+      this.trackingIntervalId = null;
     }
 
     let previousBroadcastPos: GpsPosition | null = null;
@@ -182,7 +184,11 @@ class GeolocationService {
           previousBroadcastPos = current;
           callback(current);
         }
-      } catch {}
+      } catch (err: unknown) {
+        if (onError) {
+          onError(err instanceof Error ? err : new Error(String(err)));
+        }
+      }
     };
 
     // Initial check

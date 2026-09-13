@@ -23,19 +23,19 @@ export const MobileBottomNav: React.FC = () => {
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER'],
     },
     {
-      name: 'Alerts',
+      name: t.nav.alerts,
       path: '/alerts',
       icon: Bell,
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER'],
     },
     {
-      name: 'Routes',
+      name: t.nav.routes,
       path: '/routes',
       icon: Route,
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER'],
     },
     {
-      name: 'Incidents',
+      name: t.nav.incidents,
       path: '/incidents',
       icon: ShieldAlert,
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER'],

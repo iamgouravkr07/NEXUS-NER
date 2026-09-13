@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
+  AlertOctagon,
   AlertTriangle,
   ArrowRight,
   Bell,
@@ -12,9 +13,11 @@ import {
   Eye,
   MapPin,
   Navigation,
+  Radio,
   RefreshCw,
   Route,
   ShieldAlert,
+  ShieldCheck,
   Thermometer,
   Truck,
   Wifi,
@@ -34,6 +37,9 @@ import { MapErrorBoundary } from "../components/MapErrorBoundary";
 import { PredictiveRiskCard } from "../components/PredictiveRiskCard";
 import { mlClient } from "../api/mlClient";
 import type { PredictiveRiskResult } from "../types/ml";
+import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
+import { geolocationService, type GpsPosition } from "../services/geolocation";
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -110,6 +116,8 @@ type Trip = {
   destination_lat?: number | null;
   destination_lon?: number | null;
   current_route_geometry?: string | any;
+  reroute_count?: number;
+  last_reroute_reason?: string | null;
 };
 
 type Incident = {
@@ -302,7 +310,462 @@ function StatCard({
   );
 }
 
+interface DriverMissionCockpitProps {
+  vehicle: Vehicle | null;
+  trip: Trip | null;
+  incident: Incident | null;
+  road: Road | null;
+  criticalAlerts: AlertItem[];
+  getAuthHeader: () => Record<string, string>;
+  backendOnline: boolean;
+}
+
+function DriverMissionCockpit({
+  vehicle,
+  trip,
+  incident,
+  road,
+  criticalAlerts,
+  getAuthHeader,
+  backendOnline,
+}: DriverMissionCockpitProps) {
+  const { t } = useLanguage();
+  const [isGpsTransmitting, setIsGpsTransmitting] = useState(false);
+  const [isPendingGps, setIsPendingGps] = useState(false);
+  const [lastTransmittedGps, setLastTransmittedGps] = useState<{
+    lat: number;
+    lon: number;
+    accuracy: number;
+    time: string;
+  } | null>(null);
+  const [gpsError, setGpsError] = useState<string | null>(null);
+  const stopTrackingRef = useRef<(() => void) | null>(null);
+
+  const transmitVehicleGps = useCallback(
+    async (vehicleId: number, pos: GpsPosition) => {
+      const res = await fetch(`${API_URL}/vehicles/${vehicleId}/location`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify({
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+          timestamp: new Date(pos.timestamp).toISOString(),
+          status: "in_transit",
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.detail || `Server returned HTTP ${res.status}`);
+      }
+    },
+    [getAuthHeader]
+  );
+
+  const handleToggleGps = async () => {
+    if (isGpsTransmitting) {
+      if (stopTrackingRef.current) {
+        stopTrackingRef.current();
+        stopTrackingRef.current = null;
+      }
+      setIsGpsTransmitting(false);
+      setGpsError(null);
+      return;
+    }
+
+    if (!vehicle) {
+      setGpsError("No assigned vehicle found for telemetry broadcast.");
+      return;
+    }
+
+    setIsPendingGps(true);
+    setGpsError(null);
+
+    try {
+      const initialPos = await geolocationService.getCurrentPosition(10000, 30000);
+      if (!initialPos.isWithinNER) {
+        setGpsError(
+          `Coordinates (${initialPos.latitude.toFixed(4)}, ${initialPos.longitude.toFixed(4)}) outside NER bounds [20-30°N, 88-98°E]. Transmission blocked.`
+        );
+        setIsPendingGps(false);
+        return;
+      }
+
+      await transmitVehicleGps(vehicle.id, initialPos);
+      setLastTransmittedGps({
+        lat: initialPos.latitude,
+        lon: initialPos.longitude,
+        accuracy: Math.round(initialPos.accuracy),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+      });
+
+      const cleanup = geolocationService.startThrottledTracking(
+        async (pos: GpsPosition) => {
+          if (!pos.isWithinNER) return;
+          try {
+            await transmitVehicleGps(vehicle.id, pos);
+            setLastTransmittedGps({
+              lat: pos.latitude,
+              lon: pos.longitude,
+              accuracy: Math.round(pos.accuracy),
+              time: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              }),
+            });
+            setGpsError(null);
+          } catch (err: unknown) {
+            const msg =
+              err instanceof Error ? err.message : "Failed to push telemetry";
+            setGpsError(msg);
+          }
+        },
+        30000,
+        50,
+        (err: Error) => {
+          setGpsError(err.message || "GPS acquisition error");
+        }
+      );
+
+      stopTrackingRef.current = cleanup;
+      setIsGpsTransmitting(true);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Location permission denied or GPS unavailable.";
+      setGpsError(msg);
+      setIsGpsTransmitting(false);
+    } finally {
+      setIsPendingGps(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (stopTrackingRef.current) {
+        stopTrackingRef.current();
+        stopTrackingRef.current = null;
+      }
+    };
+  }, []);
+
+  const d = t.driverCockpit || {
+    missionActive: "MISSION ACTIVE",
+    assignedVehicle: "Assigned Vehicle",
+    tripId: "Trip ID",
+    corridor: "Assigned Corridor",
+    cargoManifest: "Cargo Manifest",
+    priority: "Priority",
+    missionStatus: "Mission Status",
+    hazardAlert: "Critical Corridor Disruption",
+    corridorRisk: "Corridor Risk Index",
+    activeDetour: "Safe Detour Active",
+    viewSafeRoute: "VIEW SAFE ROUTE",
+    transmitGps: "Transmit Live GPS",
+    gpsTransmitting: "LIVE GPS TRANSMITTING",
+    gpsStandby: "Telemetry Standby — Not Transmitting",
+    lastTelemetry: "Last Transmitted Telemetry",
+    noActiveMission: "No Active Mission Dispatched",
+    detourDescription:
+      "Safe detour route computed avoiding active corridor disruption",
+  };
+
+  if (!vehicle || !trip) {
+    return (
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 text-center shadow-2xl space-y-3">
+        <div className="mx-auto mb-1 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-800/80 text-slate-400 border border-slate-700">
+          <Truck size={26} />
+        </div>
+        <div>
+          <h2 className="text-base font-bold text-white">
+            {d.noActiveMission || "Mission Assignment Unavailable"}
+          </h2>
+          <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed mt-1">
+            No active transport vehicle or corridor mission is currently dispatched to this driver terminal. Contact Control Central dispatch.
+          </p>
+        </div>
+        <div className="pt-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[11px] font-medium text-amber-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+            Standby / Unassigned
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  const riskVal = incident?.risk_score ?? road?.risk_score ?? 0;
+  const vehicleNum = vehicle.vehicle_number || `Unit #${vehicle.id}`;
+  const vehicleId = vehicle.id;
+  const tripId = trip.id;
+  const originStr = trip.origin || "Origin Unspecified";
+  const destStr = trip.destination || "Destination Unspecified";
+  const cargoStr = trip.cargo_type || vehicle.cargo_type || "General Logistics Freight";
+  const priorityStr = (trip.priority || vehicle.cargo_priority || "NORMAL").toUpperCase();
+  const statusStr = (trip.status || vehicle.status || "IDLE").replace("_", " ").toUpperCase();
+  const corridorName = road?.road_name || "NH-15";
+
+  return (
+    <div className="space-y-4 pb-2">
+      {/* 1. TOP MISSION CALLSIGN BANNER */}
+      <div className="flex items-center justify-between rounded-xl border border-cyan-500/30 bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-950/40 px-4 py-3 shadow-xl">
+        <div className="flex items-center gap-2.5">
+          <span className="relative flex h-3 w-3 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
+          </span>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono text-xs font-black uppercase tracking-widest text-white">
+                {d.missionActive}
+              </span>
+              <span className="rounded bg-cyan-500/20 px-1.5 py-0.5 text-[10px] font-bold text-cyan-300 font-mono">
+                TRIP #{tripId}
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400">
+              NEXUS-NER Automated Driver Terminal
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-400">
+          <CheckCircle2 size={13} className="shrink-0" />
+          <span>{statusStr}</span>
+        </div>
+      </div>
+
+      {/* 2. CRITICAL HAZARD & SAFE DETOUR CARD */}
+      <div className="rounded-xl border border-red-500/40 bg-gradient-to-b from-red-950/40 via-slate-950 to-slate-950 p-4 shadow-xl space-y-3">
+        {/* Hazard Header */}
+        <div className="flex items-start justify-between gap-2 border-b border-red-500/20 pb-2.5">
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg bg-red-500/20 p-1.5 text-red-400 border border-red-500/30">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">
+                {d.hazardAlert}
+              </span>
+              <h3 className="text-sm font-bold text-white leading-tight">
+                {incident?.title || (incident?.incident_type ? `Incident #${incident.id} — ${incident.incident_type.toUpperCase()} on ${corridorName}` : "Active Hazard Detected")}
+              </h3>
+            </div>
+          </div>
+          <div className="rounded-lg border border-red-500/30 bg-red-500/20 px-2 py-1 text-right shrink-0">
+            <span className="text-[9px] uppercase tracking-wider text-red-300 block font-semibold">
+              Risk Score
+            </span>
+            <span className="font-mono text-sm font-black text-red-200">
+              {riskVal} / 100
+            </span>
+          </div>
+        </div>
+
+        {/* Hazard Location & Description */}
+        <p className="text-xs text-slate-300 leading-relaxed">
+          {incident?.description ||
+            "Active corridor hazard detected by PostGIS geofence along transit route."}
+        </p>
+
+        {/* Detour Callout */}
+        <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/30 p-3 flex items-start gap-2.5">
+          <ShieldCheck size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-1 flex-wrap">
+              <span className="text-xs font-bold text-emerald-300">
+                {d.activeDetour}
+              </span>
+              <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-300 uppercase">
+                Dispatch Approved
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+              {criticalAlerts[0]?.description ||
+                trip?.last_reroute_reason ||
+                "Safe alternate corridor dispatched by Control Central"}
+            </p>
+          </div>
+        </div>
+
+        {/* Prominent Primary CTA: VIEW SAFE ROUTE */}
+        <Link
+          to={`/route-planner?trip_id=${tripId}&vehicle_id=${vehicleId}`}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 px-4 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-amber-500/20 transition active:scale-[0.99]"
+        >
+          <Route size={18} />
+          <span>{d.viewSafeRoute} →</span>
+        </Link>
+      </div>
+
+      {/* 3. ASSIGNED VEHICLE & CARGO MANIFEST CARD */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl space-y-3">
+        {/* Vehicle Identity */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="rounded-lg bg-cyan-500/10 p-2 text-cyan-400 border border-cyan-500/20">
+              <Truck size={20} />
+            </div>
+            <div>
+              <p className="font-mono text-base font-black text-white tracking-wide">
+                {vehicleNum}
+              </p>
+              <p className="text-[11px] text-slate-400">
+                Unit #{vehicleId} • {vehicle?.vehicle_type || "Heavy Carrier"}
+              </p>
+            </div>
+          </div>
+
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+              priorityStr === "CRITICAL"
+                ? "bg-red-500/20 text-red-300 border-red-500/40"
+                : "bg-amber-500/20 text-amber-300 border-amber-500/40"
+            }`}
+          >
+            {priorityStr}
+          </span>
+        </div>
+
+        {/* Corridor Endpoints */}
+        <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
+          <div className="flex-1 min-w-0">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold block">
+              Origin
+            </span>
+            <p className="text-xs font-semibold text-slate-200 truncate">
+              {originStr}
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center px-2 shrink-0">
+            <ArrowRight size={14} className="text-cyan-400" />
+            <span className="text-[9px] font-mono text-slate-400">{corridorName.split(" ")[0]}</span>
+          </div>
+
+          <div className="flex-1 min-w-0 text-right">
+            <span className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold block">
+              Destination
+            </span>
+            <p className="text-xs font-semibold text-slate-200 truncate">
+              {destStr}
+            </p>
+          </div>
+        </div>
+
+        {/* Cargo Detail */}
+        <div className="flex items-center justify-between text-xs pt-0.5">
+          <span className="text-slate-400">{d.cargoManifest}:</span>
+          <span className="font-medium text-slate-200 truncate max-w-[200px] text-right">
+            {cargoStr}
+          </span>
+        </div>
+      </div>
+
+      {/* 4. LIVE GPS TELEMETRY TRANSMISSION (P1-3) */}
+      <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div
+              className={`rounded-lg p-2 border ${
+                isGpsTransmitting
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                  : "bg-slate-800 text-slate-400 border-slate-700"
+              }`}
+            >
+              <Radio size={18} className={isGpsTransmitting ? "animate-pulse" : ""} />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">{d.transmitGps}</p>
+              <p className="text-[10px] text-slate-400">
+                {isGpsTransmitting
+                  ? "Broadcasting coordinates to Control Central"
+                  : d.gpsStandby}
+              </p>
+            </div>
+          </div>
+
+          {/* Toggle Button */}
+          <button
+            type="button"
+            onClick={handleToggleGps}
+            disabled={isPendingGps || !backendOnline}
+            className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
+              isGpsTransmitting ? "bg-emerald-500" : "bg-slate-700"
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                isGpsTransmitting ? "translate-x-6" : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Transmission Status Feedback */}
+        {isPendingGps && (
+          <div className="flex items-center gap-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 p-2.5 text-xs text-cyan-300">
+            <RefreshCw size={13} className="animate-spin shrink-0" />
+            <span>Acquiring GPS fix from device sensors...</span>
+          </div>
+        )}
+
+        {isGpsTransmitting && lastTransmittedGps && (
+          <div className="rounded-lg border border-emerald-500/20 bg-emerald-950/20 p-2.5 text-xs text-emerald-300 space-y-1 font-mono">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-bold flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+                {d.gpsTransmitting}
+              </span>
+              <span className="text-[10px] text-emerald-400">
+                ±{lastTransmittedGps.accuracy}m
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-slate-300">
+              <span>
+                {lastTransmittedGps.lat.toFixed(5)}°N, {lastTransmittedGps.lon.toFixed(5)}°E
+              </span>
+              <span className="text-[10px] text-slate-400 font-sans">
+                {lastTransmittedGps.time}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {gpsError && (
+          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-300 flex items-start gap-2">
+            <AlertOctagon size={14} className="text-red-400 shrink-0 mt-0.5" />
+            <span className="leading-snug">{gpsError}</span>
+          </div>
+        )}
+
+        {!isGpsTransmitting && !gpsError && !isPendingGps && (
+          <p className="text-[11px] text-slate-400 leading-relaxed">
+            GPS telemetry is transmitted every 30s with &gt;=50m displacement via{" "}
+            <code className="rounded bg-slate-800 px-1 py-0.5 text-[10px] text-cyan-300 font-mono">
+              POST /vehicles/{vehicleId}/location
+            </code>
+            . NER boundary bounds enforced.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Home() {
+  const { user, getAuthHeader } = useAuth();
+  const isDriver = user?.role === "DRIVER";
+
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [criticalAlerts, setCriticalAlerts] = useState<AlertItem[]>([]);
@@ -474,31 +937,61 @@ function Home() {
     );
   }, [incidents]);
 
+  // Relational resolution of affected road from active disruption foreign key
   const affectedRoad = useMemo(() => {
-    if (!activeDisruption?.affected_road_id) {
-      return roads.length > 0 ? roads[0] : null;
-    }
-    return roads.find((r) => r.id === activeDisruption.affected_road_id) || (roads.length > 0 ? roads[0] : null);
+    if (!activeDisruption?.affected_road_id) return null;
+    return roads.find((r) => r.id === activeDisruption.affected_road_id) || null;
   }, [activeDisruption, roads]);
 
-  const impactedVehicle = useMemo(() => {
-    return (
-      vehicles.find((v) => v.id === 472 || v.current_trip_id === 318) ||
-      (vehicles.length > 0 ? vehicles[0] : null)
-    );
-  }, [vehicles]);
-
-  const interceptedTrip = useMemo(() => {
+  // Relational resolution of active dispatched trip (in-transit/rerouting/active with vehicle_id)
+  const activeDispatchedTrip = useMemo(() => {
     return (
       trips.find(
         (t) =>
-          t.id === 318 ||
-          (impactedVehicle && t.vehicle_id === impactedVehicle.id)
-      ) || (trips.length > 0 ? trips[0] : null)
+          (t.status?.toLowerCase() === "in_transit" ||
+           t.status?.toLowerCase() === "rerouting" ||
+           t.status?.toLowerCase() === "active") &&
+          t.vehicle_id != null
+      ) || null
     );
-  }, [trips, impactedVehicle]);
+  }, [trips]);
 
-  // Extract real route coordinates from Trip #318 current_route_geometry
+  // Relational resolution of active transport vehicle matching the active trip
+  const activeDispatchedVehicle = useMemo(() => {
+    if (!activeDispatchedTrip) {
+      return (
+        vehicles.find(
+          (v) =>
+            v.status?.toLowerCase() === "in_transit" &&
+            v.current_trip_id != null
+        ) || null
+      );
+    }
+    return (
+      vehicles.find(
+        (v) =>
+          v.id === activeDispatchedTrip.vehicle_id &&
+          (v.current_trip_id === activeDispatchedTrip.id || v.status?.toLowerCase() === "in_transit")
+      ) ||
+      vehicles.find((v) => v.id === activeDispatchedTrip.vehicle_id) ||
+      null
+    );
+  }, [activeDispatchedTrip, vehicles]);
+
+  // Symmetrical resolution of active trip from vehicle if needed
+  const activeTrip = useMemo(() => {
+    if (activeDispatchedTrip) return activeDispatchedTrip;
+    if (activeDispatchedVehicle?.current_trip_id) {
+      return trips.find((t) => t.id === activeDispatchedVehicle.current_trip_id) || null;
+    }
+    return null;
+  }, [activeDispatchedTrip, activeDispatchedVehicle]);
+
+  // Unified assignments for Control Tower and Driver Cockpit
+  const impactedVehicle = activeDispatchedVehicle;
+  const interceptedTrip = activeTrip;
+
+  // Extract real route coordinates from interceptedTrip current_route_geometry
   const tacticalRouteCoords = useMemo(() => {
     if (!interceptedTrip?.current_route_geometry) return [];
     return parseCoordinates(interceptedTrip.current_route_geometry);
@@ -522,9 +1015,25 @@ function Home() {
 
   return (
     <div className="space-y-6 max-w-full overflow-x-hidden">
+      {/* If logged in as DRIVER on mobile viewport, render dedicated Mission Cockpit */}
+      {isDriver && (
+        <div className="block md:hidden">
+          <DriverMissionCockpit
+            vehicle={impactedVehicle}
+            trip={interceptedTrip}
+            incident={activeDisruption}
+            road={affectedRoad}
+            criticalAlerts={criticalAlerts}
+            getAuthHeader={getAuthHeader}
+            backendOnline={backendOnline}
+          />
+        </div>
+      )}
 
-      {/* COMPACT OPERATIONAL STATUS STRIP (Replaces duplicate Control Tower title) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5">
+      {/* Control Tower Dashboard (Hidden on mobile only for DRIVER; visible on desktop for everyone and on mobile for non-drivers) */}
+      <div className={isDriver ? "hidden md:block space-y-6" : "space-y-6"}>
+        {/* COMPACT OPERATIONAL STATUS STRIP (Replaces duplicate Control Tower title) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5">
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
             <Activity size={14} className="text-cyan-400" />
@@ -1515,6 +2024,7 @@ function Home() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -5,6 +5,9 @@ export interface TranslationDict {
   nav: {
     controlTower: string;
     fieldReport: string;
+    alerts: string;
+    routes: string;
+    incidents: string;
     live: string;
     polling: string;
     online: string;
@@ -13,6 +16,27 @@ export interface TranslationDict {
     gpsReady: string;
     searchPlaceholder: string;
     logout: string;
+  };
+  // Driver Mission Cockpit
+  driverCockpit: {
+    missionActive: string;
+    assignedVehicle: string;
+    tripId: string;
+    corridor: string;
+    cargoManifest: string;
+    priority: string;
+    missionStatus: string;
+    hazardAlert: string;
+    corridorRisk: string;
+    activeDetour: string;
+    viewSafeRoute: string;
+    transmitGps: string;
+    gpsTransmitting: string;
+    gpsStandby: string;
+    lastTelemetry: string;
+    noActiveMission: string;
+    detourRecommended: string;
+    detourDescription: string;
   };
   // Field Report Page
   fieldReport: {
@@ -105,6 +129,9 @@ export const translations: Record<Language, TranslationDict> = {
     nav: {
       controlTower: "Control Tower",
       fieldReport: "Field Report",
+      alerts: "Alerts",
+      routes: "Routes",
+      incidents: "Incidents",
       live: "Live",
       polling: "Polling",
       online: "Online",
@@ -113,6 +140,26 @@ export const translations: Record<Language, TranslationDict> = {
       gpsReady: "GPS ready",
       searchPlaceholder: "Search...",
       logout: "Sign Out",
+    },
+    driverCockpit: {
+      missionActive: "MISSION ACTIVE",
+      assignedVehicle: "Assigned Vehicle",
+      tripId: "Trip ID",
+      corridor: "Assigned Corridor",
+      cargoManifest: "Cargo Manifest",
+      priority: "Priority",
+      missionStatus: "Mission Status",
+      hazardAlert: "Critical Corridor Disruption",
+      corridorRisk: "Corridor Risk Index",
+      activeDetour: "Safe Detour Active",
+      viewSafeRoute: "VIEW SAFE ROUTE",
+      transmitGps: "Transmit Live GPS",
+      gpsTransmitting: "LIVE GPS TRANSMITTING",
+      gpsStandby: "Telemetry Standby — Not Transmitting",
+      lastTelemetry: "Last Transmitted Telemetry",
+      noActiveMission: "No Active Mission Dispatched",
+      detourRecommended: "Safe Detour Dispatched by Control Tower",
+      detourDescription: "Detour route computed via NH-715 avoiding Landslide on NH-15",
     },
     fieldReport: {
       title: "Field Report",
@@ -195,6 +242,9 @@ export const translations: Record<Language, TranslationDict> = {
     nav: {
       controlTower: "कंट्रोल टावर",
       fieldReport: "फील्ड रिपोर्ट",
+      alerts: "अलर्ट",
+      routes: "मार्ग",
+      incidents: "घटनाएं",
       live: "लाइव",
       polling: "पोलिंग",
       online: "ऑनलाइन",
@@ -203,6 +253,26 @@ export const translations: Record<Language, TranslationDict> = {
       gpsReady: "जीपीएस तैयार",
       searchPlaceholder: "खोजें...",
       logout: "साइन आउट",
+    },
+    driverCockpit: {
+      missionActive: "सक्रिय मिशन",
+      assignedVehicle: "आवंटित वाहन",
+      tripId: "ट्रिप आईडी",
+      corridor: "आवंटित कॉरिडोर",
+      cargoManifest: "कार्गो विवरण",
+      priority: "प्राथमिकता",
+      missionStatus: "मिशन स्थिति",
+      hazardAlert: "गंभीर कॉरिडोर व्यवधान",
+      corridorRisk: "कॉरिडोर जोखिम सूचकांक",
+      activeDetour: "सुरक्षित वैकल्पिक मार्ग सक्रिय",
+      viewSafeRoute: "सुरक्षित मार्ग देखें",
+      transmitGps: "लाइव जीपीएस प्रसारित करें",
+      gpsTransmitting: "लाइव जीपीएस प्रसारण सक्रिय",
+      gpsStandby: "टेलीमेट्री स्टैंडबाय — प्रसारित नहीं",
+      lastTelemetry: "अंतिम प्रसारित टेलीमेट्री",
+      noActiveMission: "कोई सक्रिय मिशन आवंटित नहीं",
+      detourRecommended: "कंट्रोल टावर द्वारा सुरक्षित मार्ग जारी",
+      detourDescription: "NH-15 भूस्खलन से बचते हुए NH-715 से सुरक्षित मार्ग निर्धारित",
     },
     fieldReport: {
       title: "फील्ड रिपोर्ट",
@@ -283,8 +353,11 @@ export const translations: Record<Language, TranslationDict> = {
   },
   as: {
     nav: {
-      controlTower: "নিয়ন্ত্ৰণ কক্ষ (Control Tower)",
-      fieldReport: "ক্ষেত্ৰ প্ৰতিবেদন (Field Report)",
+      controlTower: "নিয়ন্ত্ৰণ কক্ষ",
+      fieldReport: "ক্ষেত্ৰ প্ৰতিবেদন",
+      alerts: "সতৰ্কবাৰ্তা",
+      routes: "পথসমূহ",
+      incidents: "ঘটনাসমূহ",
       live: "সক্ৰিয় (Live)",
       polling: "পলিং (Polling)",
       online: "অনলাইন",
@@ -293,6 +366,26 @@ export const translations: Record<Language, TranslationDict> = {
       gpsReady: "GPS সাজু",
       searchPlaceholder: "সন্ধান কৰক...",
       logout: "প্ৰস্থান কৰক",
+    },
+    driverCockpit: {
+      missionActive: "সক্ৰিয় অভিযান",
+      assignedVehicle: "নিযুক্ত বাহন",
+      tripId: "যাত্ৰা নম্বৰ",
+      corridor: "নিযুক্ত পথ",
+      cargoManifest: "সামগ্ৰীৰ বিৱৰণ",
+      priority: "প্ৰাথমিকতা",
+      missionStatus: "অভিযান স্থিতি",
+      hazardAlert: "সংকটজনক পথ বিঘিনি",
+      corridorRisk: "পথ বিপদাশংকা সূচক",
+      activeDetour: "সুৰক্ষিত বিকল্প পথ সক্ৰিয়",
+      viewSafeRoute: "সুৰক্ষিত পথ চাওক",
+      transmitGps: "লাইভ GPS প্ৰেৰণ কৰক",
+      gpsTransmitting: "লাইভ GPS প্ৰেৰণ চলি আছে",
+      gpsStandby: "টেলিমেট্ৰী স্থিৰ — প্ৰেৰণ হোৱা নাই",
+      lastTelemetry: "শেহতীয়া প্ৰেৰিত তথ্য",
+      noActiveMission: "কোনো সক্ৰিয় অভিযান নাই",
+      detourRecommended: "নিয়ন্ত্ৰণ কক্ষই সুৰক্ষিত বিকল্প পথ প্ৰেৰণ কৰিছে",
+      detourDescription: "NH-15 ৰ ভূমিস্খলন এৰাই চলি NH-715 ৰে বিকল্প পথ নিৰ্ধাৰণ",
     },
     fieldReport: {
       title: "ক্ষেত্ৰ প্ৰতিবেদন",
