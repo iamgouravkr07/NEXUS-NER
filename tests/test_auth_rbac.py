@@ -22,7 +22,8 @@ Verifies:
 import os
 import sys
 import unittest
-from datetime import datetime
+from datetime import datetime, timedelta
+import jwt
 from fastapi.testclient import TestClient
 
 backend_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend"))
@@ -324,6 +325,88 @@ class AuthRBACTests(unittest.TestCase):
             self.assertNotIn("password_hash", u)
             self.assertNotIn("password", u)
         print("PASS: Scenario P - password_hash strictly excluded from all API response schemas.")
+
+    def test_scenario_q_expired_jwt(self):
+        """Scenario Q (TEST 8): Expired JWT is rejected with 401."""
+        expired_token = auth_service.create_access_token(
+            {"sub": "1", "username": "admin", "role": "ADMIN"},
+            expires_delta=timedelta(seconds=-30)
+        )
+        resp = self.client.get(
+            "/auth/me",
+            headers={"Authorization": f"Bearer {expired_token}"}
+        )
+        self.assertEqual(resp.status_code, 401)
+        self.assertIn("Invalid or expired token", resp.json()["detail"])
+        print("PASS: Scenario Q - Expired JWT rejected with 401.")
+
+    def test_scenario_r_invalid_signature_jwt(self):
+        """Scenario R (TEST 9): Invalid-signature JWT is rejected with 401."""
+        tampered_token = jwt.encode(
+            {"sub": "1", "username": "admin", "role": "ADMIN", "exp": int(datetime.now().timestamp()) + 3600},
+            "unauthorized_fake_secret_key_1234567890",
+            algorithm="HS256"
+        )
+        resp = self.client.get(
+            "/auth/me",
+            headers={"Authorization": f"Bearer {tampered_token}"}
+        )
+        self.assertEqual(resp.status_code, 401)
+        self.assertIn("Invalid or expired token", resp.json()["detail"])
+        print("PASS: Scenario R - Invalid-signature JWT rejected with 401.")
+
+    def test_scenario_s_public_registration_default_role(self):
+        """Scenario S (TEST 11): Public registration succeeds with safe default role PUBLIC."""
+        ts = int(datetime.now().timestamp())
+        reg_payload = {
+            "username": f"test_pub_{ts}",
+            "email": f"testpub_{ts}@example.com",
+            "password": "PublicUserSecure123!"
+        }
+        resp = self.client.post("/auth/register", json=reg_payload)
+        self.assertEqual(resp.status_code, 201)
+        data = resp.json()
+        self.assertEqual(data["username"], f"test_pub_{ts}")
+        self.assertEqual(data["role"], "PUBLIC")
+        self.assertTrue(data["is_active"])
+        self.assertNotIn("password_hash", data)
+        self.assertNotIn("password", data)
+
+        # Verify new user can login
+        login_resp = self.client.post("/auth/login", json={
+            "username": f"test_pub_{ts}",
+            "password": "PublicUserSecure123!"
+        })
+        self.assertEqual(login_resp.status_code, 200)
+        login_data = login_resp.json()
+        self.assertEqual(login_data["user"]["role"], "PUBLIC")
+        print("PASS: Scenario S - Public user registration with default role PUBLIC verified.")
+
+    def test_scenario_t_registration_privilege_escalation_defense(self):
+        """Scenario T (TEST 12-15): Registration cannot self-assign operational roles."""
+        ts = int(datetime.now().timestamp())
+        forbidden_roles = ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"]
+        for role in forbidden_roles:
+            reg_payload = {
+                "username": f"test_atk_{role.lower()}_{ts}",
+                "email": f"testatk_{role.lower()}_{ts}@example.com",
+                "password": "AttackerPassword123!",
+                "role": role
+            }
+            resp = self.client.post("/auth/register", json=reg_payload)
+            self.assertEqual(resp.status_code, 400)
+            self.assertIn("forbidden", resp.json()["detail"].lower())
+        print("PASS: Scenario T - Privilege escalation defense verified for all operational roles.")
+
+    def test_scenario_u_unknown_user_fails(self):
+        """Scenario U (TEST 3): Unknown user authentication fails with 401."""
+        resp = self.client.post(
+            "/auth/login",
+            json={"username": "non_existent_user_99999", "password": "AnyPassword123!"}
+        )
+        self.assertEqual(resp.status_code, 401)
+        self.assertIn("Invalid credentials", resp.json()["detail"])
+        print("PASS: Scenario U - Unknown user login rejected with 401.")
 
 
 if __name__ == "__main__":

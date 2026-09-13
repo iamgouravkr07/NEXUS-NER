@@ -98,7 +98,7 @@ def authenticate_user(db: Session, username_or_email: str, password: str) -> Opt
 def create_user(db: Session, user_in: UserCreate) -> User:
     """Create a new persistent user with Argon2id hashed password."""
     normalized_role = user_in.role.upper().strip()
-    valid_roles = {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"}
+    valid_roles = {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"}
     if normalized_role not in valid_roles:
         raise ValueError(f"Invalid role '{normalized_role}'. Allowed: {sorted(list(valid_roles))}")
 
@@ -122,7 +122,7 @@ def update_user(db: Session, db_user: User, user_update: UserUpdate) -> User:
         db_user.email = user_update.email.strip().lower()
     if user_update.role is not None:
         norm_role = user_update.role.upper().strip()
-        if norm_role not in {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"}:
+        if norm_role not in {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"}:
             raise ValueError(f"Invalid role '{norm_role}'")
         db_user.role = norm_role
     if user_update.is_active is not None:

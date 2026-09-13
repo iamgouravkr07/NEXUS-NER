@@ -1,21 +1,25 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Shield, Lock, User, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Shield, Lock, User, Mail, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export const Login: React.FC = () => {
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = (location.state as any)?.from?.pathname || "/";
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) {
       setError("Please enter both username and password.");
@@ -23,6 +27,7 @@ export const Login: React.FC = () => {
     }
 
     setError("");
+    setSuccessMessage("");
     setIsSubmitting(true);
 
     const result = await login(username, password);
@@ -35,10 +40,48 @@ export const Login: React.FC = () => {
     }
   };
 
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim() || !email.trim() || !password) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+    if (username.trim().length < 3) {
+      setError("Username must be at least 3 characters long.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setError("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
+
+    const result = await register(username.trim(), email.trim(), password);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      setSuccessMessage("Account created successfully as Public User. Please sign in.");
+      setPassword("");
+      setConfirmPassword("");
+      setMode("login");
+    } else {
+      setError(result.error || "Registration failed.");
+    }
+  };
+
   const fillDemoCredentials = (u: string, p: string) => {
     setUsername(u);
     setPassword(p);
     setError("");
+    setSuccessMessage("");
+    setMode("login");
   };
 
   return (
@@ -62,10 +105,48 @@ export const Login: React.FC = () => {
 
         {/* Card */}
         <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
+          {/* Mode Switcher */}
+          <div className="flex rounded-xl bg-slate-950/70 p-1 mb-6 border border-slate-800">
+            <button
+              type="button"
+              onClick={() => {
+                setMode("login");
+                setError("");
+                setSuccessMessage("");
+              }}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition ${
+                mode === "login"
+                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode("register");
+                setError("");
+                setSuccessMessage("");
+              }}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition ${
+                mode === "register"
+                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Register (Public)
+            </button>
+          </div>
+
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-white">Operator Sign In</h2>
+            <h2 className="text-lg font-semibold text-white">
+              {mode === "login" ? "Operator Sign In" : "Public User Registration"}
+            </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Enter your credentials to access the North East Control Tower
+              {mode === "login"
+                ? "Enter your credentials to access the North East Control Tower"
+                : "Create a standard public account for regional citizen access"}
             </p>
           </div>
 
@@ -76,60 +157,162 @@ export const Login: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                Username or Email
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                  <User size={16} />
-                </div>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. operator or admin"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                  required
-                />
-              </div>
+          {successMessage && (
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 text-xs text-emerald-300">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400 mt-0.5" />
+              <span>{successMessage}</span>
             </div>
+          )}
 
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                  <Lock size={16} />
+          {mode === "login" ? (
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Username or Email
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                    <User size={16} />
+                  </div>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="e.g. operator or admin"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    required
+                  />
                 </div>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
-                  required
-                />
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:from-cyan-400 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <span>Authenticating...</span>
-              ) : (
-                <>
-                  <span>Sign In to Control Tower</span>
-                  <ArrowRight size={16} />
-                </>
-              )}
-            </button>
-          </form>
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:from-cyan-400 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <span>Authenticating...</span>
+                ) : (
+                  <>
+                    <span>Sign In to Control Tower</span>
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Username
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                    <User size={16} />
+                  </div>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="e.g. rahul_sharma"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                    <Mail size={16} />
+                  </div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="e.g. rahul@example.com"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:from-emerald-400 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <span>Registering...</span>
+                ) : (
+                  <>
+                    <span>Create Public Account</span>
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </form>
+          )}
 
           {/* Quick-select Demo Credentials */}
           <div className="mt-8 border-t border-slate-800/80 pt-5">

@@ -26,7 +26,7 @@ function isTokenExpired(jwtToken: string): boolean {
   }
 }
 
-export type UserRole = "ADMIN" | "CONTROL_OPERATOR" | "FIELD_OFFICER" | "DRIVER";
+export type UserRole = "ADMIN" | "CONTROL_OPERATOR" | "FIELD_OFFICER" | "DRIVER" | "PUBLIC";
 
 export type AuthUser = {
   id: number;
@@ -42,6 +42,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   loading: boolean;
   login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (username: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   getAuthHeader: () => Record<string, string>;
   apiUrl: string;
@@ -113,6 +114,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const register = async (username: string, email: string, password: string) => {
+    try {
+      const res = await fetch(`${apiUrl}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        let errMsg = "Registration failed. Please check your inputs.";
+        if (typeof data.detail === "string") {
+          errMsg = data.detail;
+        } else if (Array.isArray(data.detail) && data.detail[0]?.msg) {
+          errMsg = data.detail[0].msg;
+        }
+        return {
+          success: false,
+          error: errMsg,
+        };
+      }
+
+      return { success: true };
+    } catch {
+      return {
+        success: false,
+        error: "Network error connecting to NEXUS-NER authentication service.",
+      };
+    }
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -135,6 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!token && !!user,
         loading,
         login,
+        register,
         logout,
         getAuthHeader,
         apiUrl,

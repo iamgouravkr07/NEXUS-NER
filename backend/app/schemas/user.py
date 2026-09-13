@@ -6,8 +6,15 @@ from pydantic import BaseModel, ConfigDict, Field
 class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=100)
     email: str = Field(..., max_length=255)
-    role: str = Field(default="CONTROL_OPERATOR", examples=["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"])
+    role: str = Field(default="PUBLIC", examples=["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"])
     is_active: bool = True
+
+
+class UserRegister(BaseModel):
+    username: str = Field(..., min_length=3, max_length=100)
+    email: str = Field(..., max_length=255)
+    password: str = Field(..., min_length=6, max_length=128)
+    role: Optional[str] = None
 
 
 class UserCreate(UserBase):

@@ -12,6 +12,7 @@ from app.schemas.user import (
     Token,
     UserCreate,
     UserUpdate,
+    UserRegister,
     UserResponse,
 )
 from app.services import auth_service
@@ -121,6 +122,58 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         token_type="bearer",
         user=UserResponse.model_validate(user)
     )
+
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def register(payload: UserRegister, db: Session = Depends(get_db)):
+    """
+    Public registration endpoint for standard users.
+    Assigns safe default role 'PUBLIC'.
+    Defends against privilege escalation: requests attempting to self-assign
+    operational roles (ADMIN, CONTROL_OPERATOR, FIELD_OFFICER, DRIVER) are rejected.
+    """
+    if payload.role is not None:
+        requested_role = payload.role.strip().upper()
+        if requested_role in {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"}:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Self-assignment of operational role '{payload.role}' is forbidden",
+            )
+        if requested_role != "PUBLIC":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid role '{payload.role}'. Allowed for public registration: ['PUBLIC']",
+            )
+
+    clean_username = payload.username.strip()
+    clean_email = payload.email.strip().lower()
+
+    existing_user = auth_service.get_user_by_username_or_email(db, clean_username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Username '{clean_username}' already registered",
+        )
+
+    existing_email = auth_service.get_user_by_username_or_email(db, clean_email)
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Email '{clean_email}' already registered",
+        )
+
+    new_user = User(
+        username=clean_username,
+        email=clean_email,
+        password_hash=auth_service.hash_password(payload.password),
+        role="PUBLIC",
+        is_active=True,
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    logger.info("Registered new public user '%s' (ID #%d)", new_user.username, new_user.id)
+    return UserResponse.model_validate(new_user)
 
 
 @router.get("/me", response_model=UserResponse)
