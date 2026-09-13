@@ -111,6 +111,7 @@ function Vehicles() {
   const [anomalies, setAnomalies] = useState<
     Record<number, { anomaly_type: string; severity: string; description: string }>
   >({});
+  const [driverAssignments, setDriverAssignments] = useState<Record<number, string>>({});
 
   useEffect(() => {
     async function loadVehicles() {
@@ -118,17 +119,34 @@ function Vehicles() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_URL}/vehicles/`, {
-          headers: getAuthHeader(),
-        });
+        const [response, assignResponse] = await Promise.all([
+          fetch(`${API_URL}/vehicles/`, {
+            headers: getAuthHeader(),
+          }),
+          fetch(`${API_URL}/assignments/?active_only=true`, {
+            headers: getAuthHeader(),
+          }).catch(() => null),
+        ]);
 
         if (!response.ok) {
           throw new Error(`Failed to load vehicles (${response.status})`);
         }
 
         const data: BackendVehicle[] = await response.json();
-
         setVehicles(data);
+
+        if (assignResponse && assignResponse.ok) {
+          const assignData = await assignResponse.json().catch(() => []);
+          if (Array.isArray(assignData)) {
+            const map: Record<number, string> = {};
+            for (const a of assignData) {
+              if (a.vehicle_id && a.driver_username) {
+                map[a.vehicle_id] = a.driver_username;
+              }
+            }
+            setDriverAssignments(map);
+          }
+        }
       } catch (err) {
         console.error(err);
         setError(
@@ -451,8 +469,8 @@ function Vehicles() {
                               {vehicle.vehicle_number}
                             </p>
 
-                            <p className="mt-1 text-xs text-slate-600">
-                              Database ID: {vehicle.id}
+                            <p className="mt-1 text-xs text-slate-500">
+                              ID: {vehicle.id} {driverAssignments[vehicle.id] && <span className="text-cyan-400 font-mono">• Driver: {driverAssignments[vehicle.id]}</span>}
                             </p>
                           </div>
                         </div>
@@ -639,6 +657,13 @@ function Vehicles() {
                 <p className="text-xs text-slate-600">Vehicle Number</p>
                 <p className="mt-2 text-sm font-medium text-white">
                   {selectedVehicle.vehicle_number}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+                <p className="text-xs text-slate-600">Assigned Driver</p>
+                <p className="mt-2 text-sm font-medium text-cyan-300 font-mono">
+                  {driverAssignments[selectedVehicle.id] || "No Driver Assigned"}
                 </p>
               </div>
 

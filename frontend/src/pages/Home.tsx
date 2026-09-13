@@ -319,6 +319,7 @@ interface DriverMissionCockpitProps {
   criticalAlerts: AlertItem[];
   getAuthHeader: () => Record<string, string>;
   backendOnline: boolean;
+  driverUsername?: string;
 }
 
 function DriverMissionCockpit({
@@ -329,6 +330,7 @@ function DriverMissionCockpit({
   criticalAlerts,
   getAuthHeader,
   backendOnline,
+  driverUsername,
 }: DriverMissionCockpitProps) {
   const { t } = useLanguage();
   const [isGpsTransmitting, setIsGpsTransmitting] = useState(false);
@@ -480,24 +482,28 @@ function DriverMissionCockpit({
       "Safe detour route computed avoiding active corridor disruption",
   };
 
-  if (!vehicle || !trip) {
+  if (!vehicle) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 text-center shadow-2xl space-y-3">
-        <div className="mx-auto mb-1 flex h-14 w-14 items-center justify-center rounded-xl bg-slate-800/80 text-slate-400 border border-slate-700">
-          <Truck size={26} />
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-8 text-center shadow-2xl space-y-4 max-w-lg mx-auto my-6">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/30">
+          <Truck size={32} />
         </div>
         <div>
-          <h2 className="text-base font-bold text-white">
-            {d.noActiveMission || "Mission Assignment Unavailable"}
+          <span className="inline-block rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400">
+            Vehicle Assignment Unavailable
+          </span>
+          <h2 className="text-xl font-bold text-white mt-3">
+            No Active Vehicle Assigned
           </h2>
-          <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed mt-1">
-            No active transport vehicle or corridor mission is currently dispatched to this driver terminal. Contact Control Central dispatch.
+          <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed mt-2">
+            Authenticated Driver: <span className="font-mono text-cyan-300 font-semibold">{driverUsername || "Driver"}</span>.<br />
+            No fleet transport vehicle is currently assigned to your terminal. Contact Control Central dispatch for vehicle assignment.
           </p>
         </div>
         <div className="pt-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-[11px] font-medium text-amber-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-            Standby / Unassigned
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 text-[11px] font-medium text-slate-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
+            Terminal Status: Standby / Unassigned
           </span>
         </div>
       </div>
@@ -507,12 +513,12 @@ function DriverMissionCockpit({
   const riskVal = incident?.risk_score ?? road?.risk_score ?? 0;
   const vehicleNum = vehicle.vehicle_number || `Unit #${vehicle.id}`;
   const vehicleId = vehicle.id;
-  const tripId = trip.id;
-  const originStr = trip.origin || "Origin Unspecified";
-  const destStr = trip.destination || "Destination Unspecified";
-  const cargoStr = trip.cargo_type || vehicle.cargo_type || "General Logistics Freight";
-  const priorityStr = (trip.priority || vehicle.cargo_priority || "NORMAL").toUpperCase();
-  const statusStr = (trip.status || vehicle.status || "IDLE").replace("_", " ").toUpperCase();
+  const tripId = trip?.id ?? "Standby";
+  const originStr = trip?.origin || "Guwahati Hub";
+  const destStr = trip?.destination || "Regional Depot";
+  const cargoStr = trip?.cargo_type || vehicle.cargo_type || "General Logistics Freight";
+  const priorityStr = (trip?.priority || vehicle.cargo_priority || "NORMAL").toUpperCase();
+  const statusStr = (trip?.status || vehicle.status || "IDLE").replace("_", " ").toUpperCase();
   const corridorName = road?.road_name || "NH-15";
 
   return (
@@ -530,11 +536,11 @@ function DriverMissionCockpit({
                 {d.missionActive}
               </span>
               <span className="rounded bg-cyan-500/20 px-1.5 py-0.5 text-[10px] font-bold text-cyan-300 font-mono">
-                TRIP #{tripId}
+                {trip ? `TRIP #${trip.id}` : "STANDBY"}
               </span>
             </div>
             <p className="text-[10px] text-slate-400">
-              NEXUS-NER Automated Driver Terminal
+              Driver: <span className="text-cyan-300 font-semibold">{driverUsername || "driver"}</span> • Unit: <span className="text-white font-medium">{vehicleNum}</span>
             </p>
           </div>
         </div>
@@ -839,16 +845,89 @@ function Home() {
     return () => window.clearInterval(interval);
   }, [selectedHubIdx, fetchPredictiveRisk]);
 
+  // Phase 7C: Driver ↔ Vehicle Assignment state
+  const [driverAssignment, setDriverAssignment] = useState<any | null>(null);
+  const [driverVehicle, setDriverVehicle] = useState<Vehicle | null>(null);
+  const [driverTrip, setDriverTrip] = useState<Trip | null>(null);
+  const [vehicleAssignments, setVehicleAssignments] = useState<Record<number, string>>({});
+
+  const loadDriverMission = useCallback(async () => {
+    try {
+      const authHeaders = getAuthHeader();
+      const assignRes = await fetch(`${API_URL}/assignments/me`, { headers: authHeaders });
+      if (!assignRes.ok) {
+        if (assignRes.status === 404) {
+          setDriverAssignment(null);
+          setDriverVehicle(null);
+          setDriverTrip(null);
+          setBackendOnline(true);
+          return;
+        }
+        throw new Error(`Failed to load driver assignment (${assignRes.status})`);
+      }
+
+      const assignData = await assignRes.json();
+      setDriverAssignment(assignData);
+
+      const [vehRes, tripsRes, roadsRes, alertsRes, incsRes] = await Promise.all([
+        fetch(`${API_URL}/vehicles/${assignData.vehicle_id}`, { headers: authHeaders }),
+        fetch(`${API_URL}/trips/`, { headers: authHeaders }),
+        fetch(`${API_URL}/roads/`, { headers: authHeaders }),
+        fetch(`${API_URL}/alerts/?severity=critical&status=active&limit=5`, { headers: authHeaders }),
+        fetch(`${API_URL}/incidents/`, { headers: authHeaders }),
+      ]);
+
+      if (vehRes.ok) {
+        const vData = await vehRes.json();
+        setDriverVehicle(vData);
+      }
+
+      if (tripsRes.ok) {
+        const tData: Trip[] = await tripsRes.json();
+        setTrips(tData);
+        const matchedTrip = tData.find(
+          (t) =>
+            t.vehicle_id === assignData.vehicle_id &&
+            t.status?.toLowerCase() !== "completed" &&
+            t.status?.toLowerCase() !== "cancelled"
+        ) || null;
+        setDriverTrip(matchedTrip);
+      }
+
+      if (roadsRes.ok) {
+        const rData = await roadsRes.json();
+        setRoads(rData);
+      }
+      if (alertsRes.ok) {
+        const aData = await alertsRes.json();
+        setCriticalAlerts(aData);
+      }
+      if (incsRes.ok) {
+        const iData = await incsRes.json();
+        setIncidents(iData);
+      }
+
+      setBackendOnline(true);
+    } catch (err) {
+      console.error("Failed to load driver mission:", err);
+      setBackendOnline(false);
+    } finally {
+      setLoading(false);
+      setLoadingAlerts(false);
+    }
+  }, [getAuthHeader]);
+
   const loadDashboard = useCallback(async () => {
     try {
       const authHeaders = getAuthHeader();
-      const [vehicleResponse, incidentResponse, alertResponse, tripsResponse, roadsResponse] =
+      const [vehicleResponse, incidentResponse, alertResponse, tripsResponse, roadsResponse, assignResponse] =
         await Promise.all([
           fetch(`${API_URL}/vehicles/`, { headers: authHeaders }),
           fetch(`${API_URL}/incidents/`, { headers: authHeaders }),
           fetch(`${API_URL}/alerts/?severity=critical&status=active&limit=5`, { headers: authHeaders }),
           fetch(`${API_URL}/trips/`, { headers: authHeaders }),
           fetch(`${API_URL}/roads/`, { headers: authHeaders }),
+          fetch(`${API_URL}/assignments/?active_only=true`, { headers: authHeaders }).catch(() => null),
         ]);
 
       if (!vehicleResponse.ok || !incidentResponse.ok) {
@@ -871,6 +950,20 @@ function Home() {
       if (Array.isArray(roadsData)) {
         setRoads(roadsData);
       }
+
+      if (assignResponse && assignResponse.ok) {
+        const aData = await assignResponse.json().catch(() => []);
+        if (Array.isArray(aData)) {
+          const map: Record<number, string> = {};
+          for (const a of aData) {
+            if (a.vehicle_id && a.driver_username) {
+              map[a.vehicle_id] = a.driver_username;
+            }
+          }
+          setVehicleAssignments(map);
+        }
+      }
+
       setAlertsError(!alertResponse.ok);
       setBackendOnline(true);
     } catch {
@@ -880,13 +973,19 @@ function Home() {
       setLoading(false);
       setLoadingAlerts(false);
     }
-  }, []);
+  }, [getAuthHeader]);
 
   useEffect(() => {
-    loadDashboard();
-    const interval = window.setInterval(loadDashboard, 10000);
-    return () => window.clearInterval(interval);
-  }, [loadDashboard]);
+    if (isDriver) {
+      loadDriverMission();
+      const interval = window.setInterval(loadDriverMission, 10000);
+      return () => window.clearInterval(interval);
+    } else {
+      loadDashboard();
+      const interval = window.setInterval(loadDashboard, 10000);
+      return () => window.clearInterval(interval);
+    }
+  }, [isDriver, loadDriverMission, loadDashboard]);
 
   // Real-time WebSocket event listeners for immediate state invalidation & telemetry
   useEffect(() => {
@@ -897,7 +996,11 @@ function Home() {
         case "trip.rerouted":
         case "alert.status.updated":
         case "vehicle.anomaly.detected":
-          loadDashboard();
+          if (isDriver) {
+            loadDriverMission();
+          } else {
+            loadDashboard();
+          }
           break;
 
         case "vehicle.position.updated":
@@ -1046,24 +1149,24 @@ function Home() {
 
   return (
     <div className="space-y-6 max-w-full overflow-x-hidden">
-      {/* If logged in as DRIVER on mobile viewport, render dedicated Mission Cockpit */}
-      {isDriver && (
-        <div className="block md:hidden">
+      {/* If logged in as DRIVER, render dedicated Mission Cockpit exclusively */}
+      {isDriver ? (
+        <div className="space-y-6">
           <DriverMissionCockpit
-            vehicle={impactedVehicle}
-            trip={interceptedTrip}
+            vehicle={driverVehicle}
+            trip={driverTrip}
             incident={activeDisruption}
             road={affectedRoad}
             criticalAlerts={criticalAlerts}
             getAuthHeader={getAuthHeader}
             backendOnline={backendOnline}
+            driverUsername={user?.username || driverAssignment?.driver_username}
           />
         </div>
-      )}
-
-      {/* Control Tower Dashboard (Hidden on mobile only for DRIVER; visible on desktop for everyone and on mobile for non-drivers) */}
-      <div className={isDriver ? "hidden md:block space-y-6" : "space-y-6"}>
-        {/* COMPACT OPERATIONAL STATUS STRIP (Replaces duplicate Control Tower title) */}
+      ) : (
+        /* Control Tower Dashboard for Operators and Admins */
+        <div className="space-y-6">
+          {/* COMPACT OPERATIONAL STATUS STRIP (Replaces duplicate Control Tower title) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5">
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
@@ -1255,6 +1358,11 @@ function Home() {
               >
                 {impactedVehicle?.vehicle_number || "AS-01-BX-4091"} (Trip #{interceptedTrip?.id ?? 318}) →
               </Link>
+              <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
+                <span>Driver: <strong className="text-slate-200 font-mono">{vehicleAssignments[impactedVehicle?.id ?? 472] || "driver"}</strong></span>
+                <span>•</span>
+                <span>GPS: <strong className="text-emerald-400 font-semibold">Live</strong></span>
+              </div>
               <p className="text-[11px] text-slate-400 mt-0.5 truncate">
                 Cargo: {impactedVehicle?.cargo_type || "Critical Vaccines & Cold-Chain Supplies"}
               </p>
@@ -2057,6 +2165,7 @@ function Home() {
         </div>
       </div>
       </div>
+      )}
     </div>
   );
 }

@@ -6,3 +6,4 @@ from app.models.alert import Alert
 from app.models.user import User
 from app.models.sync_event import SyncEvent
 from app.models.weather import WeatherRecord
+from app.models.assignment import DriverVehicleAssignment

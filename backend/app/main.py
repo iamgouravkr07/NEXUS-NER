@@ -18,6 +18,7 @@ from app.api.weather import router as weather_router
 from app.api.ml import router as ml_router
 from app.api.analytics import router as analytics_router
 from app.api.websocket import router as websocket_router
+from app.api.assignments import router as assignments_router
 from app.database import Base, engine
 from app.models.incident import Incident
 from app.models.road import Road
@@ -27,6 +28,7 @@ from app.models.alert import Alert
 from app.models.user import User
 from app.models.sync_event import SyncEvent
 from app.models.weather import WeatherRecord
+from app.models.assignment import DriverVehicleAssignment
 
 logger = logging.getLogger("nexus_ner")
 
@@ -73,6 +75,7 @@ app.include_router(weather_router)
 app.include_router(ml_router)
 app.include_router(analytics_router)
 app.include_router(websocket_router)
+app.include_router(assignments_router, prefix="/assignments", tags=["Assignments"])
 
 @app.get("/")
 

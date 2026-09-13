@@ -3,7 +3,7 @@ import logging
 import math
 from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -17,6 +17,7 @@ from app.schemas.vehicle import (
     VehicleStatusUpdate,
 )
 from app.api.auth import require_roles, get_current_user
+from app.services.assignment_service import AssignmentService
 from app.services.vehicle_anomaly_service import VehicleAnomalyService, haversine_km
 from app.services.websocket_manager import manager
 
@@ -272,6 +273,14 @@ def update_vehicle_location_patch(
     db: Session = Depends(get_db),
     current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "DRIVER")),
 ):
+    if current_user.role == "DRIVER":
+        active_assignment = AssignmentService.get_active_assignment_for_driver(db, current_user.id)
+        if not active_assignment or active_assignment.vehicle_id != vehicle_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Driver #{current_user.id} is not assigned to vehicle #{vehicle_id}. GPS submission forbidden."
+            )
+
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
     ).first()
@@ -295,6 +304,14 @@ def update_vehicle_location_post(
     db: Session = Depends(get_db),
     current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "DRIVER")),
 ):
+    if current_user.role == "DRIVER":
+        active_assignment = AssignmentService.get_active_assignment_for_driver(db, current_user.id)
+        if not active_assignment or active_assignment.vehicle_id != vehicle_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Driver #{current_user.id} is not assigned to vehicle #{vehicle_id}. GPS submission forbidden."
+            )
+
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
     ).first()
