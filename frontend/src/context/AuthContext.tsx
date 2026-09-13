@@ -10,8 +10,12 @@ export function getAuthApiUrl(): string {
 
 function isTokenExpired(jwtToken: string): boolean {
   try {
-    const payloadBase64 = jwtToken.split(".")[1];
-    if (!payloadBase64) return true;
+    const parts = jwtToken.split(".");
+    if (parts.length < 2) return true;
+    let payloadBase64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    while (payloadBase64.length % 4) {
+      payloadBase64 += "=";
+    }
     const decoded = JSON.parse(atob(payloadBase64));
     if (typeof decoded.exp === "number") {
       return decoded.exp * 1000 < Date.now();

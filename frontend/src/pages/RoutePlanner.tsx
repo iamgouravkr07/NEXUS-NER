@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   AlertTriangle,
@@ -30,6 +30,7 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useAuth } from "../context/AuthContext";
+import { useWebSocket } from "../hooks/useWebSocket";
 import { MapErrorBoundary } from "../components/MapErrorBoundary";
 import { networkService } from "../services/network";
 
@@ -334,6 +335,11 @@ function RoutePlanner() {
   const [tileError, setTileError] = useState<boolean>(false);
 
   const prevParamsRef = useRef<string>("");
+  const selectedTripIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    selectedTripIdRef.current = selectedTrip ? selectedTrip.id : null;
+  }, [selectedTrip]);
 
   const applyTripSelection = (
     tripsList: Trip[],
@@ -401,7 +407,15 @@ function RoutePlanner() {
     }
 
     if (!targetTrip && tripsList.length > 0) {
-      targetTrip = tripsList[0];
+      if (selectedTripIdRef.current) {
+        const foundCurrent = tripsList.find((t) => t.id === selectedTripIdRef.current);
+        if (foundCurrent) {
+          targetTrip = foundCurrent;
+        }
+      }
+      if (!targetTrip) {
+        targetTrip = tripsList[0];
+      }
     }
 
     if (targetTrip && !targetVehicle) {
@@ -562,11 +576,14 @@ function RoutePlanner() {
     };
   }, [isSimulating, simSpeed, mainRoute, detourRoute, isRerouted, selectedVehicle?.id]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async (isBackground: boolean | unknown = false) => {
+    const isBg = isBackground === true;
     try {
       setError("");
-      setLoadingTrips(true);
-      setLoadingVehicles(true);
+      if (!isBg) {
+        setLoadingTrips(true);
+        setLoadingVehicles(true);
+      }
 
       let tripsResponse: Response;
       let vehiclesResponse: Response;
@@ -645,14 +662,99 @@ function RoutePlanner() {
         setError("An unexpected error occurred while loading Route Planner data.");
       }
     } finally {
-      setLoadingTrips(false);
-      setLoadingVehicles(false);
+      if (!isBg) {
+        setLoadingTrips(false);
+        setLoadingVehicles(false);
+      }
     }
-  };
+  }, [searchParams]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+    const interval = window.setInterval(() => {
+      fetchData(true);
+    }, 10000);
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [fetchData]);
+
+  const { subscribe } = useWebSocket();
+
+  useEffect(() => {
+    const unsub = subscribe((message) => {
+      if (!message || !message.type) return;
+      const ev = message.type;
+      const data = message.data || {};
+
+      if (ev === "trip.rerouted") {
+        fetchData(true);
+        if (selectedTripIdRef.current && data.trip_id === selectedTripIdRef.current) {
+          setSelectedTrip((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              status: data.status ?? prev.status,
+              route_distance_km: data.route_distance_km ?? prev.route_distance_km,
+              route_duration_minutes: data.route_duration_minutes ?? prev.route_duration_minutes,
+              reroute_count: data.reroute_count ?? (prev.reroute_count ?? 0) + 1,
+              last_reroute_reason: data.reason ?? prev.last_reroute_reason,
+              current_route_geometry: data.route_geometry ?? prev.current_route_geometry,
+            };
+          });
+
+          if (data.route_geometry) {
+            const coords = parseCoordinates(data.route_geometry);
+            if (coords.length > 0) {
+              setMainRoute(coords);
+              setRouteCalculated(true);
+              setRouteError("");
+              if (data.route_distance_km) setRouteDistanceKm(data.route_distance_km);
+              if (data.route_duration_minutes) setRouteDurationMinutes(data.route_duration_minutes);
+              setIsRerouted(false);
+              setDetourRoute([]);
+              setBlockedRoute([]);
+              setBlockagePoint(null);
+              setRerouteResult(null);
+            }
+          }
+        }
+      } else if (ev === "incident.status.updated" || ev === "incident.created") {
+        fetchData(true);
+      } else if (ev === "vehicle.position.updated") {
+        if (data.vehicle_id) {
+          setVehicles((prev) =>
+            prev.map((v) =>
+              v.id === data.vehicle_id
+                ? {
+                    ...v,
+                    latitude: typeof data.latitude === "number" ? data.latitude : v.latitude,
+                    longitude: typeof data.longitude === "number" ? data.longitude : v.longitude,
+                    status: data.status || v.status,
+                    last_gps_timestamp: data.timestamp || new Date().toISOString(),
+                    current_trip_id: data.current_trip_id !== undefined ? data.current_trip_id : v.current_trip_id,
+                  }
+                : v
+            )
+          );
+          setSelectedVehicle((prev) =>
+            prev && prev.id === data.vehicle_id
+              ? {
+                  ...prev,
+                  latitude: typeof data.latitude === "number" ? data.latitude : prev.latitude,
+                  longitude: typeof data.longitude === "number" ? data.longitude : prev.longitude,
+                  status: data.status || prev.status,
+                  last_gps_timestamp: data.timestamp || new Date().toISOString(),
+                  current_trip_id: data.current_trip_id !== undefined ? data.current_trip_id : prev.current_trip_id,
+                }
+              : prev
+          );
+        }
+      }
+    });
+
+    return () => unsub();
+  }, [fetchData, subscribe]);
 
   // Synchronize selection when URL query parameters change after initial load
   useEffect(() => {
@@ -923,7 +1025,7 @@ function RoutePlanner() {
         </div>
 
         <button
-          onClick={fetchData}
+          onClick={() => fetchData()}
           className="flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-800"
         >
           <RefreshCw size={16} />

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth, getAuthApiUrl } from "../context/AuthContext";
+import { useWebSocket } from "../hooks/useWebSocket";
 
 type AlertSeverity = "Critical" | "High" | "Medium" | "Low";
 type AlertStatus = "Active" | "Acknowledged" | "Resolved";
@@ -113,6 +114,7 @@ function alertIcon(type: string) {
 
 function Alerts() {
   const { getAuthHeader } = useAuth();
+  const { subscribe } = useWebSocket();
   const apiBase = getAuthApiUrl();
 
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
@@ -210,6 +212,22 @@ function Alerts() {
       window.clearInterval(interval);
     };
   }, [fetchAlertsData]);
+
+  useEffect(() => {
+    const unsub = subscribe((message) => {
+      if (!message || !message.type) return;
+      const ev = message.type;
+      if (
+        ev === "alert.status.updated" ||
+        ev === "incident.created" ||
+        ev === "incident.status.updated" ||
+        ev === "trip.rerouted"
+      ) {
+        fetchAlertsData();
+      }
+    });
+    return () => unsub();
+  }, [fetchAlertsData, subscribe]);
 
   const handleAcknowledge = async (rawId: number) => {
     try {

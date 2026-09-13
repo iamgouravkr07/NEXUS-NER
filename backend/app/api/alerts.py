@@ -10,6 +10,7 @@ from app.schemas.alert import (
     AlertStatusUpdate
 )
 from app.services import alert_service
+from app.services.websocket_manager import manager
 from app.api.auth import require_roles
 
 router = APIRouter(
@@ -79,6 +80,18 @@ def acknowledge_alert_endpoint(
     alert = alert_service.acknowledge_alert(db=db, alert_id=alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
+
+    manager.broadcast_sync(
+        "alert.status.updated",
+        {
+            "id": alert.id,
+            "alert_id": alert.id,
+            "status": alert.status,
+            "source_entity": alert.source_entity,
+            "source_entity_id": alert.source_entity_id,
+        },
+    )
+
     return alert
 
 
@@ -92,6 +105,18 @@ def resolve_alert_endpoint(
     alert = alert_service.resolve_alert(db=db, alert_id=alert_id)
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
+
+    manager.broadcast_sync(
+        "alert.status.updated",
+        {
+            "id": alert.id,
+            "alert_id": alert.id,
+            "status": alert.status,
+            "source_entity": alert.source_entity,
+            "source_entity_id": alert.source_entity_id,
+        },
+    )
+
     return alert
 
 

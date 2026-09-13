@@ -15,6 +15,7 @@ from app.schemas.nlp_incident import (
 )
 from app.services import alert_service
 from app.services.nlp_extraction_service import get_nlp_extraction_service, ExtractionError
+from app.services.websocket_manager import manager
 from app.api.auth import require_roles
 
 
@@ -100,6 +101,17 @@ def create_incident(
         except Exception:
             pass
 
+    manager.broadcast_sync(
+        "incident.created",
+        {
+            "id": db_incident.id,
+            "incident_id": db_incident.id,
+            "severity": db_incident.severity,
+            "status": db_incident.status,
+            "affected_road_id": db_incident.affected_road_id,
+        },
+    )
+
     return db_incident
 
 
@@ -179,5 +191,16 @@ def update_incident_status(
 
     db.commit()
     db.refresh(incident)
+
+    manager.broadcast_sync(
+        "incident.status.updated",
+        {
+            "id": incident.id,
+            "incident_id": incident.id,
+            "status": incident.status,
+            "affected_road_id": incident.affected_road_id,
+            "severity": incident.severity,
+        },
+    )
 
     return incident

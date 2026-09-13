@@ -20,6 +20,7 @@ class ConnectionManager:
         # {"ws": WebSocket, "user_id": int, "role": str, "assigned_vehicle_id": Optional[int]}
         self.active_connections: List[Dict[str, Any]] = []
         self._lock = asyncio.Lock()
+        self._main_loop: Optional[asyncio.AbstractEventLoop] = None
 
     async def connect(
         self,
@@ -30,6 +31,10 @@ class ConnectionManager:
     ) -> None:
         """Accept WebSocket handshake and register client in connection pool."""
         await websocket.accept()
+        try:
+            self._main_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            pass
         async with self._lock:
             self.active_connections.append({
                 "ws": websocket,
@@ -109,6 +114,39 @@ class ConnectionManager:
                 ]
 
         return dispatched
+
+    def broadcast_sync(
+        self,
+        event_type: str,
+        data: Dict[str, Any],
+        target_vehicle_id: Optional[int] = None,
+    ) -> None:
+        """Safely dispatch WebSocket event from synchronous API context without raising."""
+        if not self.active_connections:
+            return
+        try:
+            loop = getattr(self, "_main_loop", None)
+            if loop and loop.is_running():
+                asyncio.run_coroutine_threadsafe(
+                    self.broadcast(event_type, data, target_vehicle_id),
+                    loop,
+                )
+                return
+
+            try:
+                current_loop = asyncio.get_running_loop()
+            except RuntimeError:
+                current_loop = None
+
+            if current_loop and current_loop.is_running():
+                asyncio.run_coroutine_threadsafe(
+                    self.broadcast(event_type, data, target_vehicle_id),
+                    current_loop,
+                )
+            else:
+                asyncio.run(self.broadcast(event_type, data, target_vehicle_id))
+        except Exception as err:
+            logger.warning("Could not broadcast WebSocket event %s: %s", event_type, err)
 
 
 # Global singleton instance

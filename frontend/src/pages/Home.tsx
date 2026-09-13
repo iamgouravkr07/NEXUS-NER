@@ -39,6 +39,7 @@ import { mlClient } from "../api/mlClient";
 import type { PredictiveRiskResult } from "../types/ml";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useWebSocket } from "../hooks/useWebSocket";
 import { geolocationService, type GpsPosition } from "../services/geolocation";
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
@@ -764,6 +765,7 @@ function DriverMissionCockpit({
 
 function Home() {
   const { user, getAuthHeader } = useAuth();
+  const { subscribe } = useWebSocket();
   const isDriver = user?.role === "DRIVER";
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -837,66 +839,94 @@ function Home() {
     return () => window.clearInterval(interval);
   }, [selectedHubIdx, fetchPredictiveRisk]);
 
-  useEffect(() => {
-    let mounted = true;
+  const loadDashboard = useCallback(async () => {
+    try {
+      const [vehicleResponse, incidentResponse, alertResponse, tripsResponse, roadsResponse] =
+        await Promise.all([
+          fetch(`${API_URL}/vehicles/`),
+          fetch(`${API_URL}/incidents/`),
+          fetch(`${API_URL}/alerts/?severity=critical&status=active&limit=5`),
+          fetch(`${API_URL}/trips/`),
+          fetch(`${API_URL}/roads/`),
+        ]);
 
-    async function loadDashboard() {
-      try {
-        const [vehicleResponse, incidentResponse, alertResponse, tripsResponse, roadsResponse] =
-          await Promise.all([
-            fetch(`${API_URL}/vehicles/`),
-            fetch(`${API_URL}/incidents/`),
-            fetch(`${API_URL}/alerts/?severity=critical&status=active&limit=5`),
-            fetch(`${API_URL}/trips/`),
-            fetch(`${API_URL}/roads/`),
-          ]);
-
-        if (!vehicleResponse.ok || !incidentResponse.ok) {
-          throw new Error("Backend request failed");
-        }
-
-        const vehicleData = await vehicleResponse.json();
-        const incidentData = await incidentResponse.json();
-        const alertData = alertResponse.ok ? await alertResponse.json() : [];
-        const tripsData = tripsResponse.ok ? await tripsResponse.json() : [];
-        const roadsData = roadsResponse.ok ? await roadsResponse.json() : [];
-
-        if (!mounted) return;
-
-        setVehicles(Array.isArray(vehicleData) ? vehicleData : []);
-        setIncidents(Array.isArray(incidentData) ? incidentData : []);
-        setCriticalAlerts(Array.isArray(alertData) ? alertData : []);
-        if (Array.isArray(tripsData)) {
-          setTrips(tripsData);
-          setTripsCount(tripsData.length);
-        }
-        if (Array.isArray(roadsData)) {
-          setRoads(roadsData);
-        }
-        setAlertsError(!alertResponse.ok);
-        setBackendOnline(true);
-      } catch {
-        if (!mounted) return;
-
-        setBackendOnline(false);
-        setAlertsError(true);
-      } finally {
-        if (mounted) {
-          setLoading(false);
-          setLoadingAlerts(false);
-        }
+      if (!vehicleResponse.ok || !incidentResponse.ok) {
+        throw new Error("Backend request failed");
       }
+
+      const vehicleData = await vehicleResponse.json();
+      const incidentData = await incidentResponse.json();
+      const alertData = alertResponse.ok ? await alertResponse.json() : [];
+      const tripsData = tripsResponse.ok ? await tripsResponse.json() : [];
+      const roadsData = roadsResponse.ok ? await roadsResponse.json() : [];
+
+      setVehicles(Array.isArray(vehicleData) ? vehicleData : []);
+      setIncidents(Array.isArray(incidentData) ? incidentData : []);
+      setCriticalAlerts(Array.isArray(alertData) ? alertData : []);
+      if (Array.isArray(tripsData)) {
+        setTrips(tripsData);
+        setTripsCount(tripsData.length);
+      }
+      if (Array.isArray(roadsData)) {
+        setRoads(roadsData);
+      }
+      setAlertsError(!alertResponse.ok);
+      setBackendOnline(true);
+    } catch {
+      setBackendOnline(false);
+      setAlertsError(true);
+    } finally {
+      setLoading(false);
+      setLoadingAlerts(false);
     }
-
-    loadDashboard();
-
-    const interval = window.setInterval(loadDashboard, 10000);
-
-    return () => {
-      mounted = false;
-      window.clearInterval(interval);
-    };
   }, []);
+
+  useEffect(() => {
+    loadDashboard();
+    const interval = window.setInterval(loadDashboard, 10000);
+    return () => window.clearInterval(interval);
+  }, [loadDashboard]);
+
+  // Real-time WebSocket event listeners for immediate state invalidation & telemetry
+  useEffect(() => {
+    const unsubscribe = subscribe((event) => {
+      switch (event.type) {
+        case "incident.created":
+        case "incident.status.updated":
+        case "trip.rerouted":
+        case "alert.status.updated":
+        case "vehicle.anomaly.detected":
+          loadDashboard();
+          break;
+
+        case "vehicle.position.updated":
+          if (event.data?.vehicle_id) {
+            setVehicles((prev) =>
+              prev.map((v) =>
+                v.id === event.data.vehicle_id
+                  ? {
+                      ...v,
+                      latitude: event.data.latitude,
+                      longitude: event.data.longitude,
+                      status: event.data.status || v.status,
+                      current_trip_id:
+                        event.data.current_trip_id !== undefined
+                          ? event.data.current_trip_id
+                          : v.current_trip_id,
+                    }
+                  : v
+              )
+            );
+          }
+          break;
+
+        default:
+          break;
+      }
+    });
+
+    return () => unsubscribe();
+  }, [subscribe, loadDashboard]);
 
   const activeVehicles = useMemo(() => {
     return vehicles.filter((vehicle) => {

@@ -31,6 +31,7 @@ from app.services.risk import (
     haversine_distance_km,
 )
 from app.services import alert_service
+from app.services.websocket_manager import manager
 from app.api.auth import require_roles
 
 
@@ -930,6 +931,28 @@ def reroute_trip(
         )
     except Exception:
         pass
+
+    additional_dist = round(
+        max(0.0, selected_route["distance_km"] - primary_route.get("distance_km", selected_route["distance_km"])),
+        1,
+    )
+
+    manager.broadcast_sync(
+        "trip.rerouted",
+        {
+            "id": trip.id,
+            "trip_id": trip.id,
+            "vehicle_id": vehicle.id,
+            "status": "rerouting",
+            "reroute_count": trip.reroute_count,
+            "new_eta_minutes": trip.eta_minutes,
+            "additional_distance_km": additional_dist,
+            "reason": trip.last_reroute_reason,
+            "route_geometry": trip.current_route_geometry,
+            "route_distance_km": trip.route_distance_km,
+            "route_duration_minutes": trip.route_duration_minutes,
+        },
+    )
 
     # --------------------------------------------------------
     # 12. Calculate delay
