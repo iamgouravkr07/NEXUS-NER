@@ -1,4 +1,11 @@
 import logging
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load the project-root .env before importing any app modules
+ROOT_DIR = Path(__file__).resolve().parents[2]
+load_dotenv(ROOT_DIR / ".env")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
