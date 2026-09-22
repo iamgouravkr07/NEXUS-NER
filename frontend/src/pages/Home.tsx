@@ -276,30 +276,30 @@ function StatCard({
   badgeType?: "critical" | "warning" | "success" | "info";
 }) {
   const badgeColors = {
-    critical: "border-red-500/30 bg-red-500/10 text-red-400",
-    warning: "border-amber-500/30 bg-amber-500/10 text-amber-300",
-    success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
-    info: "border-cyan-500/30 bg-cyan-500/10 text-cyan-300",
+    critical: "border-red-500/30 bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400",
+    warning: "border-amber-500/30 bg-amber-100 text-amber-800 dark:bg-amber-500/10 dark:text-amber-300",
+    success: "border-emerald-500/30 bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400",
+    info: "border-cyan-500/30 bg-cyan-100 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-300",
   };
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 sm:p-5 flex flex-col justify-between shadow-lg">
+    <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-4 sm:p-5 flex flex-col justify-between shadow-sm">
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{title}</p>
-          <p className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-white truncate">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</p>
+          <p className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white truncate">
             {value}
           </p>
-          <p className="mt-1 text-xs text-slate-400 truncate">{subtitle}</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">{subtitle}</p>
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-2.5 sm:p-3 text-cyan-400 shrink-0 ml-2">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 p-2.5 sm:p-3 text-cyan-600 dark:text-cyan-400 shrink-0 ml-2">
           {icon}
         </div>
       </div>
 
       {badgeText && (
-        <div className="mt-3.5 pt-2.5 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-1">
+        <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between gap-1">
           <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${badgeColors[badgeType]}`}>
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
             {badgeText}
@@ -484,25 +484,25 @@ function DriverMissionCockpit({
 
   if (!vehicle) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-8 text-center shadow-2xl space-y-4 max-w-lg mx-auto my-6">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/30">
+      <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/90 p-8 text-center shadow-sm space-y-4 max-w-lg mx-auto my-6">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/30">
           <Truck size={32} />
         </div>
         <div>
-          <span className="inline-block rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-amber-400">
+          <span className="inline-block rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 dark:bg-amber-500/10 dark:text-amber-400 px-3 py-1 text-xs font-semibold uppercase tracking-wider">
             Vehicle Assignment Unavailable
           </span>
-          <h2 className="text-xl font-bold text-white mt-3">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mt-3">
             No Active Vehicle Assigned
           </h2>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed mt-2">
-            Authenticated Driver: <span className="font-mono text-cyan-300 font-semibold">{driverUsername || "Driver"}</span>.<br />
+          <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto leading-relaxed mt-2">
+            Authenticated Driver: <span className="font-mono text-cyan-700 dark:text-cyan-300 font-semibold">{driverUsername || "Driver"}</span>.<br />
             No fleet transport vehicle is currently assigned to your terminal. Contact Control Central dispatch for vehicle assignment.
           </p>
         </div>
         <div className="pt-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800/80 px-3 py-1 text-[11px] font-medium text-slate-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400 px-3 py-1 text-[11px] font-medium">
+            <span className="h-1.5 w-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
             Terminal Status: Standby / Unassigned
           </span>
         </div>
@@ -524,7 +524,7 @@ function DriverMissionCockpit({
   return (
     <div className="space-y-4 pb-2">
       {/* 1. TOP MISSION CALLSIGN BANNER */}
-      <div className="flex items-center justify-between rounded-xl border border-cyan-500/30 bg-gradient-to-r from-slate-950 via-slate-900 to-cyan-950/40 px-4 py-3 shadow-xl">
+      <div className="flex items-center justify-between rounded-xl border border-cyan-200 bg-cyan-50/70 dark:border-cyan-500/30 dark:bg-gradient-to-r dark:from-slate-950 dark:via-slate-900 dark:to-cyan-950/40 px-4 py-3 shadow-sm">
         <div className="flex items-center gap-2.5">
           <span className="relative flex h-3 w-3 shrink-0">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
@@ -532,71 +532,71 @@ function DriverMissionCockpit({
           </span>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-xs font-black uppercase tracking-widest text-white">
+              <span className="font-mono text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white">
                 {d.missionActive}
               </span>
-              <span className="rounded bg-cyan-500/20 px-1.5 py-0.5 text-[10px] font-bold text-cyan-300 font-mono">
+              <span className="rounded bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300 px-1.5 py-0.5 text-[10px] font-bold font-mono">
                 {trip ? `TRIP #${trip.id}` : "STANDBY"}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400">
-              Driver: <span className="text-cyan-300 font-semibold">{driverUsername || "driver"}</span> • Unit: <span className="text-white font-medium">{vehicleNum}</span>
+            <p className="text-[10px] text-slate-600 dark:text-slate-400">
+              Driver: <span className="text-cyan-700 dark:text-cyan-300 font-semibold">{driverUsername || "driver"}</span> • Unit: <span className="text-slate-900 dark:text-white font-medium">{vehicleNum}</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-400">
+        <div className="flex items-center gap-1.5 rounded-full border border-emerald-600/30 bg-emerald-100 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 px-2.5 py-1 text-[11px] font-bold">
           <CheckCircle2 size={13} className="shrink-0" />
           <span>{statusStr}</span>
         </div>
       </div>
 
       {/* 2. CRITICAL HAZARD & SAFE DETOUR CARD */}
-      <div className="rounded-xl border border-red-500/40 bg-gradient-to-b from-red-950/40 via-slate-950 to-slate-950 p-4 shadow-xl space-y-3">
+      <div className="rounded-xl border border-red-200 bg-red-50/50 dark:border-red-500/40 dark:bg-gradient-to-b dark:from-red-950/40 dark:via-slate-950 dark:to-slate-950 p-4 shadow-sm space-y-3">
         {/* Hazard Header */}
-        <div className="flex items-start justify-between gap-2 border-b border-red-500/20 pb-2.5">
+        <div className="flex items-start justify-between gap-2 border-b border-red-200 dark:border-red-500/20 pb-2.5">
           <div className="flex items-center gap-2">
-            <div className="rounded-lg bg-red-500/20 p-1.5 text-red-400 border border-red-500/30">
+            <div className="rounded-lg bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 p-1.5 border border-red-200 dark:border-red-500/30">
               <AlertTriangle size={18} />
             </div>
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
                 {d.hazardAlert}
               </span>
-              <h3 className="text-sm font-bold text-white leading-tight">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
                 {incident?.title || (incident?.incident_type ? `Incident #${incident.id} — ${incident.incident_type.toUpperCase()} on ${corridorName}` : "Active Hazard Detected")}
               </h3>
             </div>
           </div>
-          <div className="rounded-lg border border-red-500/30 bg-red-500/20 px-2 py-1 text-right shrink-0">
-            <span className="text-[9px] uppercase tracking-wider text-red-300 block font-semibold">
+          <div className="rounded-lg border border-red-200 bg-red-100 dark:border-red-500/30 dark:bg-red-500/20 px-2 py-1 text-right shrink-0">
+            <span className="text-[9px] uppercase tracking-wider text-red-700 dark:text-red-300 block font-semibold">
               Risk Score
             </span>
-            <span className="font-mono text-sm font-black text-red-200">
+            <span className="font-mono text-sm font-black text-red-800 dark:text-red-200">
               {riskVal} / 100
             </span>
           </div>
         </div>
 
         {/* Hazard Location & Description */}
-        <p className="text-xs text-slate-300 leading-relaxed">
+        <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
           {incident?.description ||
             "Active corridor hazard detected by PostGIS geofence along transit route."}
         </p>
 
         {/* Detour Callout */}
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/30 p-3 flex items-start gap-2.5">
-          <ShieldCheck size={18} className="text-emerald-400 shrink-0 mt-0.5" />
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-950/30 p-3 flex items-start gap-2.5">
+          <ShieldCheck size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-1 flex-wrap">
-              <span className="text-xs font-bold text-emerald-300">
+              <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
                 {d.activeDetour}
               </span>
-              <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-300 uppercase">
+              <span className="rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 px-1.5 py-0.5 text-[9px] font-bold uppercase">
                 Dispatch Approved
               </span>
             </div>
-            <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+            <p className="text-[11px] text-slate-700 dark:text-slate-300 mt-0.5 leading-snug">
               {criticalAlerts[0]?.description ||
                 trip?.last_reroute_reason ||
                 "Safe alternate corridor dispatched by Control Central"}
@@ -607,7 +607,7 @@ function DriverMissionCockpit({
         {/* Prominent Primary CTA: VIEW SAFE ROUTE */}
         <Link
           to={`/route-planner?trip_id=${tripId}&vehicle_id=${vehicleId}`}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 px-4 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-amber-500/20 transition active:scale-[0.99]"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 px-4 py-3.5 text-sm font-bold text-slate-950 shadow-md shadow-amber-500/20 transition active:scale-[0.99]"
         >
           <Route size={18} />
           <span>{d.viewSafeRoute} →</span>
@@ -615,18 +615,18 @@ function DriverMissionCockpit({
       </div>
 
       {/* 3. ASSIGNED VEHICLE & CARGO MANIFEST CARD */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl space-y-3">
+      <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-4 shadow-sm space-y-3">
         {/* Vehicle Identity */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="rounded-lg bg-cyan-500/10 p-2 text-cyan-400 border border-cyan-500/20">
+            <div className="rounded-lg bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400 p-2 border border-cyan-200 dark:border-cyan-500/20">
               <Truck size={20} />
             </div>
             <div>
-              <p className="font-mono text-base font-black text-white tracking-wide">
+              <p className="font-mono text-base font-black text-slate-900 dark:text-white tracking-wide">
                 {vehicleNum}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Unit #{vehicleId} • {vehicle?.vehicle_type || "Heavy Carrier"}
               </p>
             </div>
@@ -635,8 +635,8 @@ function DriverMissionCockpit({
           <span
             className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
               priorityStr === "CRITICAL"
-                ? "bg-red-500/20 text-red-300 border-red-500/40"
-                : "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                ? "bg-red-100 text-red-800 border-red-300 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40"
+                : "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40"
             }`}
           >
             {priorityStr}
@@ -644,26 +644,26 @@ function DriverMissionCockpit({
         </div>
 
         {/* Corridor Endpoints */}
-        <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/80">
+        <div className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/80">
           <div className="flex-1 min-w-0">
             <span className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold block">
               Origin
             </span>
-            <p className="text-xs font-semibold text-slate-200 truncate">
+            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
               {originStr}
             </p>
           </div>
 
           <div className="flex flex-col items-center px-2 shrink-0">
-            <ArrowRight size={14} className="text-cyan-400" />
-            <span className="text-[9px] font-mono text-slate-400">{corridorName.split(" ")[0]}</span>
+            <ArrowRight size={14} className="text-cyan-600 dark:text-cyan-400" />
+            <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400">{corridorName.split(" ")[0]}</span>
           </div>
 
           <div className="flex-1 min-w-0 text-right">
             <span className="text-[9px] uppercase tracking-wider text-slate-500 font-semibold block">
               Destination
             </span>
-            <p className="text-xs font-semibold text-slate-200 truncate">
+            <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
               {destStr}
             </p>
           </div>
@@ -671,29 +671,29 @@ function DriverMissionCockpit({
 
         {/* Cargo Detail */}
         <div className="flex items-center justify-between text-xs pt-0.5">
-          <span className="text-slate-400">{d.cargoManifest}:</span>
-          <span className="font-medium text-slate-200 truncate max-w-[200px] text-right">
+          <span className="text-slate-500 dark:text-slate-400">{d.cargoManifest}:</span>
+          <span className="font-medium text-slate-800 dark:text-slate-200 truncate max-w-[200px] text-right">
             {cargoStr}
           </span>
         </div>
       </div>
 
       {/* 4. LIVE GPS TELEMETRY TRANSMISSION (P1-3) */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl space-y-3">
+      <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div
               className={`rounded-lg p-2 border ${
                 isGpsTransmitting
-                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                  : "bg-slate-800 text-slate-400 border-slate-700"
+                  ? "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/40"
+                  : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700"
               }`}
             >
               <Radio size={18} className={isGpsTransmitting ? "animate-pulse" : ""} />
             </div>
             <div>
-              <p className="text-xs font-bold text-white">{d.transmitGps}</p>
-              <p className="text-[10px] text-slate-400">
+              <p className="text-xs font-bold text-slate-900 dark:text-white">{d.transmitGps}</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400">
                 {isGpsTransmitting
                   ? "Broadcasting coordinates to Control Central"
                   : d.gpsStandby}
@@ -707,7 +707,7 @@ function DriverMissionCockpit({
             onClick={handleToggleGps}
             disabled={isPendingGps || !backendOnline}
             className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-50 ${
-              isGpsTransmitting ? "bg-emerald-500" : "bg-slate-700"
+              isGpsTransmitting ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-700"
             }`}
           >
             <span
@@ -720,28 +720,28 @@ function DriverMissionCockpit({
 
         {/* Transmission Status Feedback */}
         {isPendingGps && (
-          <div className="flex items-center gap-2 rounded-lg bg-cyan-500/10 border border-cyan-500/20 p-2.5 text-xs text-cyan-300">
+          <div className="flex items-center gap-2 rounded-lg bg-cyan-50 border border-cyan-200 text-cyan-800 dark:bg-cyan-500/10 dark:border-cyan-500/20 dark:text-cyan-300 p-2.5 text-xs">
             <RefreshCw size={13} className="animate-spin shrink-0" />
             <span>Acquiring GPS fix from device sensors...</span>
           </div>
         )}
 
         {isGpsTransmitting && lastTransmittedGps && (
-          <div className="rounded-lg border border-emerald-500/20 bg-emerald-950/20 p-2.5 text-xs text-emerald-300 space-y-1 font-mono">
+          <div className="rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-950/20 dark:text-emerald-300 p-2.5 text-xs space-y-1 font-mono">
             <div className="flex items-center justify-between text-[11px]">
               <span className="font-bold flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+                <span className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-ping inline-block" />
                 {d.gpsTransmitting}
               </span>
-              <span className="text-[10px] text-emerald-400">
+              <span className="text-[10px] text-emerald-700 dark:text-emerald-400">
                 ±{lastTransmittedGps.accuracy}m
               </span>
             </div>
-            <div className="flex items-center justify-between text-[11px] text-slate-300">
+            <div className="flex items-center justify-between text-[11px] text-slate-700 dark:text-slate-300">
               <span>
                 {lastTransmittedGps.lat.toFixed(5)}°N, {lastTransmittedGps.lon.toFixed(5)}°E
               </span>
-              <span className="text-[10px] text-slate-400 font-sans">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans">
                 {lastTransmittedGps.time}
               </span>
             </div>
@@ -749,16 +749,16 @@ function DriverMissionCockpit({
         )}
 
         {gpsError && (
-          <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-300 flex items-start gap-2">
-            <AlertOctagon size={14} className="text-red-400 shrink-0 mt-0.5" />
+          <div className="rounded-lg border border-red-200 bg-red-50 text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 p-2.5 text-xs flex items-start gap-2">
+            <AlertOctagon size={14} className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
             <span className="leading-snug">{gpsError}</span>
           </div>
         )}
 
         {!isGpsTransmitting && !gpsError && !isPendingGps && (
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
             GPS telemetry is transmitted every 30s with &gt;=50m displacement via{" "}
-            <code className="rounded bg-slate-800 px-1 py-0.5 text-[10px] text-cyan-300 font-mono">
+            <code className="rounded bg-slate-100 text-cyan-800 dark:bg-slate-800 dark:text-cyan-300 px-1 py-0.5 text-[10px] font-mono">
               POST /vehicles/{vehicleId}/location
             </code>
             . NER boundary bounds enforced.
@@ -1182,31 +1182,31 @@ function Home() {
         /* Control Tower Dashboard for Operators and Admins */
         <div className="space-y-6">
           {/* COMPACT OPERATIONAL STATUS STRIP (Replaces duplicate Control Tower title) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/60 px-4 py-2.5 shadow-sm">
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
-            <Activity size={14} className="text-cyan-400" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-300">
+            <Activity size={14} className="text-cyan-600 dark:text-cyan-400" />
             <span>NEXUS-NER Control Central</span>
           </div>
-          <span className="text-slate-600 hidden sm:inline">•</span>
-          <span className="text-xs text-slate-400">Guwahati Regional Dispatch Terminal</span>
-          <span className="text-slate-600 hidden sm:inline">•</span>
-          <span className="rounded bg-cyan-500/10 border border-cyan-500/25 px-2 py-0.5 text-[10px] font-bold text-cyan-300">
+          <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">Guwahati Regional Dispatch Terminal</span>
+          <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
+          <span className="rounded bg-cyan-50 text-cyan-800 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/25 px-2 py-0.5 text-[10px] font-bold dark:text-cyan-300">
             PostGIS Geofencing Active
           </span>
           {publicReportSummary && (
             <>
-              <span className="text-slate-600 hidden sm:inline">•</span>
-              <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-300">
-                <span className="text-slate-400">Citizen Reports:</span>
-                <span className="rounded bg-amber-500/20 text-amber-300 px-1.5 py-0.5 font-bold font-mono">
+              <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
+              <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-700 dark:text-slate-300">
+                <span className="text-slate-500 dark:text-slate-400">Citizen Reports:</span>
+                <span className="rounded bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 px-1.5 py-0.5 font-bold font-mono">
                   {publicReportSummary.unverified} Unverified
                 </span>
-                <span className="rounded bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 font-bold font-mono">
+                <span className="rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 px-1.5 py-0.5 font-bold font-mono">
                   {publicReportSummary.verified} Verified
                 </span>
                 {publicReportSummary.rejected > 0 && (
-                  <span className="rounded bg-slate-800 text-slate-400 px-1.5 py-0.5 font-mono">
+                  <span className="rounded bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 font-mono">
                     {publicReportSummary.rejected} Rejected
                   </span>
                 )}
@@ -1219,16 +1219,16 @@ function Home() {
           <div
             className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${
               backendOnline
-                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                : "border-red-500/20 bg-red-500/10 text-red-400"
+                ? "border-emerald-600/30 bg-emerald-100 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
+                : "border-red-600/30 bg-red-100 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400"
             }`}
           >
             {backendOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
             <span>{backendOnline ? "Telemetry Synchronized" : "Backend Offline"}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <Clock3 size={13} className="text-cyan-400" />
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <Clock3 size={13} className="text-cyan-600 dark:text-cyan-400" />
             <span>Live • 30s auto-refresh</span>
           </div>
         </div>
@@ -1236,22 +1236,22 @@ function Home() {
 
       {/* EXCEPTION-FIRST OPERATOR STATUS BANNER WITH CAUSAL CHAIN */}
       {activeDisruption ? (
-        <div className="rounded-xl border border-red-500/40 bg-gradient-to-r from-red-950/40 via-slate-900 to-slate-900 p-5 shadow-2xl space-y-4">
-          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between border-b border-red-500/20 pb-4">
+        <div className="rounded-xl border border-red-300 bg-red-50/50 dark:border-red-500/40 dark:bg-gradient-to-r dark:from-red-950/40 dark:via-slate-900 dark:to-slate-900 p-5 shadow-sm space-y-4">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between border-b border-red-200 dark:border-red-500/20 pb-4">
             <div className="flex items-start gap-3.5">
-              <div className="rounded-xl bg-red-500/20 p-2.5 text-red-400 shrink-0 mt-0.5 border border-red-500/30">
+              <div className="rounded-xl bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 p-2.5 shrink-0 mt-0.5 border border-red-200 dark:border-red-500/30">
                 <AlertTriangle size={24} />
               </div>
               <div>
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <span className="rounded-md bg-red-500/20 border border-red-500/40 px-2.5 py-0.5 text-xs font-bold text-red-300 uppercase tracking-wider">
+                  <span className="rounded-md bg-red-100 text-red-800 border border-red-300 dark:bg-red-500/20 dark:border-red-500/40 px-2.5 py-0.5 text-xs font-bold dark:text-red-300 uppercase tracking-wider">
                     Critical Disruption Active
                   </span>
-                  <span className="text-xs text-slate-400">
-                    Incident #{activeDisruption.id} • Status: <span className="capitalize font-semibold text-amber-300">{activeDisruption.status || "Reported"}</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400">
+                    Incident #{activeDisruption.id} • Status: <span className="capitalize font-semibold text-amber-700 dark:text-amber-300">{activeDisruption.status || "Reported"}</span>
                   </span>
                 </div>
-                <h3 className="mt-1 text-lg font-bold text-white">
+                <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">
                   {activeDisruption.title || activeDisruption.description}
                 </h3>
               </div>
@@ -1260,14 +1260,14 @@ function Home() {
             <div className="flex items-center gap-2.5 self-start lg:self-center w-full sm:w-auto">
               <Link
                 to="/route-planner"
-                className="flex-1 sm:flex-none justify-center rounded-lg bg-amber-500 hover:bg-amber-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.25)]"
+                className="flex-1 sm:flex-none justify-center rounded-lg bg-amber-500 hover:bg-amber-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition flex items-center gap-1.5 shadow-md shadow-amber-500/20"
               >
                 <Route size={15} />
                 Execute Dynamic Detour →
               </Link>
               <Link
                 to="/incidents"
-                className="flex-1 sm:flex-none justify-center rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 px-3.5 py-2.5 text-xs font-medium text-slate-300 transition"
+                className="flex-1 sm:flex-none justify-center rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 px-3.5 py-2.5 text-xs font-medium dark:text-slate-300 transition"
               >
                 Inspect Incident →
               </Link>
@@ -1275,13 +1275,13 @@ function Home() {
           </div>
 
           {/* OPERATIONAL CAUSAL IMPACT CHAIN (Directly on Dashboard) */}
-          <div className="rounded-xl border border-red-500/25 bg-slate-950/90 p-3.5 sm:p-4">
+          <div className="rounded-xl border border-slate-200 bg-white dark:border-red-500/25 dark:bg-slate-950/90 p-3.5 sm:p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-red-300 flex items-center gap-1.5">
-                <ShieldAlert size={14} className="text-red-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-red-700 dark:text-red-300 flex items-center gap-1.5">
+                <ShieldAlert size={14} className="text-red-500 dark:text-red-400" />
                 Operational Causal Impact Chain
               </span>
-              <span className="text-[10px] text-slate-400">Interactive Telemetry Graph</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">Interactive Telemetry Graph</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -1289,65 +1289,65 @@ function Home() {
               <Link
                 to="/incidents"
                 title="Inspect Incident in Incident Management"
-                className="flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/10 px-2.5 py-1.5 font-semibold text-red-300 transition hover:bg-red-500/20"
+                className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300 px-2.5 py-1.5 font-semibold transition hover:bg-red-100 dark:hover:bg-red-500/20"
               >
-                <AlertTriangle size={13} className="text-red-400" />
+                <AlertTriangle size={13} className="text-red-500 dark:text-red-400" />
                 <span>Incident #{activeDisruption.id}</span>
               </Link>
 
-              <ArrowRight size={13} className="text-slate-600 shrink-0" />
+              <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
 
               {/* Node 2: Affected Road */}
               <Link
                 to="/road-risk"
                 title="View Road Risk Telemetry"
-                className="flex items-center gap-1.5 rounded-lg border border-orange-500/40 bg-orange-500/10 px-2.5 py-1.5 font-semibold text-orange-300 transition hover:bg-orange-500/20"
+                className="flex items-center gap-1.5 rounded-lg border border-orange-500/30 bg-orange-50 text-orange-700 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-300 px-2.5 py-1.5 font-semibold transition hover:bg-orange-100 dark:hover:bg-orange-500/20"
               >
-                <Route size={13} className="text-orange-400" />
+                <Route size={13} className="text-orange-500 dark:text-orange-400" />
                 <span>Road #{affectedRoad?.id ?? 135}</span>
               </Link>
 
-              <ArrowRight size={13} className="text-slate-600 shrink-0" />
+              <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
 
               {/* Node 3: Disruption Risk */}
-              <div className="flex items-center gap-1.5 rounded-lg border border-red-500/50 bg-red-950/60 px-2.5 py-1.5 font-bold text-red-400">
-                <ShieldAlert size={13} className="text-red-400" />
+              <div className="flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-100 text-red-800 dark:border-red-500/50 dark:bg-red-950/60 dark:text-red-400 px-2.5 py-1.5 font-bold">
+                <ShieldAlert size={13} className="text-red-500 dark:text-red-400" />
                 <span>Risk: {activeDisruption.risk_score ? activeDisruption.risk_score.toFixed(1) : "95.0"}</span>
               </div>
 
-              <ArrowRight size={13} className="text-slate-600 shrink-0" />
+              <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
 
               {/* Node 4: Alert */}
               <Link
                 to="/alerts"
                 title="View Operational Alerts Feed"
-                className="flex items-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 font-semibold text-amber-300 transition hover:bg-amber-500/20"
+                className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-50 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 px-2.5 py-1.5 font-semibold transition hover:bg-amber-100 dark:hover:bg-amber-500/20"
               >
-                <Bell size={13} className="text-amber-400" />
+                <Bell size={13} className="text-amber-500 dark:text-amber-400" />
                 <span>Alert Active</span>
               </Link>
 
-              <ArrowRight size={13} className="text-slate-600 shrink-0" />
+              <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
 
               {/* Node 5: Vehicle */}
               <Link
                 to="/vehicles"
                 title="Track Vehicle Telemetry"
-                className="flex items-center gap-1.5 rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1.5 font-semibold text-cyan-300 transition hover:bg-cyan-500/20"
+                className="flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-50 text-cyan-800 dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-300 px-2.5 py-1.5 font-semibold transition hover:bg-cyan-100 dark:hover:bg-cyan-500/20"
               >
-                <Truck size={13} className="text-cyan-400" />
+                <Truck size={13} className="text-cyan-600 dark:text-cyan-400" />
                 <span>{impactedVehicle?.vehicle_number || "AS-01-BX-4091"}</span>
               </Link>
 
-              <ArrowRight size={13} className="text-slate-600 shrink-0" />
+              <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
 
               {/* Node 6: Trip */}
               <Link
                 to="/route-planner"
                 title="Open Route Planner Detour"
-                className="flex items-center gap-1.5 rounded-lg border border-blue-500/40 bg-blue-500/10 px-2.5 py-1.5 font-semibold text-blue-300 transition hover:bg-blue-500/20"
+                className="flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-50 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-300 px-2.5 py-1.5 font-semibold transition hover:bg-blue-100 dark:hover:bg-blue-500/20"
               >
-                <Navigation size={13} className="text-blue-400" />
+                <Navigation size={13} className="text-blue-600 dark:text-blue-400" />
                 <span>Trip #{interceptedTrip?.id ?? 318}</span>
               </Link>
             </div>
@@ -1356,88 +1356,88 @@ function Home() {
           {/* Three Critical Questions Grid */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3 pt-1">
             {/* 1. Is Anything Wrong? */}
-            <div className="rounded-lg border border-red-500/20 bg-slate-950/80 p-4">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-                <span className="font-semibold text-red-400 uppercase tracking-wider text-[11px]">
+            <div className="rounded-lg border border-red-200 bg-white dark:border-red-500/20 dark:bg-slate-950/80 p-4 shadow-sm">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                <span className="font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider text-[11px]">
                   1. Is Anything Wrong?
                 </span>
-                <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[10px] font-bold text-red-300">
+                <span className="rounded bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300 px-1.5 py-0.5 text-[10px] font-bold">
                   Risk: {activeDisruption.risk_score ? activeDisruption.risk_score.toFixed(1) : "95.0"}
                 </span>
               </div>
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
                 Corridor Blockage Confirmed
               </p>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                 Major landslide blocking NH-15 corridor near Kharupetia. Impassable for heavy logistics units.
               </p>
             </div>
 
             {/* 2. What Is Affected? */}
-            <div className="rounded-lg border border-orange-500/20 bg-slate-950/80 p-4">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-                <span className="font-semibold text-orange-400 uppercase tracking-wider text-[11px]">
+            <div className="rounded-lg border border-orange-200 bg-white dark:border-orange-500/20 dark:bg-slate-950/80 p-4 shadow-sm">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                <span className="font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider text-[11px]">
                   2. What Is Affected?
                 </span>
-                <Link to="/road-risk" className="text-[10px] text-cyan-400 hover:underline">
+                <Link to="/road-risk" className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline">
                   Road #{affectedRoad?.id ?? 135} →
                 </Link>
               </div>
-              <p className="text-sm font-semibold text-white truncate">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                 {affectedRoad?.road_name || "NH-15 Guwahati-Tezpur Corridor"}
               </p>
               <Link
                 to="/vehicles"
-                className="text-xs text-cyan-300 hover:text-cyan-200 mt-1 font-medium block"
+                className="text-xs text-cyan-700 dark:text-cyan-300 hover:text-cyan-800 dark:hover:text-cyan-200 mt-1 font-medium block"
               >
                 {impactedVehicle?.vehicle_number || "AS-01-BX-4091"} (Trip #{interceptedTrip?.id ?? 318}) →
               </Link>
-              <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
-                <span>Driver: <strong className="text-slate-200 font-mono">{vehicleAssignments[impactedVehicle?.id ?? 472] || "driver"}</strong></span>
+              <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+                <span>Driver: <strong className="text-slate-800 dark:text-slate-200 font-mono">{vehicleAssignments[impactedVehicle?.id ?? 472] || "driver"}</strong></span>
                 <span>•</span>
-                <span>GPS: <strong className="text-emerald-400 font-semibold">Live</strong></span>
+                <span>GPS: <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</strong></span>
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                 Cargo: {impactedVehicle?.cargo_type || "Critical Vaccines & Cold-Chain Supplies"}
               </p>
             </div>
 
             {/* 3. What Is Being Done? */}
-            <div className="rounded-lg border border-emerald-500/20 bg-slate-950/80 p-4">
-              <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
-                <span className="font-semibold text-emerald-400 uppercase tracking-wider text-[11px]">
+            <div className="rounded-lg border border-emerald-200 bg-white dark:border-emerald-500/20 dark:bg-slate-950/80 p-4 shadow-sm">
+              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-[11px]">
                   3. What Is Being Done?
                 </span>
-                <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] font-bold text-emerald-300">
+                <span className="rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 px-1.5 py-0.5 text-[10px] font-bold">
                   Detour Available
                 </span>
               </div>
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
                 Safe Alternate Corridor Available
               </p>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                 Dynamic detour via Mangaldai-Tangla corridor computed. Reduces corridor risk by 70 points.
               </p>
             </div>
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/15 p-5 shadow-lg">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 dark:border-emerald-500/30 dark:bg-emerald-950/15 p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3.5">
-              <div className="rounded-xl bg-emerald-500/20 p-2.5 text-emerald-400 border border-emerald-500/30">
+              <div className="rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 p-2.5 border border-emerald-200 dark:border-emerald-500/30">
                 <CheckCircle2 size={22} />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   All Logistics Corridors Operational • 0 Network Disruptions
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                   Primary highway corridors across all 8 NER states are clear. Automated PostGIS risk telemetry and AI hazard tracking active.
                 </p>
               </div>
             </div>
-            <span className="hidden sm:inline-flex rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
+            <span className="hidden sm:inline-flex rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-500/10 dark:border-emerald-500/20 px-3 py-1 text-xs font-semibold dark:text-emerald-400">
               Network Status: Optimal
             </span>
           </div>
@@ -1496,40 +1496,40 @@ function Home() {
       <div className="grid gap-6 xl:grid-cols-3">
 
         {/* REAL TACTICAL LEAFLET GIS MAP (Replaces decorative CSS mock) */}
-        <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/80 shadow-xl xl:col-span-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 px-5 py-3.5 gap-2">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm xl:col-span-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-3.5 gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <Navigation size={16} className="text-cyan-400" />
-                <h3 className="font-bold text-white text-sm sm:text-base">
+                <Navigation size={16} className="text-cyan-600 dark:text-cyan-400" />
+                <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
                   NER Tactical Corridor Map
                 </h3>
-                <span className="rounded-full bg-cyan-500/15 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold text-cyan-300">
+                <span className="rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 dark:bg-cyan-500/15 dark:border-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold dark:text-cyan-300">
                   PostGIS GIS Telemetry
                 </span>
               </div>
-              <p className="mt-0.5 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 Live corridor routing, active hazard geofencing, and transport tracking
               </p>
             </div>
 
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
-                <span className="text-slate-300 font-medium">Unit AS-01-BX-4091</span>
+                <span className="h-2.5 w-2.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#22d3ee]" />
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Unit AS-01-BX-4091</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" />
-                <span className="text-slate-300 font-medium">Kharupetia Blockage</span>
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Kharupetia Blockage</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-blue-400" />
-                <span className="text-slate-300 font-medium">NH-15 Corridor</span>
+                <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                <span className="text-slate-700 dark:text-slate-300 font-medium">NH-15 Corridor</span>
               </div>
             </div>
           </div>
 
-          <div className="relative h-[410px] bg-slate-950 overflow-hidden">
+          <div className="relative h-[410px] bg-slate-100 dark:bg-slate-950 overflow-hidden">
             <MapErrorBoundary fallbackMessage="Tactical corridor map tiles offline — cached geometry available">
               <MapContainer
                 center={[26.40, 92.20]}
@@ -1569,7 +1569,7 @@ function Home() {
                 >
                   <Popup>
                     <div className="text-xs">
-                      <strong className="text-emerald-500">Origin: Guwahati Logistics Hub</strong>
+                      <strong className="text-emerald-600 dark:text-emerald-500">Origin: Guwahati Logistics Hub</strong>
                       <br />Freight Dispatch Staging Zone
                     </div>
                   </Popup>
@@ -1583,7 +1583,7 @@ function Home() {
                 >
                   <Popup>
                     <div className="text-xs">
-                      <strong className="text-blue-500">Destination: Tezpur Logistics Center</strong>
+                      <strong className="text-blue-600 dark:text-blue-500">Destination: Tezpur Logistics Center</strong>
                       <br />Trip #318 Delivery Terminal
                     </div>
                   </Popup>
@@ -1670,11 +1670,11 @@ function Home() {
             </MapErrorBoundary>
 
             {/* Map Overlay Badge */}
-            <div className="absolute bottom-3 left-3 z-[1000] rounded-lg border border-slate-800 bg-slate-950/90 px-3 py-2 backdrop-blur shadow-lg">
+            <div className="absolute bottom-3 left-3 z-[1000] rounded-lg border border-slate-200 bg-white/95 text-slate-900 dark:border-slate-800 dark:bg-slate-950/90 dark:text-white px-3 py-2 backdrop-blur shadow-md">
               <div className="flex items-center gap-2">
-                <Route size={14} className="text-cyan-400" />
-                <span className="text-xs font-semibold text-white">NH-15 Guwahati-Tezpur Corridor</span>
-                <span className="rounded bg-red-500/20 text-[10px] font-bold text-red-400 px-1.5 py-0.5">
+                <Route size={14} className="text-cyan-600 dark:text-cyan-400" />
+                <span className="text-xs font-semibold">NH-15 Guwahati-Tezpur Corridor</span>
+                <span className="rounded bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400 text-[10px] font-bold px-1.5 py-0.5">
                   Blocked at km 84
                 </span>
               </div>
@@ -1683,34 +1683,34 @@ function Home() {
         </div>
 
         {/* Corridor Weather Intelligence Panel */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/80 shadow-xl flex flex-col justify-between">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <CloudRain size={16} className="text-cyan-400" />
-                  <h3 className="font-semibold text-white">Corridor Weather</h3>
+                  <CloudRain size={16} className="text-cyan-600 dark:text-cyan-400" />
+                  <h3 className="font-semibold text-slate-900 dark:text-white">Corridor Weather</h3>
                 </div>
-                <p className="mt-1 text-xs text-slate-400">Real-time atmospheric conditions across NER routes</p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Real-time atmospheric conditions across NER routes</p>
               </div>
               <button
                 type="button"
                 onClick={() => fetchHubWeather(selectedHubIdx)}
                 aria-label="Refresh atmospheric conditions"
-                className="rounded-lg border border-slate-800 bg-slate-950 p-2 text-slate-400 transition hover:border-slate-700 hover:text-white"
+                className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 transition dark:hover:border-slate-700 dark:hover:text-white"
                 title="Refresh weather"
               >
-                <RefreshCw size={13} className={loadingWeather ? "animate-spin text-cyan-400" : ""} />
+                <RefreshCw size={13} className={loadingWeather ? "animate-spin text-cyan-600 dark:text-cyan-400" : ""} />
               </button>
             </div>
 
             {/* Hub Selector Dropdown */}
-            <div className="border-b border-slate-800/80 p-3">
-              <label className="block text-[11px] font-medium text-slate-400 mb-1.5">Monitored Corridor / Logistics Hub:</label>
+            <div className="border-b border-slate-100 dark:border-slate-800/80 p-3">
+              <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1.5">Monitored Corridor / Logistics Hub:</label>
               <select
                 value={selectedHubIdx}
                 onChange={(e) => setSelectedHubIdx(Number(e.target.value))}
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"
+                className="w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-cyan-500"
               >
                 {WEATHER_HUBS.map((hub, idx) => (
                   <option key={hub.name} value={idx}>
@@ -1723,18 +1723,18 @@ function Home() {
             {/* Weather Data Display */}
             <div className="p-4">
               {loadingWeather && !weatherData ? (
-                <div className="flex h-36 items-center justify-center text-xs text-slate-400">
-                  <RefreshCw size={16} className="animate-spin text-cyan-400 mr-2" />
+                <div className="flex h-36 items-center justify-center text-xs text-slate-500 dark:text-slate-400">
+                  <RefreshCw size={16} className="animate-spin text-cyan-600 dark:text-cyan-400 mr-2" />
                   Fetching atmospheric telemetry...
                 </div>
               ) : weatherError && !weatherData ? (
-                <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
+                <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10 p-3 text-xs text-red-700 dark:text-red-400">
                   <p className="font-medium">Atmospheric Service Unavailable</p>
-                  <p className="mt-1 text-[11px] text-red-400/80">{weatherError}</p>
+                  <p className="mt-1 text-[11px] text-red-600 dark:text-red-400/80">{weatherError}</p>
                   <button
                     type="button"
                     onClick={() => fetchHubWeather(selectedHubIdx)}
-                    className="mt-2 text-[11px] underline hover:text-red-300"
+                    className="mt-2 text-[11px] underline hover:text-red-800 dark:hover:text-red-300"
                   >
                     Retry connection
                   </button>
@@ -1742,17 +1742,17 @@ function Home() {
               ) : weatherData ? (
                 <div className="space-y-4">
                   {/* Primary condition banner */}
-                  <div className="flex items-center justify-between rounded-lg bg-slate-950/70 p-3.5 border border-slate-800/60">
+                  <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-950/70 p-3.5 border border-slate-200 dark:border-slate-800/60">
                     <div>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-white">
+                        <span className="text-2xl font-bold text-slate-900 dark:text-white">
                           {weatherData.temperature_c !== undefined ? `${weatherData.temperature_c}°C` : "—"}
                         </span>
                         {weatherData.feels_like_c !== undefined && (
-                          <span className="text-xs text-slate-400">Feels {weatherData.feels_like_c}°C</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">Feels {weatherData.feels_like_c}°C</span>
                         )}
                       </div>
-                      <p className="mt-0.5 text-xs font-medium text-cyan-400">
+                      <p className="mt-0.5 text-xs font-medium text-cyan-600 dark:text-cyan-400">
                         {weatherData.weather_condition || "Clear"}
                       </p>
                     </div>
@@ -1762,17 +1762,17 @@ function Home() {
                       <span
                         className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${
                           weatherData.risk_signal?.risk_level === "Critical"
-                            ? "border-red-500/20 bg-red-500/10 text-red-400"
+                            ? "border-red-300 bg-red-100 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400"
                             : weatherData.risk_signal?.risk_level === "High"
-                            ? "border-orange-500/20 bg-orange-500/10 text-orange-400"
+                            ? "border-orange-300 bg-orange-100 text-orange-800 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400"
                             : weatherData.risk_signal?.risk_level === "Moderate"
-                            ? "border-amber-500/20 bg-amber-500/10 text-amber-400"
-                            : "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                            ? "border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400"
+                            : "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
                         }`}
                       >
                         {weatherData.risk_signal?.risk_level || "Low"} Weather Risk
                       </span>
-                      <p className="mt-1 text-[10px] text-slate-400">
+                      <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
                         Score: {weatherData.risk_signal?.risk_score ?? 0}/100
                       </p>
                     </div>
@@ -1780,42 +1780,42 @@ function Home() {
 
                   {/* Metrics grid */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/40">
-                      <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                        <Droplets size={13} className="text-cyan-400" />
+                    <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
+                      <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
+                        <Droplets size={13} className="text-cyan-600 dark:text-cyan-400" />
                         <span>Precipitation</span>
                       </div>
-                      <p className="font-semibold text-white">
+                      <p className="font-semibold text-slate-900 dark:text-white">
                         {weatherData.rainfall_mm !== undefined ? `${weatherData.rainfall_mm} mm` : "0 mm"}
                       </p>
                     </div>
 
-                    <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/40">
-                      <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                        <Wind size={13} className="text-cyan-400" />
+                    <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
+                      <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
+                        <Wind size={13} className="text-cyan-600 dark:text-cyan-400" />
                         <span>Wind Speed</span>
                       </div>
-                      <p className="font-semibold text-white">
+                      <p className="font-semibold text-slate-900 dark:text-white">
                         {weatherData.wind_speed_kmh !== undefined ? `${weatherData.wind_speed_kmh} km/h` : "—"}
                       </p>
                     </div>
 
-                    <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/40">
-                      <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                        <Eye size={13} className="text-cyan-400" />
+                    <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
+                      <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
+                        <Eye size={13} className="text-cyan-600 dark:text-cyan-400" />
                         <span>Visibility</span>
                       </div>
-                      <p className="font-semibold text-white">
+                      <p className="font-semibold text-slate-900 dark:text-white">
                         {weatherData.visibility_km !== undefined ? `${weatherData.visibility_km} km` : "—"}
                       </p>
                     </div>
 
-                    <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/40">
-                      <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                        <Thermometer size={13} className="text-cyan-400" />
+                    <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
+                      <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
+                        <Thermometer size={13} className="text-cyan-600 dark:text-cyan-400" />
                         <span>Humidity</span>
                       </div>
-                      <p className="font-semibold text-white">
+                      <p className="font-semibold text-slate-900 dark:text-white">
                         {weatherData.humidity_percent !== undefined ? `${weatherData.humidity_percent}%` : "—"}
                       </p>
                     </div>
@@ -1823,16 +1823,16 @@ function Home() {
 
                   {/* Operational warning if any */}
                   {weatherData.risk_signal?.warnings && weatherData.risk_signal.warnings.length > 0 && (
-                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-[11px] text-amber-300">
+                    <div className="rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-500/20 dark:bg-amber-500/10 p-2.5 text-[11px] text-amber-800 dark:text-amber-300">
                       <div className="flex items-start gap-1.5">
-                        <AlertTriangle size={13} className="mt-0.5 shrink-0 text-amber-400" />
+                        <AlertTriangle size={13} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                         <span>{weatherData.risk_signal.warnings[0]}</span>
                       </div>
                     </div>
                   )}
 
                   {/* Metadata footer */}
-                  <div className="flex items-center justify-between border-t border-slate-800/60 pt-2 text-[10px] text-slate-400">
+                  <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/60 pt-2 text-[10px] text-slate-500 dark:text-slate-400">
                     <span>Source: {weatherData.source} {weatherData.cached ? "(Cached)" : "(Live)"}</span>
                     <span>Updated: {weatherLastUpdated || "Just now"}</span>
                   </div>
@@ -1841,10 +1841,10 @@ function Home() {
             </div>
           </div>
 
-          <div className="border-t border-slate-800/80 p-3 bg-slate-950/40 text-center rounded-b-xl">
+          <div className="border-t border-slate-100 dark:border-slate-800/80 p-3 bg-slate-50/50 dark:bg-slate-950/40 text-center rounded-b-xl">
             <Link
               to="/road-risk"
-              className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition inline-flex items-center gap-1"
+              className="text-xs font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 transition inline-flex items-center gap-1"
             >
               Inspect Complete Regional Road Risk &rarr;
             </Link>
@@ -1856,65 +1856,65 @@ function Home() {
       <div className="grid gap-6 lg:grid-cols-3">
 
         {/* CORRIDOR THREAT ASSESSMENT (Replaces fabricated Mon-Sun AreaChart) */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl lg:col-span-2 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3.5 gap-2">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-5 shadow-sm lg:col-span-2 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3.5 gap-2">
             <div>
               <div className="flex items-center gap-2">
-                <ShieldAlert size={18} className="text-red-400" />
-                <h3 className="font-bold text-white text-base">
+                <ShieldAlert size={18} className="text-red-500 dark:text-red-400" />
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">
                   Corridor Threat & Vulnerability Assessment
                 </h3>
               </div>
-              <p className="mt-0.5 text-xs text-slate-400">
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                 Real-time PostGIS hazard geofencing and multi-factor corridor risk telemetry
               </p>
             </div>
 
-            <span className="self-start sm:self-center rounded-full bg-red-500/15 border border-red-500/30 px-3 py-1 text-xs font-bold text-red-400">
+            <span className="self-start sm:self-center rounded-full bg-red-100 text-red-800 border border-red-300 dark:bg-red-500/15 dark:border-red-500/30 px-3 py-1 text-xs font-bold dark:text-red-400">
               Corridor Threat: 95.0 / 100
             </span>
           </div>
 
           {/* 4 Threat Assessment Fact Blocks */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border border-slate-800 bg-slate-950/80 p-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Monitored Corridor</span>
-              <p className="text-sm font-bold text-white mt-1">Road #135 — NH-15 Guwahati-Tezpur</p>
-              <p className="text-xs text-slate-400 mt-0.5">Length: 175.5 km • Baseline: 15.0 • Elevated: 95.0</p>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/80 p-3.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Monitored Corridor</span>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mt-1">Road #135 — NH-15 Guwahati-Tezpur</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Length: 175.5 km • Baseline: 15.0 • Elevated: 95.0</p>
             </div>
 
-            <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-red-300">Active Geofenced Hazard</span>
-              <p className="text-sm font-bold text-red-300 mt-1">Incident #15 — Major Landslide</p>
-              <p className="text-xs text-slate-300 mt-0.5">Near Kharupetia (26.40°N, 91.93°E) • Impassable</p>
+            <div className="rounded-lg border border-red-200 bg-red-50/70 dark:border-red-500/30 dark:bg-red-950/20 p-3.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-red-700 dark:text-red-300">Active Geofenced Hazard</span>
+              <p className="text-sm font-bold text-red-700 dark:text-red-300 mt-1">Incident #15 — Major Landslide</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Near Kharupetia (26.40°N, 91.93°E) • Impassable</p>
             </div>
 
-            <div className="rounded-lg border border-cyan-500/30 bg-cyan-950/20 p-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300">Intercepted Logistics Asset</span>
-              <p className="text-sm font-bold text-white mt-1">AS-01-BX-4091 (Trip #318)</p>
-              <p className="text-xs text-cyan-200 mt-0.5">Cargo: Critical Vaccines & Cold-Chain Supplies</p>
+            <div className="rounded-lg border border-cyan-200 bg-cyan-50/70 dark:border-cyan-500/30 dark:bg-cyan-950/20 p-3.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">Intercepted Logistics Asset</span>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mt-1">AS-01-BX-4091 (Trip #318)</p>
+              <p className="text-xs text-cyan-800 dark:text-cyan-200 mt-0.5">Cargo: Critical Vaccines & Cold-Chain Supplies</p>
             </div>
 
-            <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/20 p-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">Detour Corridor Status</span>
-              <p className="text-sm font-bold text-emerald-300 mt-1">Mangaldai-Tangla-Tezpur Detour</p>
-              <p className="text-xs text-slate-300 mt-0.5">Detour Delta: +44.3 km • Detour Risk: 25.0 (-70 pts)</p>
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/70 dark:border-emerald-500/30 dark:bg-emerald-950/20 p-3.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Detour Corridor Status</span>
+              <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300 mt-1">Mangaldai-Tangla-Tezpur Detour</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Detour Delta: +44.3 km • Detour Risk: 25.0 (-70 pts)</p>
             </div>
           </div>
 
           {/* Vulnerability Severity Meter */}
           <div className="space-y-1.5 pt-1">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-300">Composite Corridor Vulnerability Meter</span>
-              <span className="text-red-400 font-bold">95.0 / 100 (Immediate Reroute Enforced)</span>
+              <span className="text-slate-700 dark:text-slate-300">Composite Corridor Vulnerability Meter</span>
+              <span className="text-red-600 dark:text-red-400 font-bold">95.0 / 100 (Immediate Reroute Enforced)</span>
             </div>
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+            <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-red-500"
                 style={{ width: "95%" }}
               />
             </div>
-            <div className="flex flex-wrap justify-between text-[11px] text-slate-400 pt-0.5">
+            <div className="flex flex-wrap justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
               <span>Geological Slope Instability: 45 pts</span>
               <span>Atmospheric Precipitation: 30 pts</span>
               <span>Cargo Criticality (Vaccines): 20 pts</span>
@@ -1923,86 +1923,86 @@ function Home() {
         </div>
 
         {/* Critical Alerts Feed (Existing Real API) */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/80 shadow-xl flex flex-col justify-between">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-white">
+                  <h3 className="font-semibold text-slate-900 dark:text-white">
                     Critical Alerts
                   </h3>
                   {criticalAlerts.length > 0 && (
-                    <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-bold text-red-400 border border-red-500/30">
+                    <span className="rounded-full bg-red-100 text-red-800 border border-red-300 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30 px-2 py-0.5 text-[10px] font-bold">
                       {criticalAlerts.length} Active
                     </span>
                   )}
                 </div>
 
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Requires operator attention
                 </p>
               </div>
 
               <AlertTriangle
                 size={18}
-                className={criticalAlerts.length > 0 ? "text-red-400" : "text-slate-500"}
+                className={criticalAlerts.length > 0 ? "text-red-500 dark:text-red-400" : "text-slate-400 dark:text-slate-500"}
               />
             </div>
 
-            <div className="divide-y divide-slate-800">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {loadingAlerts && criticalAlerts.length === 0 ? (
                 <div className="p-4 space-y-4">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="flex gap-3 animate-pulse">
-                      <div className="h-8 w-8 rounded-lg bg-slate-800" />
+                      <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800" />
                       <div className="flex-1 space-y-2">
-                        <div className="h-4 w-3/4 rounded bg-slate-800" />
-                        <div className="h-3 w-1/2 rounded bg-slate-800/60" />
+                        <div className="h-4 w-3/4 rounded bg-slate-100 dark:bg-slate-800" />
+                        <div className="h-3 w-1/2 rounded bg-slate-100 dark:bg-slate-800/60" />
                       </div>
                     </div>
                   ))}
                 </div>
               ) : alertsError && criticalAlerts.length === 0 ? (
                 <div className="p-8 text-center">
-                  <AlertTriangle size={24} className="mx-auto text-amber-400 mb-2" />
-                  <p className="text-sm font-medium text-slate-300">Unable to load critical alerts</p>
-                  <p className="text-xs text-slate-400 mt-1">Connecting to backend...</p>
+                  <AlertTriangle size={24} className="mx-auto text-amber-500 dark:text-amber-400 mb-2" />
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Unable to load critical alerts</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Connecting to backend...</p>
                 </div>
               ) : criticalAlerts.length === 0 ? (
                 <div className="p-8 text-center">
-                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 size={20} />
                   </div>
-                  <p className="text-sm font-medium text-slate-200">All Corridors Normal</p>
-                  <p className="mt-1 text-xs text-slate-400">No active critical alerts require operator intervention.</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">All Corridors Normal</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">No active critical alerts require operator intervention.</p>
                 </div>
               ) : (
                 criticalAlerts.map((alert) => {
                   const IconComponent = alertIcon(alert.alert_type);
                   return (
-                    <div key={alert.id} className="p-4 transition hover:bg-slate-800/30">
+                    <div key={alert.id} className="p-4 transition hover:bg-slate-50 dark:hover:bg-slate-800/30">
                       <div className="flex gap-3">
-                        <div className="mt-0.5 rounded-lg bg-red-500/10 p-2 text-red-400 shrink-0">
+                        <div className="mt-0.5 rounded-lg bg-red-100 dark:bg-red-500/10 p-2 text-red-600 dark:text-red-400 shrink-0">
                           <IconComponent size={16} />
                         </div>
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-medium text-slate-200 truncate">
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-200 truncate">
                               {alert.title}
                             </p>
-                            <span className="shrink-0 text-[10px] text-slate-400">
+                            <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                               {formatRelativeTime(alert.created_at)}
                             </span>
                           </div>
 
-                          <p className="mt-1 text-xs leading-5 text-slate-400 line-clamp-2">
+                          <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400 line-clamp-2">
                             {alert.description}
                           </p>
 
                           {alert.location && (
-                            <p className="mt-1.5 flex items-center gap-1 text-[11px] text-slate-400">
-                              <MapPin size={11} className="shrink-0 text-slate-500" />
+                            <p className="mt-1.5 flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                              <MapPin size={11} className="shrink-0 text-slate-400 dark:text-slate-500" />
                               <span className="truncate">{alert.location}</span>
                             </p>
                           )}
@@ -2015,10 +2015,10 @@ function Home() {
             </div>
           </div>
 
-          <div className="border-t border-slate-800/80 p-3 bg-slate-950/40 text-center rounded-b-xl">
+          <div className="border-t border-slate-100 dark:border-slate-800/80 p-3 bg-slate-50/50 dark:bg-slate-950/40 text-center rounded-b-xl">
             <Link
               to="/alerts"
-              className="text-xs font-medium text-cyan-400 hover:text-cyan-300 transition inline-flex items-center gap-1"
+              className="text-xs font-medium text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 transition inline-flex items-center gap-1"
             >
               View All Regional Alerts &rarr;
             </Link>
@@ -2039,40 +2039,40 @@ function Home() {
       <div className="grid gap-6 lg:grid-cols-2">
 
         {/* Recent Incidents (Existing Real API) */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/80 shadow-xl">
-          <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
             <div>
-              <h3 className="font-semibold text-white">
+              <h3 className="font-semibold text-slate-900 dark:text-white">
                 Recent Reported Incidents
               </h3>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Latest field and system-reported network events
               </p>
             </div>
 
-            <MapPin size={18} className="text-cyan-400" />
+            <MapPin size={18} className="text-cyan-600 dark:text-cyan-400" />
           </div>
 
           {recentIncidents.length > 0 ? (
-            <div className="divide-y divide-slate-800">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {recentIncidents.map((incident) => (
                 <div
                   key={incident.id}
                   className="flex items-center justify-between gap-4 px-5 py-4"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="rounded-lg bg-red-500/10 p-2 text-red-400 shrink-0">
+                    <div className="rounded-lg bg-red-100 dark:bg-red-500/10 p-2 text-red-600 dark:text-red-400 shrink-0">
                       <AlertTriangle size={16} />
                     </div>
 
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-200">
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-200">
                         {incident.title ||
                           incident.incident_type ||
                           "Road Incident"}
                       </p>
 
-                      <p className="mt-1 truncate text-xs text-slate-400">
+                      <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
                         {incident.district ||
                           incident.state ||
                           "Northeast Region"} • Risk: {incident.risk_score ?? 95.0}
@@ -2082,7 +2082,7 @@ function Home() {
 
                   <Link
                     to="/incidents"
-                    className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full border border-red-500/30 bg-red-500/10 ${getStatusClass(
+                    className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 ${getStatusClass(
                       incident.severity
                     )}`}
                   >
@@ -2096,12 +2096,12 @@ function Home() {
               <div>
                 <CheckCircle2
                   size={28}
-                  className="mx-auto text-emerald-400"
+                  className="mx-auto text-emerald-500 dark:text-emerald-400"
                 />
-                <p className="mt-3 text-sm text-slate-300">
+                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
                   No active incidents
                 </p>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   All primary corridors reported open.
                 </p>
               </div>
@@ -2110,59 +2110,59 @@ function Home() {
         </div>
 
         {/* ACTIVE TRANSPORT UNIT TELEMETRY (Replaces fake 12 online operators) */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <Truck size={17} className="text-cyan-400" />
-                <h3 className="font-bold text-white text-base">Active Freight Unit Telemetry</h3>
+                <Truck size={17} className="text-cyan-600 dark:text-cyan-400" />
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">Active Freight Unit Telemetry</h3>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">Real-time GPS tracking and cold-chain integrity</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time GPS tracking and cold-chain integrity</p>
             </div>
-            <Link to="/vehicles" className="text-xs font-semibold text-cyan-400 hover:text-cyan-300">
+            <Link to="/vehicles" className="text-xs font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300">
               Open Fleet View →
             </Link>
           </div>
 
           {impactedVehicle ? (
             <div className="space-y-3">
-              <div className="flex items-center justify-between rounded-lg bg-slate-950/80 p-3.5 border border-slate-800">
+              <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-950/80 p-3.5 border border-slate-200 dark:border-slate-800">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-base font-bold text-white">{impactedVehicle.vehicle_number}</span>
-                    <span className="rounded bg-cyan-500/20 text-cyan-300 px-2 py-0.5 text-[10px] font-bold uppercase">
+                    <span className="text-base font-bold text-slate-900 dark:text-white">{impactedVehicle.vehicle_number}</span>
+                    <span className="rounded bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300 px-2 py-0.5 text-[10px] font-bold uppercase">
                       {impactedVehicle.status?.replace("_", " ") || "In Transit"}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-1 font-medium">{impactedVehicle.cargo_type}</p>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium">{impactedVehicle.cargo_type}</p>
                 </div>
                 <div className="text-right text-xs">
-                  <span className="text-slate-400 block text-[10px]">Current Mission</span>
-                  <span className="font-bold text-cyan-400">Trip #{interceptedTrip?.id ?? 318}</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Current Mission</span>
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">Trip #{interceptedTrip?.id ?? 318}</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/60">
-                  <span className="text-slate-400 block text-[10px]">Assigned Corridor</span>
-                  <span className="font-semibold text-white">Guwahati → Tezpur</span>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/60">
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Assigned Corridor</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">Guwahati → Tezpur</span>
                 </div>
-                <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/60">
-                  <span className="text-slate-400 block text-[10px]">Cold-Chain Status</span>
-                  <span className="font-semibold text-emerald-400">Nominal (2.4°C)</span>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/60">
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Cold-Chain Status</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Nominal (2.4°C)</span>
                 </div>
-                <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/60">
-                  <span className="text-slate-400 block text-[10px]">Live GPS Telemetry</span>
-                  <span className="font-mono text-slate-300">{impactedVehicle.latitude?.toFixed(4)}°N, {impactedVehicle.longitude?.toFixed(4)}°E</span>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/60">
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Live GPS Telemetry</span>
+                  <span className="font-mono text-slate-700 dark:text-slate-300">{impactedVehicle.latitude?.toFixed(4)}°N, {impactedVehicle.longitude?.toFixed(4)}°E</span>
                 </div>
-                <div className="rounded-lg bg-slate-950/60 p-2.5 border border-slate-800/60">
-                  <span className="text-slate-400 block text-[10px]">Interception Status</span>
-                  <span className="font-semibold text-amber-400">Detour Enforced</span>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/60">
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Interception Status</span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">Detour Enforced</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="p-8 text-center text-xs text-slate-400">
+            <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
               No active freight units currently registered.
             </div>
           )}
@@ -2171,37 +2171,37 @@ function Home() {
 
       {/* BOTTOM OPERATIONAL SUMMARY ROW (Replaces fake 6h 42m, 7 routes, 284 deliveries) */}
       <div className="grid gap-4 md:grid-cols-3">
-        <div className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
-          <div className="rounded-lg bg-cyan-500/10 p-3 text-cyan-400 shrink-0">
+        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/70 p-4 sm:p-5 shadow-sm">
+          <div className="rounded-lg bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400 p-3 shrink-0">
             <Navigation size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-400">Trip #318 Corridor ETA</p>
-            <p className="mt-1 text-base sm:text-lg font-bold text-white">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Trip #318 Corridor ETA</p>
+            <p className="mt-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               126 min direct • +59 min detour
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
-          <div className="rounded-lg bg-amber-500/10 p-3 text-amber-400 shrink-0">
+        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/70 p-4 sm:p-5 shadow-sm">
+          <div className="rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 p-3 shrink-0">
             <ShieldAlert size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-400">Active Geofenced Hazards</p>
-            <p className="mt-1 text-base sm:text-lg font-bold text-white">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Active Geofenced Hazards</p>
+            <p className="mt-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               1 Critical Blockage (NH-15)
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-xl border border-slate-800 bg-slate-900/70 p-4 sm:p-5">
-          <div className="rounded-lg bg-emerald-500/10 p-3 text-emerald-400 shrink-0">
+        <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/70 p-4 sm:p-5 shadow-sm">
+          <div className="rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 p-3 shrink-0">
             <CheckCircle2 size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-400">Control Operator Session</p>
-            <p className="mt-1 text-base sm:text-lg font-bold text-white">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Control Operator Session</p>
+            <p className="mt-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               CONTROL_OPERATOR Active
             </p>
           </div>

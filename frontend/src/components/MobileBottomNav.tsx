@@ -63,7 +63,7 @@ export const MobileBottomNav: React.FC = () => {
   const visibleItems = navItems.filter((item) => item.roles.includes(role) || !role);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-950/95 backdrop-blur border-t border-slate-800 px-2 py-1.5 flex items-center justify-around pb-[max(0.375rem,env(safe-area-inset-bottom))]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 text-slate-900 backdrop-blur border-t border-slate-200 dark:bg-slate-950/95 dark:text-white dark:border-slate-800 px-2 py-1.5 flex items-center justify-around pb-[max(0.375rem,env(safe-area-inset-bottom))] transition-colors duration-150">
       {visibleItems.map((item) => {
         const Icon = item.icon;
         return (
@@ -74,14 +74,14 @@ export const MobileBottomNav: React.FC = () => {
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-lg text-[10px] font-medium transition ${
                 isActive
-                  ? 'text-cyan-400 font-semibold'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'text-cyan-600 dark:text-cyan-400 font-semibold'
+                  : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
               }`
             }
           >
             {({ isActive }) => (
               <>
-                <Icon size={18} className={isActive ? 'text-cyan-400' : 'text-slate-400'} />
+                <Icon size={18} className={isActive ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400 dark:text-slate-400'} />
                 <span>{item.name}</span>
               </>
             )}

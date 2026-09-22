@@ -71,7 +71,7 @@ const defaultKpis = [
     trend: "neutral",
     description: "0 in transit • 0 completed",
     icon: "Map",
-    iconClass: "bg-cyan-500/10 text-cyan-400",
+    iconClass: "border border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-transparent dark:bg-cyan-500/10 dark:text-cyan-400",
   },
   {
     title: "Average ETA",
@@ -80,7 +80,7 @@ const defaultKpis = [
     trend: "neutral",
     description: "Guwahati → Tezpur mission",
     icon: "Clock3",
-    iconClass: "bg-purple-500/10 text-purple-400",
+    iconClass: "border border-purple-200 bg-purple-50 text-purple-700 dark:border-transparent dark:bg-purple-500/10 dark:text-purple-400",
   },
   {
     title: "Active Vehicles",
@@ -89,7 +89,7 @@ const defaultKpis = [
     trend: "up",
     description: "AS-01-BX-4091 transmitting",
     icon: "Truck",
-    iconClass: "bg-emerald-500/10 text-emerald-400",
+    iconClass: "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-transparent dark:bg-emerald-500/10 dark:text-emerald-400",
   },
   {
     title: "Road Accessibility",
@@ -98,7 +98,7 @@ const defaultKpis = [
     trend: "neutral",
     description: "monitored highway network",
     icon: "ShieldCheck",
-    iconClass: "bg-amber-500/10 text-amber-400",
+    iconClass: "border border-amber-200 bg-amber-50 text-amber-700 dark:border-transparent dark:bg-amber-500/10 dark:text-amber-400",
   },
 ];
 
@@ -227,11 +227,11 @@ function Analytics() {
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
             Logistics Analytics
           </h1>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Operational performance, incident trends and regional
             logistics intelligence
           </p>
@@ -239,7 +239,7 @@ function Analytics() {
 
         <div className="flex items-center gap-3">
           {loading && (
-            <div className="flex items-center gap-2 text-xs text-cyan-400">
+            <div className="flex items-center gap-2 text-xs text-cyan-600 dark:text-cyan-400">
               <RefreshCw size={14} className="animate-spin" />
               <span>Updating...</span>
             </div>
@@ -248,7 +248,7 @@ function Analytics() {
           <select
             value={days}
             onChange={(e) => setDays(e.target.value)}
-            className="rounded-lg border border-slate-800 bg-slate-900 px-4 py-2.5 text-xs text-slate-400 outline-none focus:border-cyan-500/50"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-700 shadow-sm outline-none focus:border-cyan-500/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
           >
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -259,14 +259,14 @@ function Analytics() {
 
       {/* Error / Offline Banner */}
       {error && (
-        <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-300">
+        <div className="flex items-center justify-between rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
           <div className="flex items-center gap-2">
-            <AlertTriangle size={16} className="text-amber-400" />
+            <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400" />
             <span>{error}</span>
           </div>
           <button
             onClick={() => fetchAnalytics(days)}
-            className="flex items-center gap-1 font-semibold text-amber-400 underline hover:text-amber-300"
+            className="flex items-center gap-1 font-semibold text-amber-700 underline hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300"
           >
             <RefreshCw size={12} />
             Retry
@@ -282,15 +282,15 @@ function Analytics() {
           return (
             <div
               key={kpi.title}
-              className="rounded-xl border border-slate-800 bg-slate-900 p-5"
+              className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
                     {kpi.title}
                   </p>
 
-                  <p className="mt-2 text-3xl font-bold text-white">
+                  <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
                     {kpi.value}
                   </p>
 
@@ -298,8 +298,8 @@ function Analytics() {
                     <span
                       className={`flex items-center gap-0.5 text-xs font-medium ${
                         kpi.trend === "up"
-                          ? "text-emerald-400"
-                          : "text-cyan-400"
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-cyan-700 dark:text-cyan-400"
                       }`}
                     >
                       {kpi.trend === "up" ? (
@@ -311,7 +311,7 @@ function Analytics() {
                       {kpi.change}
                     </span>
 
-                    <span className="text-[11px] text-slate-600">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
                       {kpi.description}
                     </span>
                   </div>
@@ -329,22 +329,22 @@ function Analytics() {
       {/* Charts Row */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         {/* Incident Trend */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-semibold text-white">
+              <h2 className="font-semibold text-slate-900 dark:text-white">
                 Incident Trend
               </h2>
 
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Reported incidents during the selected period
               </p>
             </div>
 
-            <div className="rounded-lg bg-red-500/10 p-2.5">
+            <div className="rounded-lg border border-red-200 bg-red-50 p-2.5 dark:border-transparent dark:bg-red-500/10">
               <AlertTriangle
                 size={19}
-                className="text-red-400"
+                className="text-red-600 dark:text-red-400"
               />
             </div>
           </div>
@@ -354,7 +354,8 @@ function Analytics() {
               <LineChart data={incidentTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="#1e293b"
+                  stroke="#94a3b8"
+                  strokeOpacity={0.25}
                 />
 
                 <XAxis
@@ -381,7 +382,7 @@ function Analytics() {
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#0f172a",
-                    border: "1px solid #1e293b",
+                    border: "1px solid #334155",
                     borderRadius: "8px",
                     color: "#fff",
                     fontSize: "12px",
@@ -407,22 +408,22 @@ function Analytics() {
         </div>
 
         {/* Average ETA */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-semibold text-white">
+              <h2 className="font-semibold text-slate-900 dark:text-white">
                 Average Route Time
               </h2>
 
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Average completion time in hours
               </p>
             </div>
 
-            <div className="rounded-lg bg-purple-500/10 p-2.5">
+            <div className="rounded-lg border border-purple-200 bg-purple-50 p-2.5 dark:border-transparent dark:bg-purple-500/10">
               <Clock3
                 size={19}
-                className="text-purple-400"
+                className="text-purple-600 dark:text-purple-400"
               />
             </div>
           </div>
@@ -432,7 +433,8 @@ function Analytics() {
               <LineChart data={deliveryTrend} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="#1e293b"
+                  stroke="#94a3b8"
+                  strokeOpacity={0.25}
                 />
 
                 <XAxis
@@ -458,7 +460,7 @@ function Analytics() {
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#0f172a",
-                    border: "1px solid #1e293b",
+                    border: "1px solid #334155",
                     borderRadius: "8px",
                     color: "#fff",
                     fontSize: "12px",
@@ -491,21 +493,21 @@ function Analytics() {
       {/* Regional Performance + Risk */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         {/* Regional Performance */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5 xl:col-span-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 xl:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-semibold text-white">
+              <h2 className="font-semibold text-slate-900 dark:text-white">
                 Regional Operations
               </h2>
 
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Vehicle activity and incident volume by region
               </p>
             </div>
 
             <BarChart3
               size={20}
-              className="text-cyan-400"
+              className="text-cyan-600 dark:text-cyan-400"
             />
           </div>
 
@@ -514,7 +516,8 @@ function Analytics() {
               <BarChart data={regionalData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="#1e293b"
+                  stroke="#94a3b8"
+                  strokeOpacity={0.25}
                 />
 
                 <XAxis
@@ -540,7 +543,7 @@ function Analytics() {
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#0f172a",
-                    border: "1px solid #1e293b",
+                    border: "1px solid #334155",
                     borderRadius: "8px",
                     color: "#fff",
                     fontSize: "12px",
@@ -568,7 +571,7 @@ function Analytics() {
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-sm bg-cyan-500" />
 
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-600 dark:text-slate-400">
                 Vehicles
               </span>
             </div>
@@ -576,7 +579,7 @@ function Analytics() {
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-sm bg-amber-500" />
 
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-600 dark:text-slate-400">
                 Incidents
               </span>
             </div>
@@ -584,21 +587,21 @@ function Analytics() {
         </div>
 
         {/* Risk Distribution */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-semibold text-white">
+              <h2 className="font-semibold text-slate-900 dark:text-white">
                 Road Risk
               </h2>
 
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 Current monitored roads
               </p>
             </div>
 
             <Activity
               size={20}
-              className="text-amber-400"
+              className="text-amber-500 dark:text-amber-400"
             />
           </div>
 
@@ -616,12 +619,12 @@ function Analytics() {
 
               const textClass =
                 risk.name === "Critical"
-                  ? "text-red-400"
+                  ? "text-red-600 dark:text-red-400"
                   : risk.name === "High"
-                    ? "text-orange-400"
+                    ? "text-orange-600 dark:text-orange-400"
                     : risk.name === "Medium"
-                      ? "text-amber-400"
-                      : "text-emerald-400";
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-emerald-600 dark:text-emerald-400";
 
               return (
                 <div key={risk.name}>
@@ -631,19 +634,19 @@ function Analytics() {
                         className={`h-2.5 w-2.5 rounded-full ${barClass}`}
                       />
 
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-600 dark:text-slate-400">
                         {risk.name}
                       </span>
                     </div>
 
                     <span
-                      className={`text-xs font-medium ${textClass}`}
+                      className={`text-xs font-semibold ${textClass}`}
                     >
                       {risk.value}
                     </span>
                   </div>
 
-                  <div className="h-2 rounded-full bg-slate-800">
+                  <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800">
                     <div
                       className={`h-2 rounded-full ${barClass}`}
                       style={{
@@ -656,23 +659,23 @@ function Analytics() {
             })}
           </div>
 
-          <div className="mt-8 border-t border-slate-800 pt-5">
+          <div className="mt-8 border-t border-slate-200 pt-5 dark:border-slate-800">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 Total monitored roads
               </span>
 
-              <span className="text-sm font-semibold text-white">
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">
                 {roadsSummary.total}
               </span>
             </div>
 
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 Safe / Low Risk
               </span>
 
-              <span className="text-sm font-semibold text-emerald-400">
+              <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                 {roadsSummary.safe_percentage}%
               </span>
             </div>
@@ -682,79 +685,76 @@ function Analytics() {
 
       {/* Operational Insights */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-cyan-500/10 bg-cyan-500/5 p-5">
+        <div className="rounded-xl border border-cyan-200 bg-cyan-50/70 p-5 shadow-sm dark:border-cyan-500/10 dark:bg-cyan-500/5">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-cyan-500/10 p-2.5">
+            <div className="rounded-lg border border-cyan-200 bg-cyan-100 p-2.5 text-cyan-700 dark:border-transparent dark:bg-cyan-500/10 dark:text-cyan-400">
               <Activity
                 size={19}
-                className="text-cyan-400"
               />
             </div>
 
             <div>
-              <p className="text-sm font-medium text-cyan-400">
+              <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-400">
                 Fleet Utilization
               </p>
 
-              <p className="mt-1 text-2xl font-bold text-white">
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                 {insights.fleet_utilization}%
               </p>
             </div>
           </div>
 
-          <p className="mt-4 text-xs leading-5 text-slate-500">
+          <p className="mt-4 text-xs leading-5 text-slate-600 dark:text-slate-400">
             Most active vehicles are currently assigned to
             essential supply routes.
           </p>
         </div>
 
-        <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/5 p-5">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm dark:border-emerald-500/10 dark:bg-emerald-500/5">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-emerald-500/10 p-2.5">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-100 p-2.5 text-emerald-700 dark:border-transparent dark:bg-emerald-500/10 dark:text-emerald-400">
               <ShieldCheck
                 size={19}
-                className="text-emerald-400"
               />
             </div>
 
             <div>
-              <p className="text-sm font-medium text-emerald-400">
+              <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-400">
                 Route Safety
               </p>
 
-              <p className="mt-1 text-2xl font-bold text-white">
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                 {insights.route_safety}%
               </p>
             </div>
           </div>
 
-          <p className="mt-4 text-xs leading-5 text-slate-500">
+          <p className="mt-4 text-xs leading-5 text-slate-600 dark:text-slate-400">
             Recommended routes are avoiding most currently
             identified high-risk road segments.
           </p>
         </div>
 
-        <div className="rounded-xl border border-amber-500/10 bg-amber-500/5 p-5">
+        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-5 shadow-sm dark:border-amber-500/10 dark:bg-amber-500/5">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-amber-500/10 p-2.5">
+            <div className="rounded-lg border border-amber-200 bg-amber-100 p-2.5 text-amber-700 dark:border-transparent dark:bg-amber-500/10 dark:text-amber-400">
               <AlertTriangle
                 size={19}
-                className="text-amber-400"
               />
             </div>
 
             <div>
-              <p className="text-sm font-medium text-amber-400">
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-400">
                 Incident Resolution
               </p>
 
-              <p className="mt-1 text-2xl font-bold text-white">
+              <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                 {insights.incident_resolution}%
               </p>
             </div>
           </div>
 
-          <p className="mt-4 text-xs leading-5 text-slate-500">
+          <p className="mt-4 text-xs leading-5 text-slate-600 dark:text-slate-400">
             Reported road incidents are being resolved or
             acknowledged by field teams.
           </p>
@@ -762,19 +762,19 @@ function Analytics() {
       </div>
 
       {/* Footer */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-start gap-3">
           <BarChart3
             size={19}
-            className="mt-0.5 shrink-0 text-cyan-400"
+            className="mt-0.5 shrink-0 text-cyan-600 dark:text-cyan-400"
           />
 
           <div>
-            <p className="text-sm font-medium text-white">
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">
               Analytics intelligence
             </p>
 
-            <p className="mt-1 text-xs leading-5 text-slate-500">
+            <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
               Live operational analytics computed from vehicle telemetry, verified
               incidents, road-risk assessments, route history and regional
               logistics activity across the North Eastern Region.

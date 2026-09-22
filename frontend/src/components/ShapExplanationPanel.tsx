@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import {
   BrainCircuit,
   X,
@@ -24,6 +25,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
   roadName,
 }) => {
   if (!isOpen) return null;
+  if (typeof document === "undefined") return null;
 
   const positiveContributors: FeatureAttributionItem[] =
     predictionSignal?.top_positive_contributors || [];
@@ -42,34 +44,36 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
     0.05
   );
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="shap-panel-title"
+      style={{ zIndex: 99999 }}
     >
       <div
-        className="w-full max-w-3xl rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl overflow-hidden"
+        className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden dark:border-slate-700 dark:bg-slate-900 text-slate-900 dark:text-white"
         onClick={(e) => e.stopPropagation()}
+        style={{ zIndex: 100000 }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/70">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/70">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl border border-purple-500/20 bg-purple-500/10 p-2.5 text-purple-400">
+            <div className="rounded-xl border border-purple-500/20 bg-purple-500/10 p-2.5 text-purple-600 dark:text-purple-400">
               <BrainCircuit size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 id="shap-panel-title" className="text-base font-semibold text-white">
+                <h3 id="shap-panel-title" className="text-base font-semibold text-slate-900 dark:text-white">
                   TreeSHAP Feature Attribution
                 </h3>
-                <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] text-purple-300 font-mono">
+                <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] text-purple-700 dark:text-purple-300 font-mono">
                   Probability-Space
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {roadName ? `Feature attribution analysis for ${roadName}` : "Model prediction decomposition"}
               </p>
             </div>
@@ -78,7 +82,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close explainability panel"
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition"
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -87,13 +91,13 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
         {/* Scrollable Content */}
         <div className="p-6 space-y-6 max-h-[78vh] overflow-y-auto">
           {/* Probability Pipeline Bar */}
-          <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/80">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs">
               <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-medium text-slate-500">
                   Model Baseline Prior
                 </span>
-                <p className="text-base font-bold text-slate-300">
+                <p className="text-base font-bold text-slate-800 dark:text-slate-300">
                   {(baseValue * 100).toFixed(1)}%
                 </p>
                 <p className="text-[10px] text-slate-500">
@@ -101,7 +105,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
                 </p>
               </div>
 
-              <div className="hidden sm:block text-slate-600 font-mono text-lg">
+              <div className="hidden sm:block text-slate-400 dark:text-slate-600 font-mono text-lg">
                 + &Sigma;&phi; &rarr;
               </div>
 
@@ -109,13 +113,13 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
                 <span className="text-[10px] uppercase font-medium text-slate-500">
                   Operational Threshold
                 </span>
-                <p className="text-base font-bold text-amber-400">
+                <p className="text-base font-bold text-amber-600 dark:text-amber-400">
                   {(threshold * 100).toFixed(0)}%
                 </p>
                 <p className="text-[10px] text-slate-500">Calibrated decision boundary</p>
               </div>
 
-              <div className="hidden sm:block text-slate-600 font-mono text-lg">&rarr;</div>
+              <div className="hidden sm:block text-slate-400 dark:text-slate-600 font-mono text-lg">&rarr;</div>
 
               <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-medium text-slate-500">
@@ -123,12 +127,12 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
                 </span>
                 <p
                   className={`text-base font-bold ${
-                    isLikely ? "text-red-400" : "text-emerald-400"
+                    isLikely ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"
                   }`}
                 >
                   {probability != null ? `${(probability * 100).toFixed(1)}%` : "N/A"}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
                   {isLikely ? "Disruption Likely" : "Disruption Unlikely"}
                 </p>
               </div>
@@ -136,13 +140,13 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
           </div>
 
           {/* Non-Causality & Methodology Disclaimer */}
-          <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.05] p-3.5 text-xs">
+          <div className="rounded-xl border border-cyan-200 bg-cyan-50/60 p-3.5 text-xs dark:border-cyan-500/20 dark:bg-cyan-500/[0.05]">
             <div className="flex items-start gap-2.5">
-              <Info size={16} className="mt-0.5 shrink-0 text-cyan-400" />
-              <div className="text-slate-300 leading-relaxed">
-                <span className="font-semibold text-cyan-300">Non-Causal Statistical Attribution: </span>
+              <Info size={16} className="mt-0.5 shrink-0 text-cyan-600 dark:text-cyan-400" />
+              <div className="text-slate-700 dark:text-slate-300 leading-relaxed">
+                <span className="font-semibold text-cyan-800 dark:text-cyan-300">Non-Causal Statistical Attribution: </span>
                 SHAP (SHapley Additive exPlanations) quantifies which features contributed to shifting the model prediction away from the baseline prior.
-                <span className="text-slate-400 block mt-0.5">
+                <span className="text-slate-500 dark:text-slate-400 block mt-0.5">
                   It reflects learned statistical associations in the training distribution; it does not prove physical causality.
                 </span>
               </div>
@@ -151,12 +155,12 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
 
           {/* Model Narrative if present */}
           {predictionSignal?.narrative && (
-            <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
-                <BrainCircuit size={13} className="text-purple-400" />
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
+                <BrainCircuit size={13} className="text-purple-600 dark:text-purple-400" />
                 Attribution Summary
               </p>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                 {predictionSignal.narrative}
               </p>
             </div>
@@ -165,7 +169,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
           {/* Factors Increasing Predicted Risk */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-red-400 flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400 flex items-center gap-1.5">
                 <TrendingUp size={15} />
                 Factors Associated with Increased Model Output (+&phi;)
               </h4>
@@ -175,7 +179,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             </div>
 
             {positiveContributors.length === 0 ? (
-              <p className="text-xs text-slate-500 italic p-3 rounded-lg bg-slate-950/50">
+              <p className="text-xs text-slate-500 italic p-3 rounded-lg bg-slate-50 dark:bg-slate-950/50">
                 No significant factors driving risk probability upward.
               </p>
             ) : (
@@ -188,33 +192,33 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
                   return (
                     <div
                       key={item.feature || idx}
-                      className="rounded-xl border border-red-500/15 bg-red-500/[0.03] p-3.5 space-y-2"
+                      className="rounded-xl border border-red-200 bg-red-50/60 p-3.5 space-y-2 dark:border-red-500/15 dark:bg-red-500/[0.03]"
                     >
                       <div className="flex items-center justify-between text-xs">
                         <div>
-                          <span className="font-medium text-slate-200">
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
                             {item.display_name}
                           </span>
                           {item.raw_value != null && (
-                            <span className="ml-2 font-mono text-[11px] text-slate-400">
+                            <span className="ml-2 font-mono text-[11px] text-slate-500 dark:text-slate-400">
                               ({item.raw_value} {item.unit})
                             </span>
                           )}
                         </div>
-                        <span className="font-mono font-semibold text-red-400">
+                        <span className="font-mono font-semibold text-red-600 dark:text-red-400">
                           +{(item.shap_value * 100).toFixed(2)}%
                         </span>
                       </div>
 
                       {/* Bar indicator */}
-                      <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-300"
                           style={{ width: `${widthPercent}%` }}
                         />
                       </div>
 
-                      <p className="text-[11px] text-slate-400 leading-normal">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-normal">
                         {item.physical_interpretation}
                       </p>
                     </div>
@@ -227,7 +231,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
           {/* Factors Reducing Predicted Risk */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <TrendingDown size={15} />
                 Factors Associated with Reduced Model Output (-&phi;)
               </h4>
@@ -237,7 +241,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             </div>
 
             {negativeContributors.length === 0 ? (
-              <p className="text-xs text-slate-500 italic p-3 rounded-lg bg-slate-950/50">
+              <p className="text-xs text-slate-500 italic p-3 rounded-lg bg-slate-50 dark:bg-slate-950/50">
                 No significant mitigating factors observed.
               </p>
             ) : (
@@ -250,33 +254,33 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
                   return (
                     <div
                       key={item.feature || idx}
-                      className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.03] p-3.5 space-y-2"
+                      className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3.5 space-y-2 dark:border-emerald-500/15 dark:bg-emerald-500/[0.03]"
                     >
                       <div className="flex items-center justify-between text-xs">
                         <div>
-                          <span className="font-medium text-slate-200">
+                          <span className="font-medium text-slate-800 dark:text-slate-200">
                             {item.display_name}
                           </span>
                           {item.raw_value != null && (
-                            <span className="ml-2 font-mono text-[11px] text-slate-400">
+                            <span className="ml-2 font-mono text-[11px] text-slate-500 dark:text-slate-400">
                               ({item.raw_value} {item.unit})
                             </span>
                           )}
                         </div>
-                        <span className="font-mono font-semibold text-emerald-400">
+                        <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
                           {(item.shap_value * 100).toFixed(2)}%
                         </span>
                       </div>
 
                       {/* Bar indicator */}
-                      <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                         <div
                           className="h-full rounded-full bg-gradient-to-r from-teal-500 to-emerald-500 transition-all duration-300"
                           style={{ width: `${widthPercent}%` }}
                         />
                       </div>
 
-                      <p className="text-[11px] text-slate-400 leading-normal">
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-normal">
                         {item.physical_interpretation}
                       </p>
                     </div>
@@ -287,39 +291,40 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
           </div>
 
           {/* Additive Consistency Proof Box */}
-          <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-3.5 text-xs flex items-center justify-between">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs flex items-center justify-between dark:border-slate-800 dark:bg-slate-950/60">
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+              <CheckCircle2 size={16} className="text-emerald-500 dark:text-emerald-400 shrink-0" />
               <div>
-                <p className="font-medium text-slate-200">
+                <p className="font-medium text-slate-800 dark:text-slate-200">
                   Exact Additive Consistency Verified
                 </p>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-500 dark:text-slate-500">
                   Base prior + &sum; &phi;<sub>i</sub> = Predicted probability (|error| &lt; 10<sup>-4</sup>)
                 </p>
               </div>
             </div>
-            <span className="rounded-md bg-emerald-500/10 px-2 py-1 text-[10px] font-mono text-emerald-300">
+            <span className="rounded-md bg-emerald-500/10 px-2 py-1 text-[10px] font-mono font-semibold text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
               Exact
             </span>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="border-t border-slate-800 px-6 py-3.5 bg-slate-950/70 flex items-center justify-between text-xs text-slate-500">
+        <div className="border-t border-slate-200 px-6 py-3.5 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/70 flex items-center justify-between text-xs text-slate-500">
           <span className="flex items-center gap-1.5">
-            <HelpCircle size={13} className="text-purple-400" />
+            <HelpCircle size={13} className="text-purple-600 dark:text-purple-400" />
             TreeSHAP explanations computed in-process via cached singleton
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white transition cursor-pointer"
           >
             Done
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

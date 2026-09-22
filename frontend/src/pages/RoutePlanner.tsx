@@ -1023,18 +1023,18 @@ function RoutePlanner() {
       {/* PAGE HEADER */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Route Planner
           </h1>
 
-          <p className="mt-2 text-slate-400">
+          <p className="mt-2 text-slate-500 dark:text-slate-400">
             Interactive route planning for NER logistics operations
           </p>
         </div>
 
         <button
           onClick={() => fetchData()}
-          className="flex w-fit items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-800"
+          className="flex w-fit items-center gap-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 px-4 py-2 text-sm font-medium transition shadow-sm"
         >
           <RefreshCw size={16} />
           Refresh Data
@@ -1043,20 +1043,20 @@ function RoutePlanner() {
 
       {/* ERROR */}
       {error && (
-        <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 p-4">
+        <div className="flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-50 dark:bg-red-500/10 p-4">
           <AlertTriangle
             size={20}
-            className="shrink-0 text-red-400"
+            className="shrink-0 text-red-500 dark:text-red-400"
           />
 
           <div>
-            <p className="font-medium text-red-400">
+            <p className="font-medium text-red-700 dark:text-red-400">
               {error.includes("Unable to connect")
                 ? "Backend connection error"
                 : "Route Planner Error"}
             </p>
 
-            <p className="mt-1 text-sm text-red-400/80">
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400/80">
               {error}
             </p>
           </div>
@@ -1064,11 +1064,11 @@ function RoutePlanner() {
       )}
 
       {routeError && (
-        <div className="flex items-center gap-3 rounded-xl border border-orange-500/30 bg-orange-500/10 p-4">
-          <AlertTriangle size={20} className="shrink-0 text-orange-400" />
+        <div className="flex items-center gap-3 rounded-xl border border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 p-4">
+          <AlertTriangle size={20} className="shrink-0 text-orange-500 dark:text-orange-400" />
           <div>
-            <p className="font-medium text-orange-300">Routing service message</p>
-            <p className="mt-1 text-sm text-orange-300/80">{routeError}</p>
+            <p className="font-medium text-orange-800 dark:text-orange-300">Routing service message</p>
+            <p className="mt-1 text-sm text-orange-700 dark:text-orange-300/80">{routeError}</p>
           </div>
         </div>
       )}
@@ -1076,11 +1076,11 @@ function RoutePlanner() {
       {/* TOP CONTROL PANEL */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         {/* VEHICLE */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5 shadow-sm">
           <div className="mb-3 flex items-center gap-2">
-            <Truck size={18} className="text-cyan-400" />
+            <Truck size={18} className="text-cyan-600 dark:text-cyan-400" />
 
-            <p className="text-sm font-medium text-slate-300">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Select Vehicle
             </p>
           </div>
@@ -1091,7 +1091,7 @@ function RoutePlanner() {
               handleVehicleChange(Number(e.target.value))
             }
             disabled={loadingVehicles}
-            className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-white outline-none focus:border-blue-500"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white px-3 py-3 text-sm outline-none focus:border-blue-500"
           >
             {loadingVehicles ? (
               <option>Loading vehicles...</option>
@@ -1106,17 +1106,17 @@ function RoutePlanner() {
         </div>
 
         {/* ORIGIN */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5 shadow-sm">
           <div className="mb-3 flex items-center gap-2">
-            <MapPin size={18} className="text-emerald-400" />
+            <MapPin size={18} className="text-emerald-600 dark:text-emerald-400" />
 
-            <p className="text-sm font-medium text-slate-300">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Origin
             </p>
           </div>
 
-          <div className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-3">
-            <p className="text-sm font-medium text-white">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950 px-3 py-3">
+            <p className="text-sm font-medium text-slate-900 dark:text-white">
               {origin?.name ?? "Select a trip"}
             </p>
 
@@ -1127,17 +1127,17 @@ function RoutePlanner() {
         </div>
 
         {/* DESTINATION */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5 shadow-sm">
           <div className="mb-3 flex items-center gap-2">
-            <MapPin size={18} className="text-red-400" />
+            <MapPin size={18} className="text-red-500 dark:text-red-400" />
 
-            <p className="text-sm font-medium text-slate-300">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Destination
             </p>
           </div>
 
-          <div className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-3">
-            <p className="text-sm font-medium text-white">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950 px-3 py-3">
+            <p className="text-sm font-medium text-slate-900 dark:text-white">
               {destination?.name ?? "Select a trip"}
             </p>
 
@@ -1154,11 +1154,11 @@ function RoutePlanner() {
         {/* LEFT SIDE */}
         <div className="space-y-6 xl:col-span-4">
           {/* SEARCH + TRIPS */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900">
-            <div className="border-b border-slate-800 p-5">
+          <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+            <div className="border-b border-slate-100 dark:border-slate-800 p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="font-semibold text-white">
+                  <h2 className="font-semibold text-slate-900 dark:text-white">
                     Available Trips
                   </h2>
 
@@ -1167,7 +1167,7 @@ function RoutePlanner() {
                   </p>
                 </div>
 
-                <span className="rounded-full bg-blue-500/10 px-2.5 py-1 text-xs text-blue-400">
+                <span className="rounded-full bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-400 px-2.5 py-1 text-xs font-semibold">
                   {trips.length}
                 </span>
               </div>
@@ -1175,7 +1175,7 @@ function RoutePlanner() {
               <div className="relative mt-4">
                 <Search
                   size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
 
                 <input
@@ -1183,7 +1183,7 @@ function RoutePlanner() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search vehicle, route, cargo..."
-                  className="w-full rounded-lg border border-slate-700 bg-slate-950 py-2.5 pl-9 pr-3 text-sm text-white outline-none placeholder:text-slate-500 focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -1209,8 +1209,8 @@ function RoutePlanner() {
                         onClick={() => handleTripClick(trip)}
                         className={`w-full rounded-lg border p-4 text-left transition ${
                           isSelected
-                            ? "border-blue-500/50 bg-blue-500/10"
-                            : "border-slate-800 bg-slate-950 hover:border-slate-700 hover:bg-slate-800/60"
+                            ? "border-blue-500 bg-blue-50 dark:border-blue-500/50 dark:bg-blue-500/10 shadow-sm"
+                            : "border-slate-200 bg-slate-50/70 hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700 dark:hover:bg-slate-800/60"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -1219,12 +1219,12 @@ function RoutePlanner() {
                               size={16}
                               className={
                                 isSelected
-                                  ? "text-blue-400"
-                                  : "text-slate-500"
+                                  ? "text-blue-600 dark:text-blue-400"
+                                  : "text-slate-400 dark:text-slate-500"
                               }
                             />
 
-                            <span className="text-sm font-semibold text-white">
+                            <span className="text-sm font-semibold text-slate-900 dark:text-white">
                               {vehicles.find((v) => v.id === trip.vehicle_id)?.vehicle_number ||
                                 (trip.vehicle_id === 472 ? "AS-01-BX-4091" : `Vehicle #${trip.vehicle_id}`)}
                             </span>
@@ -1240,16 +1240,16 @@ function RoutePlanner() {
                         </div>
 
                         <div className="mt-3 flex items-center gap-2 text-xs">
-                          <span className="max-w-[110px] truncate text-slate-300">
+                          <span className="max-w-[110px] truncate text-slate-700 dark:text-slate-300 font-medium">
                             {getCityName(trip.origin)}
                           </span>
 
                           <ArrowRight
                             size={13}
-                            className="shrink-0 text-slate-600"
+                            className="shrink-0 text-slate-400 dark:text-slate-600"
                           />
 
-                          <span className="max-w-[110px] truncate text-slate-300">
+                          <span className="max-w-[110px] truncate text-slate-700 dark:text-slate-300 font-medium">
                             {getCityName(trip.destination)}
                           </span>
                         </div>
@@ -1277,10 +1277,10 @@ function RoutePlanner() {
 
           {/* SELECTED TRIP */}
           {selectedTrip && (
-            <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="font-semibold text-white">
+                  <h2 className="font-semibold text-slate-900 dark:text-white">
                     Selected Trip
                   </h2>
 
@@ -1302,7 +1302,7 @@ function RoutePlanner() {
                 <div className="flex items-start gap-3">
                   <MapPin
                     size={17}
-                    className="mt-0.5 text-emerald-400"
+                    className="mt-0.5 text-emerald-600 dark:text-emerald-400"
                   />
 
                   <div>
@@ -1310,18 +1310,18 @@ function RoutePlanner() {
                       Origin
                     </p>
 
-                    <p className="mt-1 text-sm text-white">
+                    <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
                       {selectedTrip.origin}
                     </p>
                   </div>
                 </div>
 
-                <div className="ml-2 h-5 border-l border-dashed border-slate-700" />
+                <div className="ml-2 h-5 border-l border-dashed border-slate-300 dark:border-slate-700" />
 
                 <div className="flex items-start gap-3">
                   <MapPin
                     size={17}
-                    className="mt-0.5 text-red-400"
+                    className="mt-0.5 text-red-500 dark:text-red-400"
                   />
 
                   <div>
@@ -1329,7 +1329,7 @@ function RoutePlanner() {
                       Destination
                     </p>
 
-                    <p className="mt-1 text-sm text-white">
+                    <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
                       {selectedTrip.destination}
                     </p>
                   </div>
@@ -1337,12 +1337,12 @@ function RoutePlanner() {
               </div>
 
               <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-lg bg-slate-950 p-3">
+                <div className="rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-3">
                   <p className="text-[11px] text-slate-500">
                     Distance
                   </p>
 
-                  <p className="mt-1 text-sm font-semibold text-white">
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
                     {routeDistanceKm !== null
                       ? routeDistanceKm.toFixed(1)
                       : selectedTrip.route_distance_km != null
@@ -1351,12 +1351,12 @@ function RoutePlanner() {
                   </p>
                 </div>
 
-                <div className="rounded-lg bg-slate-950 p-3">
+                <div className="rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-3">
                   <p className="text-[11px] text-slate-500">
                     ETA
                   </p>
 
-                  <p className="mt-1 text-sm font-semibold text-white">
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
                     {formatDuration(
                       routeDurationMinutes !== null
                         ? Math.round(routeDurationMinutes)
@@ -1366,10 +1366,10 @@ function RoutePlanner() {
                 </div>
               </div>
 
-              <div className="mt-3 flex items-center gap-2 rounded-lg bg-slate-950 p-3">
+              <div className="mt-3 flex items-center gap-2 rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-3">
                 <Package
                   size={16}
-                  className="text-orange-400"
+                  className="text-orange-500 dark:text-orange-400"
                 />
 
                 <div>
@@ -1377,7 +1377,7 @@ function RoutePlanner() {
                     Cargo
                   </p>
 
-                  <p className="text-sm text-slate-200">
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
                     {selectedTrip.cargo_type}
                   </p>
                 </div>
@@ -1389,7 +1389,7 @@ function RoutePlanner() {
                   <button
                     onClick={handleCalculateRoute}
                     disabled={routing}
-                    className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-blue-500 disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-blue-500 disabled:opacity-50 shadow-sm"
                   >
                     <RouteIcon size={16} />
                     {routing && !isRerouted ? "Calculating..." : "Primary Route"}
@@ -1400,8 +1400,8 @@ function RoutePlanner() {
                     disabled={routing}
                     className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition disabled:opacity-50 ${
                       isRerouted
-                        ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
-                        : "border-amber-500/60 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+                        ? "border-emerald-500/50 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-500/30"
+                        : "border-amber-500/60 bg-amber-50 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/30 shadow-sm"
                     }`}
                   >
                     <RefreshCw size={16} className={routing ? "animate-spin" : ""} />
@@ -1415,13 +1415,13 @@ function RoutePlanner() {
 
                 {/* Clear Before / After operational status indicator */}
                 {isRerouted ? (
-                  <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-950/30 p-2.5 text-xs text-emerald-300">
-                    <CheckCircle2 size={15} className="shrink-0 text-emerald-400" />
+                  <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300 p-2.5 text-xs">
+                    <CheckCircle2 size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
                     <span>Dynamic detour active • Status: Rerouting via safe alternate corridor</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-950/20 p-2.5 text-xs text-amber-300/90">
-                    <AlertTriangle size={15} className="shrink-0 text-amber-400" />
+                  <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-50 text-amber-800 dark:bg-amber-950/20 dark:text-amber-300/90 p-2.5 text-xs">
+                    <AlertTriangle size={15} className="shrink-0 text-amber-600 dark:text-amber-400" />
                     <span>Corridor hazard on NH-15 • Click Execute Dynamic Detour to bypass</span>
                   </div>
                 )}
@@ -1431,23 +1431,23 @@ function RoutePlanner() {
 
           {/* VEHICLE LIVE GPS TRACKING & SIMULATOR */}
           {selectedVehicle && (
-            <div className="space-y-4 rounded-xl border border-cyan-500/30 bg-slate-900 p-5 shadow-lg">
+            <div className="space-y-4 rounded-xl border border-cyan-200 bg-white dark:border-cyan-500/30 dark:bg-slate-900 p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-lg bg-cyan-500/20 p-1.5 text-cyan-400">
+                  <div className="rounded-lg bg-cyan-50 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400 p-1.5">
                     <Navigation size={18} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">Live Vehicle Tracking</h3>
-                    <p className="text-[11px] text-slate-400">Hardware & Telematics Telemetry</p>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">Live Vehicle Tracking</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Hardware & Telematics Telemetry</p>
                   </div>
                 </div>
 
                 <span
                   className={`rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase ${
                     selectedVehicle.status === "in_transit"
-                      ? "border border-emerald-500/30 bg-emerald-500/20 text-emerald-400"
-                      : "border border-slate-700 bg-slate-800 text-slate-300"
+                      ? "border border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400"
+                      : "border border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                   }`}
                 >
                   {selectedVehicle.status}
@@ -1455,28 +1455,28 @@ function RoutePlanner() {
               </div>
 
               {/* Coordinates Display Card */}
-              <div className="rounded-lg border border-cyan-500/20 bg-cyan-950/20 p-3">
+              <div className="rounded-lg border border-cyan-200 bg-cyan-50/50 dark:border-cyan-500/20 dark:bg-cyan-950/20 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-cyan-300/80">GPS Coordinates</span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-xs font-medium text-cyan-800 dark:text-cyan-300/80">GPS Coordinates</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     {selectedVehicle.last_gps_timestamp
                       ? new Date(selectedVehicle.last_gps_timestamp).toLocaleTimeString()
                       : "Live Stream"}
                   </span>
                 </div>
-                <div className="mt-2 grid grid-cols-3 gap-2 font-mono text-xs text-cyan-200">
-                  <div className="rounded bg-slate-950/80 p-2">
+                <div className="mt-2 grid grid-cols-3 gap-2 font-mono text-xs text-slate-900 dark:text-cyan-200">
+                  <div className="rounded border border-cyan-100 dark:border-transparent bg-white dark:bg-slate-950/80 p-2">
                     <span className="block text-[10px] text-slate-500">LATITUDE</span>
                     <span className="font-semibold">{selectedVehicle.latitude.toFixed(5)}°</span>
                   </div>
-                  <div className="rounded bg-slate-950/80 p-2">
+                  <div className="rounded border border-cyan-100 dark:border-transparent bg-white dark:bg-slate-950/80 p-2">
                     <span className="block text-[10px] text-slate-500">LONGITUDE</span>
                     <span className="font-semibold">{selectedVehicle.longitude.toFixed(5)}°</span>
                   </div>
-                  <div className="rounded bg-slate-950/80 p-2 text-right">
+                  <div className="rounded border border-cyan-100 dark:border-transparent bg-white dark:bg-slate-950/80 p-2 text-right">
                     <span className="block text-[10px] text-slate-500">SIGNAL</span>
-                    <span className="inline-flex items-center gap-1 font-sans text-[11px] text-emerald-400">
-                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+                    <span className="inline-flex items-center gap-1 font-sans text-[11px] text-emerald-600 dark:text-emerald-400">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" />
                       Active
                     </span>
                   </div>
@@ -1485,25 +1485,25 @@ function RoutePlanner() {
 
               {/* Vehicle & Trip Info */}
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-lg bg-slate-950 p-2.5">
+                <div className="rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-2.5">
                   <span className="text-slate-500">Unit ID</span>
-                  <p className="mt-0.5 font-medium text-slate-200">
+                  <p className="mt-0.5 font-medium text-slate-800 dark:text-slate-200">
                     {selectedVehicle.vehicle_number} ({selectedVehicle.vehicle_type})
                   </p>
                 </div>
-                <div className="rounded-lg bg-slate-950 p-2.5">
+                <div className="rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-2.5">
                   <span className="text-slate-500">Assigned Trip</span>
-                  <p className="mt-0.5 font-medium text-slate-200">
+                  <p className="mt-0.5 font-medium text-slate-800 dark:text-slate-200">
                     {selectedTrip ? `Trip #${selectedTrip.id}` : "Idle"}
                   </p>
                 </div>
               </div>
 
               {/* Deterministic GPS Simulator Controls */}
-              <div className="space-y-2 border-t border-slate-800 pt-3">
+              <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="flex items-center gap-1.5 font-medium text-slate-300">
-                    <Play size={13} className="text-cyan-400" />
+                  <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                    <Play size={13} className="text-cyan-600 dark:text-cyan-400" />
                     GPS Simulator
                   </span>
                   <div className="flex items-center gap-1">
@@ -1514,8 +1514,8 @@ function RoutePlanner() {
                         onClick={() => setSimSpeed(spd)}
                         className={`rounded px-1.5 py-0.5 text-[10px] font-semibold transition ${
                           simSpeed === spd
-                            ? "bg-cyan-500 text-slate-950"
-                            : "bg-slate-800 text-slate-400 hover:bg-slate-700"
+                            ? "bg-cyan-600 text-white dark:bg-cyan-500 dark:text-slate-950"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
                         }`}
                       >
                         {spd}x
@@ -1528,9 +1528,9 @@ function RoutePlanner() {
                   <button
                     type="button"
                     onClick={handleToggleSimulation}
-                    className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition ${
+                    className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold transition shadow-sm ${
                       isSimulating
-                        ? "border border-amber-500 bg-amber-600/20 text-amber-300 hover:bg-amber-600/30"
+                        ? "border border-amber-500 bg-amber-50 text-amber-800 dark:bg-amber-600/20 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-600/30"
                         : "bg-cyan-600 text-white hover:bg-cyan-500"
                     }`}
                   >
@@ -1541,7 +1541,7 @@ function RoutePlanner() {
                   <button
                     type="button"
                     onClick={handleResetSimulation}
-                    className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 py-2 text-xs font-medium text-slate-300 transition hover:bg-slate-700"
+                    className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 py-2 text-xs font-medium transition dark:hover:bg-slate-700"
                   >
                     <RotateCcw size={14} />
                     Reset Start
@@ -1553,14 +1553,14 @@ function RoutePlanner() {
         </div>
 
         {/* MAP */}
-        <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900 xl:col-span-8">
-          <div className="flex flex-col gap-3 border-b border-slate-800 p-5 md:flex-row md:items-center md:justify-between">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 xl:col-span-8">
+          <div className="flex flex-col gap-3 border-b border-slate-200 p-5 dark:border-slate-800 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="font-semibold text-white">
+              <h2 className="font-semibold text-slate-900 dark:text-white">
                 Route GIS Visualization
               </h2>
 
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {isRerouted
                   ? "Dynamic detour active — comparing blocked corridor against safe road alternative"
                   : "Select a trip and calculate route or evaluate dynamic reroute"}
@@ -1571,19 +1571,19 @@ function RoutePlanner() {
               <div className="flex items-center gap-2">
                 {isRerouted ? (
                   rerouteResult?.new_route ? (
-                    <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
-                      <ShieldCheck size={14} className="text-emerald-400" />
+                    <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                      <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400" />
                       <span>Safe Detour Active</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-400">
-                      <ShieldAlert size={14} className="text-red-400" />
+                    <div className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-700 dark:text-red-400">
+                      <ShieldAlert size={14} className="text-red-600 dark:text-red-400" />
                       <span>Route Blocked - Delayed</span>
                     </div>
                   )
                 ) : (
-                  <div className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-300">
-                    <CheckCircle2 size={14} className="text-blue-400" />
+                  <div className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
+                    <CheckCircle2 size={14} className="text-blue-600 dark:text-blue-400" />
                     <span>Route Calculated</span>
                   </div>
                 )}
@@ -1650,13 +1650,13 @@ function RoutePlanner() {
                     pathOptions={{
                       color: "#0891b2",
                       fillColor: "#06b6d4",
-                      fillOpacity: 0.95,
-                      weight: 3,
+                      fillOpacity: 0.9,
+                      weight: 2,
                     }}
                   >
                     <Popup>
                       <div className="text-sm">
-                        <strong className="text-cyan-400">{selectedVehicle.vehicle_number}</strong>
+                        <strong className="text-cyan-700">{selectedVehicle.vehicle_number}</strong>
                         <br />
                         <strong>Type:</strong> {selectedVehicle.vehicle_type}
                         <br />
@@ -1667,12 +1667,7 @@ function RoutePlanner() {
                         {selectedVehicle.longitude.toFixed(5)}
                         <br />
                         <strong>Assigned Trip:</strong>{" "}
-                        {selectedTrip ? `Trip #${selectedTrip.id}` : "None"}
-                        <br />
-                        <strong>Last Fix:</strong>{" "}
-                        {selectedVehicle.last_gps_timestamp
-                          ? new Date(selectedVehicle.last_gps_timestamp).toLocaleTimeString()
-                          : "Live Stream"}
+                        {selectedTrip ? `Trip #${selectedTrip.id}` : "Idle"}
                       </div>
                     </Popup>
                   </CircleMarker>
@@ -1723,103 +1718,44 @@ function RoutePlanner() {
                 </CircleMarker>
               )}
 
-              {/* NORMAL PRIMARY ROUTE */}
-              {routeCalculated && !isRerouted && mainRoute.length > 0 && (
-                <Polyline
-                  positions={mainRoute}
-                  pathOptions={{
-                    color: "#2563eb",
-                    weight: 7,
-                    opacity: 0.9,
-                  }}
-                >
-                  <Popup>
-                    <div className="text-sm">
-                      <strong>OSRM Road Route</strong>
-                      <br />
-                      {selectedTrip?.origin} → {selectedTrip?.destination}
-                      <br />
-                      Distance: {routeDistanceKm?.toFixed(1)} km
-                      <br />
-                      Travel time: {formatDuration(
-                        routeDurationMinutes !== null
-                          ? Math.round(routeDurationMinutes)
-                          : null
-                      )}
-                    </div>
-                  </Popup>
-                </Polyline>
-              )}
-
-              {/* REROUTE: ORIGINAL BLOCKED ROUTE (Red/Amber dashed) */}
-              {isRerouted && blockedRoute.length > 0 && (
+              {/* BLOCKED CORRIDOR SEGMENT (RED DASHED) */}
+              {isRerouted && blockedRoute.length > 1 && (
                 <Polyline
                   positions={blockedRoute}
                   pathOptions={{
                     color: "#ef4444",
                     weight: 5,
-                    opacity: 0.75,
+                    opacity: 0.85,
                     dashArray: "10 8",
                   }}
-                >
-                  <Popup>
-                    <div className="text-sm">
-                      <strong className="text-red-500">Original Blocked Route</strong>
-                      <br />
-                      {selectedTrip?.origin} → {selectedTrip?.destination}
-                      <br />
-                      Distance: {rerouteResult?.previous_route?.distance_km} km
-                      <br />
-                      Duration: {formatDuration(
-                        rerouteResult?.previous_route?.duration_minutes ?? null
-                      )}
-                      <br />
-                      Risk Score: {rerouteResult?.previous_route?.risk_score} (
-                      {rerouteResult?.previous_route?.risk_level})
-                    </div>
-                  </Popup>
-                </Polyline>
+                />
               )}
 
-              {/* REROUTE: SELECTED DETOUR ROUTE (Solid Emerald) */}
-              {isRerouted && detourRoute.length > 0 && (
+              {/* SAFE DETOUR ROUTE (EMERALD GREEN SOLID) */}
+              {isRerouted && detourRoute.length > 1 && (
                 <Polyline
                   positions={detourRoute}
                   pathOptions={{
                     color: "#10b981",
-                    weight: 7,
+                    weight: 6,
                     opacity: 0.95,
                   }}
-                >
-                  <Popup>
-                    <div className="text-sm">
-                      <strong className="text-emerald-500">
-                        Selected Detour (Safe Corridor)
-                      </strong>
-                      <br />
-                      Distance: {rerouteResult?.new_route?.distance_km} km
-                      <br />
-                      Updated ETA: {formatDuration(
-                        rerouteResult?.new_route?.duration_minutes ?? null
-                      )}
-                      <br />
-                      Evaluated Risk: {rerouteResult?.new_route?.risk_score} (
-                      {rerouteResult?.new_route?.risk_level})
-                      {rerouteResult?.delay_minutes !== null &&
-                        rerouteResult?.delay_minutes !== undefined && (
-                          <>
-                            <br />
-                            <span className="font-semibold text-amber-500">
-                              Delay: +{rerouteResult.delay_minutes} min
-                            </span>
-                          </>
-                        )}
-                    </div>
-                  </Popup>
-                </Polyline>
+                />
               )}
 
-              {/* ACTIVE BLOCKAGE / HAZARD MARKER */}
+              {/* STANDARD ROUTE (BLUE SOLID) */}
+              {!isRerouted && mainRoute.length > 1 && (
+                <Polyline
+                  positions={mainRoute}
+                  pathOptions={{
+                    color: "#3b82f6",
+                    weight: 5,
+                    opacity: 0.85,
+                  }}
+                />
+              )}
+
+              {/* ROAD BLOCKAGE / HAZARD MARKER */}
               {isRerouted && blockagePoint && (
                 <>
                   <CircleMarker
@@ -1844,9 +1780,9 @@ function RoutePlanner() {
                     }}
                   >
                     <Popup>
-                      <div className="p-1 text-sm">
-                        <div className="mb-1 flex items-center gap-1.5 font-bold text-red-600">
-                          <AlertTriangle size={15} />
+                      <div className="p-1 max-w-[210px]">
+                        <div className="flex items-center gap-1.5 text-xs font-bold text-red-600">
+                          <AlertTriangle size={13} />
                           <span>Active Road Hazard</span>
                         </div>
                         <p className="font-semibold text-slate-800">
@@ -1875,31 +1811,31 @@ function RoutePlanner() {
           {(!isOnline || tileError) && (
             <div
               data-testid="map-offline-banner"
-              className="absolute top-4 right-4 z-[1000] flex items-center gap-2 rounded-lg border border-amber-500/30 bg-slate-900/90 backdrop-blur-sm px-3.5 py-2 text-xs font-medium text-amber-400 shadow-lg pointer-events-auto"
+              className="absolute top-4 right-4 z-[1000] flex items-center gap-2 rounded-lg border border-amber-500/30 bg-white/95 backdrop-blur-sm px-3.5 py-2 text-xs font-medium text-amber-700 shadow-lg pointer-events-auto dark:bg-slate-900/90 dark:text-amber-400"
             >
-              <WifiOff size={15} className="shrink-0 text-amber-400" />
+              <WifiOff size={15} className="shrink-0 text-amber-500 dark:text-amber-400" />
               <span>Map tiles unavailable — offline mode</span>
             </div>
           )}
 
             {/* MAP STATUS */}
-            <div className="absolute left-4 top-4 z-[1000] rounded-lg border border-slate-700 bg-slate-900/95 px-4 py-3 shadow-xl backdrop-blur">
+            <div className="absolute left-4 top-4 z-[1000] rounded-lg border border-slate-200 bg-white/95 px-4 py-3 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
               <div className="flex items-center gap-2">
                 <span
                   className={`h-2 w-2 rounded-full ${
                     isRerouted
-                      ? "animate-ping bg-amber-400"
-                      : "animate-pulse bg-emerald-400"
+                      ? "animate-ping bg-amber-500 dark:bg-amber-400"
+                      : "animate-pulse bg-emerald-500 dark:bg-emerald-400"
                   }`}
                 />
 
-                <span className="text-xs font-medium text-slate-200">
+                <span className="text-xs font-medium text-slate-800 dark:text-slate-200">
                   {isRerouted ? "Dynamic Detour Active" : "Route GIS Operations"}
                 </span>
               </div>
 
               {selectedTrip && (
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   {selectedVehicle?.vehicle_number ||
                     vehicles.find((v) => v.id === selectedTrip.vehicle_id)?.vehicle_number ||
                     (selectedTrip.vehicle_id === 472 ? "AS-01-BX-4091" : `Vehicle #${selectedTrip.vehicle_id}`)}{" "}
@@ -1910,12 +1846,12 @@ function RoutePlanner() {
             </div>
 
             {/* MAP LEGEND */}
-            <div className="absolute bottom-4 left-4 z-[1000] rounded-lg border border-slate-700 bg-slate-900/95 p-3 shadow-xl backdrop-blur">
-              <p className="mb-2 text-xs font-semibold text-white">
+            <div className="absolute bottom-4 left-4 z-[1000] rounded-lg border border-slate-200 bg-white/95 p-3 shadow-xl backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+              <p className="mb-2 text-xs font-semibold text-slate-900 dark:text-white">
                 Route Legend
               </p>
 
-              <div className="space-y-2 text-xs text-slate-300">
+              <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full bg-green-500" />
                   Origin
@@ -1927,7 +1863,7 @@ function RoutePlanner() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-cyan-400" />
+                  <span className="h-3 w-3 rounded-full bg-cyan-500 dark:bg-cyan-400" />
                   Vehicle GPS
                 </div>
 
@@ -1983,16 +1919,16 @@ function RoutePlanner() {
           "verified landslide on NH-15 near Kharupetia";
 
         return (
-          <div className="space-y-5 rounded-xl border border-amber-500/30 bg-slate-900 p-6 shadow-2xl">
+          <div className="space-y-5 rounded-xl border border-amber-300 bg-amber-50/40 p-6 shadow-sm dark:border-amber-500/30 dark:bg-slate-900">
             {/* Incident / Detour Header */}
-            <div className="flex flex-col gap-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 rounded-lg border border-amber-300/60 bg-amber-100/50 p-4 dark:border-amber-500/20 dark:bg-amber-500/5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-amber-500/20 p-2 text-amber-400">
+                <div className="rounded-lg bg-amber-500/20 p-2 text-amber-700 dark:text-amber-400">
                   <AlertTriangle size={20} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-amber-300">
+                    <h3 className="font-bold text-amber-900 dark:text-amber-300">
                       {rerouteResult.new_route
                         ? "Corridor Blockage Intercepted — Dynamic Detour Active"
                         : "Corridor Blockage Intercepted — No Safe Detour"}
@@ -2005,11 +1941,11 @@ function RoutePlanner() {
                       {selectedTrip.status === "in_transit" ? "Rerouting / Detour Active" : selectedTrip.status}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs text-slate-300">
+                  <p className="mt-1 text-xs text-slate-700 dark:text-slate-300">
                     {rerouteResult.reason || "Trip dynamically rerouted around confirmed hazardous corridor."}
                   </p>
                   {rerouteResult.blockage && (
-                    <p className="mt-1 text-[11px] text-amber-400/80">
+                    <p className="mt-1 text-[11px] text-amber-800 dark:text-amber-400/80 font-medium">
                       Obstruction: {rerouteResult.blockage.title} ({rerouteResult.blockage.type}) at [
                       {rerouteResult.blockage.latitude.toFixed(4)}, {rerouteResult.blockage.longitude.toFixed(4)}]
                     </p>
@@ -2018,10 +1954,10 @@ function RoutePlanner() {
               </div>
 
               <div className="flex items-center gap-3 self-end sm:self-center">
-                <span className="rounded-md border border-emerald-500/30 bg-emerald-950/30 px-3 py-1 text-xs font-semibold text-emerald-300">
+                <span className="rounded-md border border-emerald-500/30 bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
                   Detour Active
                 </span>
-                <span className="rounded-md border border-slate-700 bg-slate-950 px-3 py-1 text-xs text-slate-400">
+                <span className="rounded-md border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
                   Reroute #{selectedTrip.reroute_count ?? rerouteResult.reroute_count ?? 1}
                 </span>
               </div>
@@ -2030,31 +1966,31 @@ function RoutePlanner() {
             {/* BEFORE / AFTER COMPARISON CARDS GRID */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {/* 1. Original Blocked Route */}
-              <div className="rounded-lg border border-red-500/30 bg-slate-950 p-4">
+              <div className="rounded-lg border border-red-200 bg-white p-4 shadow-sm dark:border-red-500/30 dark:bg-slate-950">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Original Route
                   </span>
-                  <span className="rounded-full bg-red-500/20 border border-red-500/30 px-2 py-0.5 text-[10px] font-bold text-red-400">
+                  <span className="rounded-full bg-red-100 border border-red-200 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-500/20 dark:border-red-500/30 dark:text-red-400">
                     Risk: {origRisk.toFixed(1)} ({origRiskLevel})
                   </span>
                 </div>
                 <div className="mt-3 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Distance:</span>
-                    <span className="font-semibold text-slate-200">
+                    <span className="text-slate-500 dark:text-slate-400">Distance:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
                       {origDist.toFixed(1)} km
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Original ETA:</span>
-                    <span className="font-semibold text-slate-200">
+                    <span className="text-slate-500 dark:text-slate-400">Original ETA:</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
                       {formatDuration(origEta)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Corridor Status:</span>
-                    <span className="font-bold capitalize text-red-400">
+                    <span className="text-slate-500 dark:text-slate-400">Corridor Status:</span>
+                    <span className="font-bold capitalize text-red-600 dark:text-red-400">
                       Impassable / Blocked
                     </span>
                   </div>
@@ -2062,31 +1998,31 @@ function RoutePlanner() {
               </div>
 
               {/* 2. Recommended Safe Detour */}
-              <div className="rounded-lg border border-emerald-500/40 bg-slate-950 p-4">
+              <div className="rounded-lg border border-emerald-300 bg-white p-4 shadow-sm dark:border-emerald-500/40 dark:bg-slate-950">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                     Recommended Detour
                   </span>
-                  <span className="rounded-full bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                  <span className="rounded-full bg-emerald-100 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-300">
                     Risk: {detourRisk.toFixed(1)} ({detourRiskLevel})
                   </span>
                 </div>
                 <div className="mt-3 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Distance:</span>
-                    <span className="font-semibold text-emerald-300">
+                    <span className="text-slate-500 dark:text-slate-400">Distance:</span>
+                    <span className="font-semibold text-emerald-700 dark:text-emerald-300">
                       {detourDist.toFixed(1)} km
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Updated ETA:</span>
-                    <span className="font-semibold text-white">
+                    <span className="text-slate-500 dark:text-slate-400">Updated ETA:</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">
                       {formatDuration(detourEta)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Corridor Status:</span>
-                    <span className="font-bold capitalize text-emerald-400">
+                    <span className="text-slate-500 dark:text-slate-400">Corridor Status:</span>
+                    <span className="font-bold capitalize text-emerald-600 dark:text-emerald-400">
                       Clear & Navigable
                     </span>
                   </div>
@@ -2094,31 +2030,31 @@ function RoutePlanner() {
               </div>
 
               {/* 3. Operational Deltas & Trade-offs */}
-              <div className="rounded-lg border border-purple-500/30 bg-slate-950 p-4">
+              <div className="rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-500/30 dark:bg-slate-950">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-purple-300">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300">
                     Operational Deltas
                   </span>
-                  <span className="rounded-full bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 text-[10px] font-bold text-purple-300">
+                  <span className="rounded-full bg-purple-100 border border-purple-200 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-500/20 dark:border-purple-500/30 dark:text-purple-300">
                     Safety Delta
                   </span>
                 </div>
                 <div className="mt-3 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Distance Delta:</span>
-                    <span className="font-bold text-amber-400">
+                    <span className="text-slate-500 dark:text-slate-400">Distance Delta:</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">
                       {deltaDistStr} km
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Time Impact:</span>
-                    <span className="font-bold text-amber-400">
+                    <span className="text-slate-500 dark:text-slate-400">Time Impact:</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">
                       {deltaEtaStr} min
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Risk Reduction:</span>
-                    <span className="font-bold text-emerald-400">
+                    <span className="text-slate-500 dark:text-slate-400">Risk Reduction:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
                       {origRiskLevel} → {detourRiskLevel} (-{deltaRiskNum} pts)
                     </span>
                   </div>
@@ -2127,37 +2063,37 @@ function RoutePlanner() {
             </div>
 
             {/* 'WHY THIS ROUTE?' OPERATOR EXPLANATION CARD */}
-            <div className="rounded-xl border border-blue-500/30 bg-blue-950/25 p-5 space-y-3">
-              <div className="flex items-center justify-between border-b border-blue-500/20 pb-2.5">
+            <div className="rounded-xl border border-blue-200 bg-blue-50/60 p-5 space-y-3 dark:border-blue-500/30 dark:bg-blue-950/25">
+              <div className="flex items-center justify-between border-b border-blue-200 pb-2.5 dark:border-blue-500/20">
                 <div className="flex items-center gap-2">
-                  <Sparkles size={17} className="text-cyan-400" />
-                  <h4 className="text-sm font-bold text-white uppercase tracking-wider">
+                  <Sparkles size={17} className="text-blue-600 dark:text-cyan-400" />
+                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider dark:text-white">
                     Why This Route? — AI Operator Trade-Off Analysis
                   </h4>
                 </div>
-                <span className="rounded bg-blue-500/20 border border-blue-500/30 px-2 py-0.5 text-[10px] font-semibold text-cyan-300">
+                <span className="rounded bg-blue-100 border border-blue-200 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-500/20 dark:border-blue-500/30 dark:text-cyan-300">
                   Dynamic Deterministic Synthesis
                 </span>
               </div>
 
-              <p className="text-sm leading-relaxed text-slate-200">
-                Avoids <strong className="text-red-400">{obstructionTitle}</strong>.
-                Detours via <strong className="text-cyan-300">Mangaldai-Tangla-Tezpur</strong> secondary corridor.
-                Adds <strong className="text-amber-400">{deltaDistStr} km</strong> and <strong className="text-amber-400">{deltaEtaStr} min</strong>, but eliminates critical corridor hazard and reduces risk by <strong className="text-emerald-400">{deltaRiskNum} points</strong>.
+              <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                Avoids <strong className="text-red-600 dark:text-red-400">{obstructionTitle}</strong>.
+                Detours via <strong className="text-blue-700 dark:text-cyan-300">Mangaldai-Tangla-Tezpur</strong> secondary corridor.
+                Adds <strong className="text-amber-700 dark:text-amber-400">{deltaDistStr} km</strong> and <strong className="text-amber-700 dark:text-amber-400">{deltaEtaStr} min</strong>, but eliminates critical corridor hazard and reduces risk by <strong className="text-emerald-700 dark:text-emerald-400">{deltaRiskNum} points</strong>.
               </p>
 
               <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-3 text-xs">
-                <div className="rounded border border-slate-800 bg-slate-900/80 p-2.5">
-                  <span className="text-slate-500 block text-[10px] uppercase font-semibold">Priority Cargo Safety</span>
-                  <span className="text-slate-200 font-medium">{selectedTrip.cargo_type}</span>
+                <div className="rounded border border-slate-200 bg-white/80 p-2.5 dark:border-slate-800 dark:bg-slate-900/80">
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Priority Cargo Safety</span>
+                  <span className="text-slate-800 dark:text-slate-200 font-medium">{selectedTrip.cargo_type}</span>
                 </div>
-                <div className="rounded border border-slate-800 bg-slate-900/80 p-2.5">
-                  <span className="text-slate-500 block text-[10px] uppercase font-semibold">Corridor Alternatives</span>
-                  <span className="text-emerald-400 font-semibold">{rerouteResult.safe_alternatives_found ?? 1} safe path confirmed</span>
+                <div className="rounded border border-slate-200 bg-white/80 p-2.5 dark:border-slate-800 dark:bg-slate-900/80">
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Corridor Alternatives</span>
+                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{rerouteResult.safe_alternatives_found ?? 1} safe path confirmed</span>
                 </div>
-                <div className="rounded border border-slate-800 bg-slate-900/80 p-2.5">
-                  <span className="text-slate-500 block text-[10px] uppercase font-semibold">Vehicle Telemetry</span>
-                  <span className="text-cyan-400 font-semibold">{selectedVehicle?.vehicle_number || "AS-01-BX-4091"} synced</span>
+                <div className="rounded border border-slate-200 bg-white/80 p-2.5 dark:border-slate-800 dark:bg-slate-900/80">
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Vehicle Telemetry</span>
+                  <span className="text-cyan-700 dark:text-cyan-400 font-semibold">{selectedVehicle?.vehicle_number || "AS-01-BX-4091"} synced</span>
                 </div>
               </div>
             </div>
@@ -2167,24 +2103,24 @@ function RoutePlanner() {
 
       {/* STANDARD ROUTE RESULT (WHEN NOT REROUTED) */}
       {routeCalculated && selectedTrip && !isRerouted && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="font-semibold text-white">
+              <h2 className="font-semibold text-slate-900 dark:text-white">
                 Route Calculation Result
               </h2>
 
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {selectedTrip.origin} → {selectedTrip.destination}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-3">
-                <RouteIcon size={17} className="text-blue-400" />
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-transparent dark:bg-slate-950">
+                <RouteIcon size={17} className="text-blue-600 dark:text-blue-400" />
                 <div>
-                  <p className="text-[10px] text-slate-500">Distance</p>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Distance</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     {routeDistanceKm !== null
                       ? `${routeDistanceKm.toFixed(1)} km`
                       : selectedTrip.route_distance_km != null
@@ -2194,11 +2130,11 @@ function RoutePlanner() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-3">
-                <Clock3 size={17} className="text-orange-400" />
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-transparent dark:bg-slate-950">
+                <Clock3 size={17} className="text-orange-600 dark:text-orange-400" />
                 <div>
-                  <p className="text-[10px] text-slate-500">ETA</p>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">ETA</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     {formatDuration(
                       routeDurationMinutes !== null
                         ? Math.round(routeDurationMinutes)
@@ -2208,11 +2144,11 @@ function RoutePlanner() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-3">
-                <CheckCircle2 size={17} className="text-emerald-400" />
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-transparent dark:bg-slate-950">
+                <CheckCircle2 size={17} className="text-emerald-600 dark:text-emerald-400" />
                 <div>
-                  <p className="text-[10px] text-slate-500">Status</p>
-                  <p className="text-sm font-semibold capitalize text-white">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Status</p>
+                  <p className="text-sm font-semibold capitalize text-slate-900 dark:text-white">
                     {selectedTrip.status}
                   </p>
                 </div>
@@ -2220,16 +2156,16 @@ function RoutePlanner() {
             </div>
           </div>
 
-          <div className="mt-5 border-t border-slate-800 pt-5">
+          <div className="mt-5 border-t border-slate-200 pt-5 dark:border-slate-800">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-blue-500/10 p-2 text-blue-400">
+                <div className="rounded-lg bg-blue-500/10 p-2 text-blue-600 dark:text-blue-400">
                   <Truck size={18} />
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-500">Assigned Vehicle</p>
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Assigned Vehicle</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {selectedVehicle?.vehicle_number ??
                       (selectedTrip.vehicle_id === 472 ? "AS-01-BX-4091" : `Vehicle #${selectedTrip.vehicle_id}`)}
                   </p>
@@ -2251,18 +2187,18 @@ function RoutePlanner() {
       )}
 
       {/* AI ROAD RISK GIS ENGINE STATUS */}
-      <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-5">
+      <div className="rounded-xl border border-purple-200 bg-purple-50/60 p-5 dark:border-purple-500/30 dark:bg-purple-500/5">
         <div className="flex gap-4">
-          <div className="rounded-lg bg-purple-500/10 p-3 text-purple-400">
+          <div className="rounded-lg border border-purple-200 bg-purple-100 p-3 text-purple-700 dark:border-transparent dark:bg-purple-500/10 dark:text-purple-400">
             <ShieldCheck size={22} />
           </div>
 
           <div>
-            <h3 className="font-semibold text-purple-300">
+            <h3 className="font-semibold text-purple-900 dark:text-purple-300">
               AI Risk-Aware GIS Rerouting Engine Active
             </h3>
 
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-400">
+            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">
               Connected to backend PostGIS spatial database and OSRM routing engine.
               The planner dynamically computes perpendicular corridor detours around
               verified landslides, floods, and road blockages, rejecting any detour that
@@ -2270,19 +2206,19 @@ function RoutePlanner() {
             </p>
 
             <div className="mt-3 flex flex-wrap gap-2">
-              <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-emerald-400 border border-emerald-500/30">
+              <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-400">
                 OSRM Routing Engine: Online
               </span>
 
-              <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-blue-400 border border-blue-500/30">
+              <span className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-500/30 dark:bg-slate-900 dark:text-blue-400">
                 GIS Detour Corridor Snapping: Active
               </span>
 
-              <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-purple-400 border border-purple-500/30">
+              <span className="rounded-full border border-purple-200 bg-white px-3 py-1 text-xs font-medium text-purple-700 dark:border-purple-500/30 dark:bg-slate-900 dark:text-purple-400">
                 AI Risk Scoring: Real-time
               </span>
 
-              <span className="rounded-full bg-slate-900 px-3 py-1 text-xs text-amber-400 border border-amber-500/30">
+              <span className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-medium text-amber-700 dark:border-amber-500/30 dark:bg-slate-900 dark:text-amber-400">
                 Dynamic Hazard Avoidance: Enabled
               </span>
             </div>

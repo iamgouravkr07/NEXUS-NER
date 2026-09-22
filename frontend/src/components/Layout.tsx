@@ -6,7 +6,7 @@ import { MobileBottomNav } from "./MobileBottomNav";
 
 function Layout() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white flex flex-col transition-colors duration-150">
       <div className="flex min-h-screen flex-1">
         {/* Desktop Sidebar (hidden on mobile, mobile bottom nav takes over) */}
         <div className="hidden md:flex">

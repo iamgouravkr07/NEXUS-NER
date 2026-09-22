@@ -42,20 +42,20 @@ export class MapErrorBoundary extends Component<Props, State> {
       return (
         <div
           data-testid="map-error-boundary-fallback"
-          className="flex h-full min-h-[400px] w-full flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950 p-6 text-center"
+          className="flex h-full min-h-[400px] w-full flex-col items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-6 text-center"
         >
           <div className="rounded-full bg-amber-500/10 p-3 mb-3 border border-amber-500/20">
-            <WifiOff size={28} className="text-amber-400" />
+            <WifiOff size={28} className="text-amber-600 dark:text-amber-400" />
           </div>
-          <p className="text-sm font-semibold text-white">Map View Degraded</p>
-          <p className="mt-1 text-xs text-amber-400 font-medium">{msg}</p>
-          <p className="mt-2 text-[11px] text-slate-500 max-w-sm">
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">Map View Degraded</p>
+          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400 font-medium">{msg}</p>
+          <p className="mt-2 text-[11px] text-slate-600 dark:text-slate-500 max-w-sm">
             Core routing calculations, vehicle tracking records, and operational field reporting remain fully functional.
           </p>
           <button
             type="button"
             onClick={this.resetErrorBoundary}
-            className="mt-4 flex items-center gap-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition"
+            className="mt-4 flex items-center gap-1.5 rounded-lg bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 transition shadow-sm"
           >
             <RotateCcw size={13} />
             <span>Retry Map</span>

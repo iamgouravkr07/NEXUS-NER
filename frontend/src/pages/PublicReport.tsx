@@ -156,50 +156,50 @@ export default function PublicReport() {
   if (submittedReport) {
     return (
       <div className="max-w-2xl mx-auto py-8 px-4">
-        <div className="rounded-2xl border border-emerald-500/30 bg-slate-900/90 p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="rounded-2xl border border-emerald-500/30 bg-white dark:bg-slate-900/90 p-6 sm:p-8 shadow-md dark:shadow-2xl space-y-6">
           <div className="flex items-center gap-3">
-            <div className="rounded-full bg-emerald-500/20 p-3 text-emerald-400">
+            <div className="rounded-full bg-emerald-500/20 p-3 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 size={32} />
             </div>
             <div>
-              <h1 className="text-xl sm:text-2xl font-black text-white">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                 Report Submitted Successfully
               </h1>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Report Reference: <span className="font-mono text-cyan-300 font-bold">#{submittedReport.id}</span>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                Report Reference: <span className="font-mono text-cyan-700 dark:text-cyan-300 font-bold">#{submittedReport.id}</span>
               </p>
             </div>
           </div>
 
-          <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-2">
-            <div className="flex items-center gap-2 text-amber-300 text-xs font-bold uppercase tracking-wider">
+          <div className="rounded-xl border border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-4 space-y-2">
+            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 text-xs font-bold uppercase tracking-wider">
               <AlertTriangle size={16} />
               <span>Status: UNVERIFIED (Under Review)</span>
             </div>
-            <p className="text-xs text-amber-200/90 leading-relaxed">
+            <p className="text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed">
               Your observation has been queued for verification by NEXUS-NER field officers and dispatch operators.
               It will not officially affect convoy routing or road status until verified by authorized personnel.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 text-xs bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+          <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-950/60 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
             <div>
-              <span className="text-slate-500 block">Category</span>
-              <span className="font-semibold text-white">{submittedReport.report_type.replace(/_/g, " ")}</span>
+              <span className="text-slate-500 dark:text-slate-400 block">Category</span>
+              <span className="font-semibold text-slate-900 dark:text-white">{submittedReport.report_type.replace(/_/g, " ")}</span>
             </div>
             <div>
-              <span className="text-slate-500 block">Perceived Severity</span>
-              <span className="font-semibold text-amber-400 capitalize">{submittedReport.severity_hint || "High"}</span>
+              <span className="text-slate-500 dark:text-slate-400 block">Perceived Severity</span>
+              <span className="font-semibold text-amber-600 dark:text-amber-400 capitalize">{submittedReport.severity_hint || "High"}</span>
             </div>
-            <div className="col-span-2 pt-2 border-t border-slate-800/80">
-              <span className="text-slate-500 block">Coordinates</span>
-              <span className="font-mono text-cyan-300 font-medium">
+            <div className="col-span-2 pt-2 border-t border-slate-200 dark:border-slate-800/80">
+              <span className="text-slate-500 dark:text-slate-400 block">Coordinates</span>
+              <span className="font-mono text-cyan-700 dark:text-cyan-300 font-medium">
                 {submittedReport.latitude.toFixed(4)}°N, {submittedReport.longitude.toFixed(4)}°E
               </span>
             </div>
-            <div className="col-span-2 pt-2 border-t border-slate-800/80">
-              <span className="text-slate-500 block">Description</span>
-              <span className="text-slate-300">{submittedReport.description}</span>
+            <div className="col-span-2 pt-2 border-t border-slate-200 dark:border-slate-800/80">
+              <span className="text-slate-500 dark:text-slate-400 block">Description</span>
+              <span className="text-slate-700 dark:text-slate-300">{submittedReport.description}</span>
             </div>
           </div>
 
@@ -217,7 +217,7 @@ export default function PublicReport() {
                 setSubmittedReport(null);
                 setDescription("");
               }}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 px-4 py-3 text-sm font-bold text-slate-200 transition"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 transition"
             >
               <span>Submit Another Report</span>
             </button>
@@ -231,44 +231,44 @@ export default function PublicReport() {
     <div className="max-w-2xl mx-auto py-6 px-4 space-y-6">
       {/* Header */}
       <div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-400 mb-2">
+        <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-400 mb-2">
           <ShieldCheck size={14} />
           <span>Citizen Road Observation Portal</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-white">Citizen Road Condition Report</h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-1">
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Citizen Road Condition Report</h1>
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
           Help NEXUS-NER keep logistics and emergency transit corridors safe across the North Eastern Region.
         </p>
       </div>
 
       {/* Review Notice */}
-      <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 flex items-start gap-3">
-        <AlertTriangle size={18} className="text-blue-400 shrink-0 mt-0.5" />
-        <div className="text-xs text-blue-200/90 leading-relaxed">
-          <strong className="text-white block mb-0.5">Verification Guardrail (Initial Status: UNVERIFIED):</strong>
+      <div className="rounded-xl border border-blue-200 dark:border-blue-500/20 bg-blue-50 dark:bg-blue-500/5 p-4 flex items-start gap-3">
+        <AlertTriangle size={18} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+        <div className="text-xs text-blue-900 dark:text-blue-200/90 leading-relaxed">
+          <strong className="text-slate-900 dark:text-white block mb-0.5">Verification Guardrail (Initial Status: UNVERIFIED):</strong>
           All citizen reports are received in UNVERIFIED status and reviewed by Field Officers and Control Operators. Submitting a report does not immediately block roads or create official incidents.
         </div>
       </div>
 
       {/* Error Alert */}
       {errorMessage && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs text-red-300 flex items-center gap-2">
-          <AlertTriangle size={16} className="text-red-400 shrink-0" />
+        <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3.5 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+          <AlertTriangle size={16} className="text-red-600 dark:text-red-400 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-7 shadow-xl space-y-5">
+      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-5 sm:p-7 shadow-sm dark:shadow-xl space-y-5">
         {/* Category */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-            Hazard / Problem Category <span className="text-red-400">*</span>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            Hazard / Problem Category <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <select
             value={reportType}
             onChange={(e) => setReportType(e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
           >
             {REPORT_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -280,13 +280,13 @@ export default function PublicReport() {
 
         {/* Severity */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-            Perceived Impact Level <span className="text-red-400">*</span>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+            Perceived Impact Level <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <select
             value={severityHint}
             onChange={(e) => setSeverityHint(e.target.value)}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
           >
             {SEVERITY_LEVELS.map((s) => (
               <option key={s.value} value={s.value}>
@@ -298,13 +298,13 @@ export default function PublicReport() {
 
         {/* Corridor / Road (Optional) */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
             Affected Highway / Corridor (Optional)
           </label>
           <select
             value={roadId}
             onChange={(e) => setRoadId(e.target.value ? Number(e.target.value) : "")}
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none"
           >
             <option value="">-- Select corridor or leave unspecified --</option>
             {roads.map((r) => (
@@ -318,14 +318,14 @@ export default function PublicReport() {
         {/* Location Coordinates */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-              Location Coordinates (NER Region) <span className="text-red-400">*</span>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              Location Coordinates (NER Region) <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <button
               type="button"
               onClick={handleAcquireGps}
               disabled={isLocating}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 px-2.5 py-1 text-xs font-semibold text-cyan-300 transition"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 px-2.5 py-1 text-xs font-semibold text-cyan-700 dark:text-cyan-300 transition"
             >
               {isLocating ? (
                 <RefreshCw size={13} className="animate-spin" />
@@ -338,28 +338,28 @@ export default function PublicReport() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <span className="text-[10px] text-slate-400 mb-1 block">Latitude [20° - 30°N]</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Latitude [20° - 30°N]</span>
               <input
                 type="text"
                 value={latitude}
                 onChange={(e) => setLatitude(e.target.value)}
                 placeholder="26.1445"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-mono text-white focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs font-mono text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none placeholder:text-slate-400"
               />
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 mb-1 block">Longitude [88° - 98°E]</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 block">Longitude [88° - 98°E]</span>
               <input
                 type="text"
                 value={longitude}
                 onChange={(e) => setLongitude(e.target.value)}
                 placeholder="91.7362"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-mono text-white focus:border-cyan-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs font-mono text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none placeholder:text-slate-400"
               />
             </div>
           </div>
           {gpsAccuracy !== null && (
-            <p className="text-[10px] text-emerald-400 font-mono">
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">
               ✓ Acquired from device sensors (accuracy ±{gpsAccuracy}m)
             </p>
           )}
@@ -368,8 +368,8 @@ export default function PublicReport() {
         {/* Description */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-300">
-              Description & Visual Observations <span className="text-red-400">*</span>
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              Description & Visual Observations <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <span className="text-[10px] text-slate-500 font-mono">{description.length}/2000</span>
           </div>
@@ -378,7 +378,7 @@ export default function PublicReport() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe what you see: e.g. Mudslide blocking both lanes approx 5km east of bridge. Heavy rain ongoing, vehicles queuing up."
-            className="w-full rounded-xl border border-slate-700 bg-slate-950 p-3 text-xs text-white focus:border-cyan-500 focus:outline-none resize-none leading-relaxed"
+            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-3 text-xs text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none resize-none leading-relaxed placeholder:text-slate-400"
           />
         </div>
 

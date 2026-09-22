@@ -50,19 +50,20 @@ function displayStatus(status: string): VehicleStatus {
 function statusStyles(status: VehicleStatus) {
   switch (status) {
     case "Moving":
-      return "bg-emerald-500/10 text-emerald-400";
+      return "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:border-transparent dark:bg-emerald-500/10 dark:text-emerald-400";
 
     case "Delayed":
-      return "bg-amber-500/10 text-amber-400";
+      return "bg-amber-50 text-amber-700 border border-amber-200 dark:border-transparent dark:bg-amber-500/10 dark:text-amber-400";
 
     case "Stopped":
-      return "bg-orange-500/10 text-orange-400";
+      return "bg-orange-50 text-orange-700 border border-orange-200 dark:border-transparent dark:bg-orange-500/10 dark:text-orange-400";
 
     case "Offline":
-      return "bg-slate-500/10 text-slate-400";
+      return "bg-slate-100 text-slate-700 border border-slate-200 dark:border-transparent dark:bg-slate-500/10 dark:text-slate-400";
 
     case "Idle":
-      return "bg-slate-500/10 text-slate-400";
+    default:
+      return "bg-slate-100 text-slate-700 border border-slate-200 dark:border-transparent dark:bg-slate-500/10 dark:text-slate-400";
   }
 }
 
@@ -271,18 +272,18 @@ function Vehicles() {
       {/* Page Header */}
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Vehicles</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Vehicles</h1>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Monitor logistics vehicles and their current movement across the
             North Eastern Region
           </p>
         </div>
 
-        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-2.5">
-          <Wifi size={17} className="text-emerald-400" />
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-50 px-4 py-2.5 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+          <Wifi size={17} className="text-emerald-600 dark:text-emerald-400" />
 
-          <span className="text-sm text-emerald-400">
+          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
             GPS Tracking Active
           </span>
         </div>
@@ -290,88 +291,88 @@ function Vehicles() {
 
       {/* Error */}
       {error && (
-        <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400">
+        <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-600 dark:text-red-400">
           {error}
         </div>
       )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">Total Vehicles</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Vehicles</p>
 
-            <Truck size={20} className="text-cyan-400" />
+            <Truck size={20} className="text-cyan-600 dark:text-cyan-400" />
           </div>
 
-          <p className="mt-3 text-3xl font-bold text-white">
+          <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
             {vehicles.length}
           </p>
 
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Registered vehicles
           </p>
         </div>
 
-        <div className="rounded-xl border border-emerald-500/10 bg-slate-900 p-5">
+        <div className="rounded-xl border border-emerald-200 bg-white p-5 shadow-sm dark:border-emerald-500/10 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">Moving</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Moving</p>
 
-            <Navigation size={20} className="text-emerald-400" />
+            <Navigation size={20} className="text-emerald-600 dark:text-emerald-400" />
           </div>
 
-          <p className="mt-3 text-3xl font-bold text-emerald-400">
+          <p className="mt-3 text-3xl font-bold text-emerald-600 dark:text-emerald-400">
             {moving}
           </p>
 
-          <p className="mt-1 text-xs text-slate-600">Currently on route</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Currently on route</p>
         </div>
 
-        <div className="rounded-xl border border-amber-500/10 bg-slate-900 p-5">
+        <div className="rounded-xl border border-amber-200 bg-white p-5 shadow-sm dark:border-amber-500/10 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">Delayed</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Delayed</p>
 
-            <Clock3 size={20} className="text-amber-400" />
+            <Clock3 size={20} className="text-amber-600 dark:text-amber-400" />
           </div>
 
-          <p className="mt-3 text-3xl font-bold text-amber-400">
+          <p className="mt-3 text-3xl font-bold text-amber-600 dark:text-amber-400">
             {delayed}
           </p>
 
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             Requiring attention
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-700 bg-slate-900 p-5">
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-500">Offline</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Offline</p>
 
-            <WifiOff size={20} className="text-slate-500" />
+            <WifiOff size={20} className="text-slate-400 dark:text-slate-500" />
           </div>
 
-          <p className="mt-3 text-3xl font-bold text-slate-400">
+          <p className="mt-3 text-3xl font-bold text-slate-700 dark:text-slate-400">
             {offline}
           </p>
 
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
             No recent GPS signal
           </p>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2">
-            <Search size={18} className="text-slate-500" />
+          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950">
+            <Search size={18} className="text-slate-400 dark:text-slate-500" />
 
             <input
               type="text"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search vehicle, type or cargo..."
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-600 lg:w-80"
+              className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-600 lg:w-80"
             />
           </div>
 
@@ -384,8 +385,8 @@ function Vehicles() {
                   onClick={() => setActiveFilter(filter)}
                   className={`rounded-lg px-4 py-2 text-xs font-medium transition ${
                     activeFilter === filter
-                      ? "bg-cyan-500/10 text-cyan-400"
-                      : "text-slate-500 hover:bg-slate-800 hover:text-white"
+                      ? "border border-cyan-300 bg-cyan-50 text-cyan-800 dark:border-transparent dark:bg-cyan-500/10 dark:text-cyan-400"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                   }`}
                 >
                   {filter}
@@ -397,43 +398,43 @@ function Vehicles() {
       </div>
 
       {/* Vehicle Table */}
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[950px] text-left">
-            <thead className="border-b border-slate-800 bg-slate-950/50">
+            <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/50">
               <tr>
-                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500">
+                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Vehicle
                 </th>
 
-                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500">
+                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Current Location
                 </th>
 
-                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500">
+                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Cargo
                 </th>
 
-                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500">
+                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Vehicle Type
                 </th>
 
-                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500">
+                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Status
                 </th>
 
-                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500">
+                <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Action
                 </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-800">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {loading ? (
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-5 py-12 text-center text-sm text-slate-500"
+                    className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400"
                   >
                     Loading vehicles from backend...
                   </td>
@@ -442,7 +443,7 @@ function Vehicles() {
                 <tr>
                   <td
                     colSpan={6}
-                    className="px-5 py-12 text-center text-sm text-slate-500"
+                    className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400"
                   >
                     No vehicles found in the backend database.
                   </td>
@@ -455,22 +456,22 @@ function Vehicles() {
                     <tr
                       key={vehicle.id}
                       onClick={() => openVehicle(vehicle)}
-                      className="cursor-pointer transition hover:bg-slate-800/40"
+                      className="cursor-pointer transition hover:bg-slate-50 dark:hover:bg-slate-800/40"
                     >
                       {/* Vehicle */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-transparent dark:bg-cyan-500/10 dark:text-cyan-400">
                             <Truck size={20} />
                           </div>
 
                           <div>
-                            <p className="text-sm font-medium text-white">
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">
                               {vehicle.vehicle_number}
                             </p>
 
-                            <p className="mt-1 text-xs text-slate-500">
-                              ID: {vehicle.id} {driverAssignments[vehicle.id] && <span className="text-cyan-400 font-mono">• Driver: {driverAssignments[vehicle.id]}</span>}
+                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                              ID: {vehicle.id} {driverAssignments[vehicle.id] && <span className="font-mono text-cyan-700 dark:text-cyan-400">• Driver: {driverAssignments[vehicle.id]}</span>}
                             </p>
                           </div>
                         </div>
@@ -479,9 +480,9 @@ function Vehicles() {
                       {/* Location */}
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
-                          <MapPin size={15} className="text-cyan-400" />
+                          <MapPin size={15} className="text-cyan-600 dark:text-cyan-400" />
 
-                          <span className="text-sm text-slate-300">
+                          <span className="text-sm text-slate-700 dark:text-slate-300">
                             {vehicle.latitude !== null &&
                             vehicle.longitude !== null
                               ? `${vehicle.latitude.toFixed(
@@ -495,11 +496,11 @@ function Vehicles() {
                       {/* Cargo */}
                       <td className="px-5 py-4">
                         <div>
-                          <p className="text-sm text-slate-300">
+                          <p className="text-sm font-medium text-slate-800 dark:text-slate-300">
                             {vehicle.cargo_type}
                           </p>
 
-                          <p className="mt-1 text-xs capitalize text-slate-600">
+                          <p className="mt-1 text-xs capitalize text-slate-500 dark:text-slate-400">
                             Priority: {vehicle.cargo_priority}
                           </p>
                         </div>
@@ -507,7 +508,7 @@ function Vehicles() {
 
                       {/* Vehicle Type */}
                       <td className="px-5 py-4">
-                        <span className="text-sm capitalize text-slate-300">
+                        <span className="text-sm capitalize text-slate-700 dark:text-slate-300">
                           {vehicle.vehicle_type}
                         </span>
                       </td>
@@ -527,8 +528,8 @@ function Vehicles() {
                             <span
                               className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${
                                 anomalies[vehicle.id].severity === "critical"
-                                  ? "border-red-500/30 bg-red-500/10 text-red-400"
-                                  : "border-amber-500/30 bg-amber-500/10 text-amber-400"
+                                  ? "border-red-500/30 bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                                  : "border-amber-500/30 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                               }`}
                             >
                               <AlertTriangle size={10} />
@@ -546,7 +547,7 @@ function Vehicles() {
                             event.stopPropagation();
                             openVehicle(vehicle);
                           }}
-                          className="rounded-lg border border-slate-700 px-3 py-2 text-xs font-medium text-cyan-400 transition hover:border-cyan-500/40 hover:bg-cyan-500/10"
+                          className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-50 dark:border-slate-700 dark:bg-transparent dark:text-cyan-400 dark:hover:border-cyan-500/40 dark:hover:bg-cyan-500/10"
                         >
                           View Details
                         </button>
@@ -560,32 +561,32 @@ function Vehicles() {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-slate-800 px-5 py-4">
-          <p className="text-xs text-slate-600">
+        <div className="flex items-center justify-between border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Showing {filteredVehicles.length} of {vehicles.length} registered
             vehicles
           </p>
 
-          <div className="flex items-center gap-2 text-xs text-slate-600">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
             {moving} vehicles transmitting GPS
           </div>
         </div>
       </div>
 
       {/* Live Tracking Note */}
-      <div className="flex items-start gap-3 rounded-xl border border-cyan-500/10 bg-cyan-500/5 p-4">
+      <div className="flex items-start gap-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-4 dark:border-cyan-500/10 dark:bg-cyan-500/5">
         <Navigation
           size={18}
-          className="mt-0.5 shrink-0 text-cyan-400"
+          className="mt-0.5 shrink-0 text-cyan-600 dark:text-cyan-400"
         />
 
         <div>
-          <p className="text-sm font-medium text-cyan-400">
+          <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-400">
             Live vehicle tracking
           </p>
 
-          <p className="mt-1 text-xs leading-5 text-slate-500">
+          <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
             Vehicle information is now being loaded directly from the NEXUS-NER
             backend. GPS coordinates are shown when available.
           </p>
@@ -595,21 +596,21 @@ function Vehicles() {
       {/* Vehicle Details Modal */}
       {selectedVehicle && (
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
           onClick={() => setSelectedVehicle(null)}
         >
           <div
-            className="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl"
+            className="w-full max-w-2xl rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
             onClick={(event) => event.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 px-6 py-5">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-800">
               <div>
-                <p className="text-xs uppercase tracking-widest text-cyan-400">
+                <p className="text-xs font-semibold uppercase tracking-widest text-cyan-700 dark:text-cyan-400">
                   Vehicle Details
                 </p>
 
-                <h2 className="mt-1 text-2xl font-semibold text-white">
+                <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
                   {selectedVehicle.vehicle_number}
                 </h2>
               </div>
@@ -617,7 +618,7 @@ function Vehicles() {
               <button
                 type="button"
                 onClick={() => setSelectedVehicle(null)}
-                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
+                className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-white"
               >
                 <X size={20} />
               </button>
@@ -629,53 +630,53 @@ function Vehicles() {
                 <div
                   className={`mb-4 rounded-xl border p-4 ${
                     anomalies[selectedVehicle.id].severity === "critical"
-                      ? "border-red-500/40 bg-red-500/10 text-red-400"
-                      : "border-amber-500/40 bg-amber-500/10 text-amber-400"
+                      ? "border-red-300 bg-red-50 text-red-800 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-400"
+                      : "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-400"
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <AlertTriangle size={16} />
-                    <p className="text-xs font-semibold uppercase tracking-wider">
+                    <p className="text-xs font-bold uppercase tracking-wider">
                       Active Anomaly: {anomalies[selectedVehicle.id].anomaly_type.replace("_", " ")}
                     </p>
                   </div>
-                  <p className="mt-1 text-xs leading-5 text-slate-300">
+                  <p className="mt-1 text-xs leading-5 text-slate-700 dark:text-slate-300">
                     {anomalies[selectedVehicle.id].description}
                   </p>
                 </div>
               )}
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                <p className="text-xs text-slate-600">Vehicle ID</p>
-                <p className="mt-2 text-sm font-medium text-white">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Vehicle ID</p>
+                <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.id}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                <p className="text-xs text-slate-600">Vehicle Number</p>
-                <p className="mt-2 text-sm font-medium text-white">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Vehicle Number</p>
+                <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.vehicle_number}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                <p className="text-xs text-slate-600">Assigned Driver</p>
-                <p className="mt-2 text-sm font-medium text-cyan-300 font-mono">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Assigned Driver</p>
+                <p className="mt-2 font-mono text-sm font-medium text-cyan-700 dark:text-cyan-300">
                   {driverAssignments[selectedVehicle.id] || "No Driver Assigned"}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                <p className="text-xs text-slate-600">Vehicle Type</p>
-                <p className="mt-2 text-sm font-medium capitalize text-white">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Vehicle Type</p>
+                <p className="mt-2 text-sm font-semibold capitalize text-slate-900 dark:text-white">
                   {selectedVehicle.vehicle_type}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                <p className="text-xs text-slate-600">Status</p>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Status</p>
                 <div className="mt-2">
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles(
@@ -690,27 +691,27 @@ function Vehicles() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                <p className="text-xs text-slate-600">Cargo Type</p>
-                <p className="mt-2 text-sm font-medium text-white">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Cargo Type</p>
+                <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.cargo_type}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-                <p className="text-xs text-slate-600">Cargo Priority</p>
-                <p className="mt-2 text-sm font-medium capitalize text-white">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Cargo Priority</p>
+                <p className="mt-2 text-sm font-semibold capitalize text-slate-900 dark:text-white">
                   {selectedVehicle.cargo_priority}
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 sm:col-span-2">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:col-span-2">
                 <div className="flex items-center gap-2">
-                  <MapPin size={16} className="text-cyan-400" />
-                  <p className="text-xs text-slate-600">GPS Location</p>
+                  <MapPin size={16} className="text-cyan-600 dark:text-cyan-400" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">GPS Location</p>
                 </div>
 
-                <p className="mt-2 text-sm font-medium text-white">
+                <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.latitude !== null &&
                   selectedVehicle.longitude !== null
                     ? `${selectedVehicle.latitude}, ${selectedVehicle.longitude}`
@@ -718,10 +719,10 @@ function Vehicles() {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 sm:col-span-2">
-                <p className="text-xs text-slate-600">Current Trip</p>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:col-span-2">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Current Trip</p>
 
-                <p className="mt-2 text-sm font-medium text-white">
+                <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.current_trip_id !== null
                     ? `Trip #${selectedVehicle.current_trip_id}`
                     : "No active trip assigned"}
@@ -731,11 +732,11 @@ function Vehicles() {
           </div>
 
             {/* Modal Footer */}
-            <div className="flex justify-end border-t border-slate-800 px-6 py-4">
+            <div className="flex justify-end border-t border-slate-200 px-6 py-4 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setSelectedVehicle(null)}
-                className="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-400"
+                className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
               >
                 Close
               </button>

@@ -65,14 +65,14 @@ export default function MyReports() {
     switch (status?.toUpperCase()) {
       case "VERIFIED":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-400 px-2.5 py-0.5 text-xs font-bold">
             <CheckCircle2 size={13} />
             <span>Verified — Incident Active</span>
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/10 px-2.5 py-0.5 text-xs font-bold text-red-400">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-400 px-2.5 py-0.5 text-xs font-bold">
             <XCircle size={13} />
             <span>Rejected</span>
           </span>
@@ -80,7 +80,7 @@ export default function MyReports() {
       case "UNVERIFIED":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 px-2.5 py-0.5 text-xs font-bold text-amber-300">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 px-2.5 py-0.5 text-xs font-bold">
             <Clock3 size={13} />
             <span>UNVERIFIED (Under Review)</span>
           </span>
@@ -93,8 +93,8 @@ export default function MyReports() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">My Submitted Reports</h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">My Submitted Reports</h1>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
             Track operational verification and status of your citizen hazard submissions.
           </p>
         </div>
@@ -104,7 +104,7 @@ export default function MyReports() {
             type="button"
             onClick={loadMyReports}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-300 transition"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 transition"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
             <span>Refresh</span>
@@ -120,25 +120,25 @@ export default function MyReports() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3.5 text-xs text-red-300 flex items-center gap-2">
-          <AlertTriangle size={16} className="text-red-400 shrink-0" />
+        <div className="rounded-xl border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3.5 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+          <AlertTriangle size={16} className="text-red-600 dark:text-red-400 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {loading && reports.length === 0 ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-12 text-center text-slate-400">
-          <RefreshCw size={24} className="animate-spin mx-auto mb-3 text-cyan-400" />
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-12 text-center text-slate-600 dark:text-slate-400 shadow-sm dark:shadow-none">
+          <RefreshCw size={24} className="animate-spin mx-auto mb-3 text-cyan-600 dark:text-cyan-400" />
           <p className="text-sm">Loading your citizen reports...</p>
         </div>
       ) : reports.length === 0 ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-12 text-center space-y-4">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-800 text-slate-400 border border-slate-700">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-12 text-center space-y-4 shadow-sm dark:shadow-none">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
             <FileText size={26} />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">No Submitted Reports Found</h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">No Submitted Reports Found</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto mt-1">
               You haven't reported any road hazards or disruptions yet. Notice something on the road?
             </p>
           </div>
@@ -155,19 +155,19 @@ export default function MyReports() {
           {reports.map((report) => (
             <div
               key={report.id}
-              className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-xl space-y-3.5"
+              className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-5 shadow-sm dark:shadow-xl space-y-3.5"
             >
               {/* Top Row: Ref, Type, Status */}
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-cyan-400">
+                  <span className="font-mono text-xs font-bold text-cyan-700 dark:text-cyan-400">
                     #{report.id}
                   </span>
-                  <span className="rounded-md bg-slate-800 px-2 py-0.5 text-xs font-bold text-white uppercase tracking-wide">
+                  <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wide">
                     {report.report_type.replace(/_/g, " ")}
                   </span>
                   {report.severity_hint && (
-                    <span className="text-[10px] text-slate-400 capitalize">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 capitalize">
                       ({report.severity_hint} severity)
                     </span>
                   )}
@@ -176,33 +176,33 @@ export default function MyReports() {
               </div>
 
               {/* Description */}
-              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
                 {report.description}
               </p>
 
               {/* Rejection / Verification Feedback Banner */}
               {report.status === "REJECTED" && report.rejection_reason && (
-                <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-2.5 text-xs text-red-300">
-                  <span className="font-semibold block text-[11px] text-red-200">Reviewer Feedback:</span>
+                <div className="rounded-lg border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-2.5 text-xs text-red-800 dark:text-red-300">
+                  <span className="font-semibold block text-[11px] text-red-900 dark:text-red-200">Reviewer Feedback:</span>
                   {report.rejection_reason}
                 </div>
               )}
               {report.status === "VERIFIED" && report.converted_incident_id && (
-                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-xs text-emerald-300 flex items-center justify-between">
+                <div className="rounded-lg border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 p-2.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
                   <span>Linked to Official Incident: <strong>#{report.converted_incident_id}</strong></span>
-                  <span className="text-[10px] text-emerald-400">Active in Risk Engine</span>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Active in Risk Engine</span>
                 </div>
               )}
 
               {/* Bottom Metadata */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-[11px] text-slate-400">
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-[11px] text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-3">
                   <span className="flex items-center gap-1 font-mono">
-                    <MapPin size={12} className="text-cyan-400 shrink-0" />
+                    <MapPin size={12} className="text-cyan-600 dark:text-cyan-400 shrink-0" />
                     {report.latitude.toFixed(4)}°N, {report.longitude.toFixed(4)}°E
                   </span>
                   {report.road_name && (
-                    <span className="text-slate-300 font-medium">
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">
                       Corridor: {report.road_name}
                     </span>
                   )}

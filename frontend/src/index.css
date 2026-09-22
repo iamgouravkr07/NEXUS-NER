@@ -1,7 +1,17 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 * {
   box-sizing: border-box;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+:root.light {
+  color-scheme: light;
 }
 
 html,
@@ -14,4 +24,49 @@ body,
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Light mode base surface styling */
+.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Dark mode base surface styling */
+.dark body {
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+/* Scrollbar refinement */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

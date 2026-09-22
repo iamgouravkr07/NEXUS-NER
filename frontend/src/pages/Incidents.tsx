@@ -476,23 +476,22 @@ function Incidents() {
   }).length;
 
   return (
-    <div className="min-h-full bg-slate-950 text-white">
-      <div className="space-y-6 p-6">
+    <div className="space-y-6">
 
         {/* Header */}
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold tracking-tight">
+              <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Incident Management
               </h2>
 
-              <span className="rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs text-red-400">
+              <span className="rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600 dark:text-red-400">
                 {incidents.length} Total
               </span>
             </div>
 
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               Monitor, investigate and manage road accessibility incidents
               across the NER logistics network.
             </p>
@@ -502,9 +501,9 @@ function Incidents() {
             <button
               type="button"
               onClick={() => setShowNlpPanel(!showNlpPanel)}
-              className="flex items-center justify-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-300 transition hover:bg-amber-500/20"
+              className="flex items-center justify-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-sm font-medium text-amber-700 dark:text-amber-300 transition hover:bg-amber-500/20 cursor-pointer"
             >
-              <Sparkles size={16} className="text-amber-400" />
+              <Sparkles size={16} className="text-amber-500 dark:text-amber-400" />
               {showNlpPanel ? "Close NLP Assistant" : "AI / NLP Ingestion"}
             </button>
 
@@ -512,7 +511,7 @@ function Incidents() {
               type="button"
               onClick={() => loadIncidents(true)}
               disabled={refreshing}
-              className="flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-slate-300 transition hover:border-slate-600 hover:bg-slate-800 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
             >
               <RefreshCw
                 size={16}
@@ -526,29 +525,29 @@ function Incidents() {
 
         {/* NLP Incident Ingestion Drawer / Card */}
         {showNlpPanel && (
-          <div className="rounded-xl border border-amber-500/30 bg-slate-900/90 p-5 space-y-4 shadow-lg">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-5 space-y-4 shadow-sm dark:border-amber-500/30 dark:bg-slate-900/90">
+            <div className="flex items-center justify-between border-b border-amber-200 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <Sparkles size={18} className="text-amber-400" />
-                <h3 className="font-semibold text-white text-base">
+                <Sparkles size={18} className="text-amber-500 dark:text-amber-400" />
+                <h3 className="font-semibold text-slate-900 dark:text-white text-base">
                   AI / NLP Incident Ingestion & Extraction
                 </h3>
-                <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs text-amber-400 border border-amber-500/20 font-medium">
+                <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs text-amber-700 dark:text-amber-400 border border-amber-500/20 font-medium">
                   Advisory Ingestion
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setShowNlpPanel(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
               Paste raw citizen dispatches, WhatsApp alerts, or field officer radio notes to extract candidate incident attributes.
-              Candidates are ingested as <strong className="text-amber-300">unverified (status: reported)</strong> and require explicit operator verification before escalating to road blocks or emergency alerts.
+              Candidates are ingested as <strong className="text-amber-700 dark:text-amber-300">unverified (status: reported)</strong> and require explicit operator verification before escalating to road blocks or emergency alerts.
             </p>
 
             <div className="space-y-2">
@@ -557,13 +556,13 @@ function Incidents() {
                 value={nlpText}
                 onChange={(e) => setNlpText(e.target.value)}
                 placeholder="e.g. Incessant rain triggered a massive landslide on NH-10 near Gangtok. Both lanes are impassable and multiple cargo trucks are stranded."
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 p-3 text-sm text-white placeholder:text-slate-600 outline-none focus:border-amber-500/50"
+                className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-amber-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600 shadow-sm"
               />
             </div>
 
             {nlpError && (
-              <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-xs text-red-300">
-                <AlertTriangle size={15} className="shrink-0 text-red-400" />
+              <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-xs text-red-700 dark:text-red-300">
+                <AlertTriangle size={15} className="shrink-0 text-red-500 dark:text-red-400" />
                 <span>{nlpError}</span>
               </div>
             )}
@@ -573,7 +572,7 @@ function Incidents() {
                 type="button"
                 onClick={handleExtractNlp}
                 disabled={isExtractingNlp || !nlpText.trim()}
-                className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-slate-950 transition hover:bg-amber-400 disabled:opacity-50"
+                className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-slate-950 transition hover:bg-amber-400 disabled:opacity-50 cursor-pointer shadow-sm"
               >
                 <Sparkles size={14} className={isExtractingNlp ? "animate-spin" : ""} />
                 {isExtractingNlp ? "Analyzing with NLP..." : "Analyze Report with AI"}
@@ -587,7 +586,7 @@ function Incidents() {
                     setNlpCandidate(null);
                     setNlpError(null);
                   }}
-                  className="text-xs text-slate-400 hover:text-white"
+                  className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white cursor-pointer"
                 >
                   Clear
                 </button>
@@ -596,17 +595,17 @@ function Incidents() {
 
             {/* Extraction Candidate Preview */}
             {nlpCandidate?.extraction && (
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-500/10 pb-2">
+              <div className="rounded-xl border border-amber-300 bg-white p-4 space-y-3 shadow-sm dark:border-amber-500/30 dark:bg-amber-500/5">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 dark:border-amber-500/10 pb-2">
                   <div className="flex items-center gap-2">
-                    <FileText size={16} className="text-amber-400" />
-                    <span className="font-semibold text-amber-300 text-sm">Extraction Candidate</span>
-                    <span className="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">
+                    <FileText size={16} className="text-amber-600 dark:text-amber-400" />
+                    <span className="font-semibold text-amber-800 dark:text-amber-300 text-sm">Extraction Candidate</span>
+                    <span className="rounded bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[11px] text-slate-700 dark:text-slate-300">
                       Provider: {nlpCandidate.provider === "gemini" ? "Gemini 2.5 Flash" : "Deterministic Fallback Engine"}
                     </span>
                   </div>
 
-                  <span className="rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-400 border border-red-500/20">
+                  <span className="rounded-full bg-red-500/10 px-2.5 py-0.5 text-xs font-semibold text-red-600 dark:text-red-400 border border-red-500/20">
                     AI-extracted — requires operator verification
                   </span>
                 </div>
@@ -614,46 +613,46 @@ function Incidents() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                   <div>
                     <span className="text-slate-500 block">Incident Type:</span>
-                    <span className="font-semibold text-white capitalize">{nlpCandidate.extraction.incident_type?.replace("_", " ")}</span>
+                    <span className="font-semibold text-slate-900 dark:text-white capitalize">{nlpCandidate.extraction.incident_type?.replace("_", " ")}</span>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Severity:</span>
-                    <span className="font-semibold text-white capitalize">{nlpCandidate.extraction.severity}</span>
+                    <span className="font-semibold text-slate-900 dark:text-white capitalize">{nlpCandidate.extraction.severity}</span>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Confidence:</span>
-                    <span className="font-semibold text-amber-400">{(nlpCandidate.extraction.confidence * 100).toFixed(0)}%</span>
+                    <span className="font-semibold text-amber-600 dark:text-amber-400">{(nlpCandidate.extraction.confidence * 100).toFixed(0)}%</span>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Corridor Reference:</span>
-                    <span className="font-semibold text-white">{nlpCandidate.extraction.road_corridor || "None detected"}</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">{nlpCandidate.extraction.road_corridor || "None detected"}</span>
                   </div>
                 </div>
 
                 <div className="text-xs">
                   <span className="text-slate-500 block">Description:</span>
-                  <p className="text-slate-200 mt-0.5">{nlpCandidate.extraction.description}</p>
+                  <p className="text-slate-800 dark:text-slate-200 mt-0.5">{nlpCandidate.extraction.description}</p>
                 </div>
 
                 {nlpCandidate.extraction.location_text && (
                   <div className="text-xs">
                     <span className="text-slate-500">Location Reference: </span>
-                    <span className="text-slate-200 font-medium">{nlpCandidate.extraction.location_text}</span>
+                    <span className="text-slate-800 dark:text-slate-200 font-medium">{nlpCandidate.extraction.location_text}</span>
                   </div>
                 )}
 
                 {nlpCandidate.warning && (
-                  <p className="text-xs text-amber-400/90 italic">
+                  <p className="text-xs text-amber-700 dark:text-amber-400/90 italic">
                     Notice: {nlpCandidate.warning}
                   </p>
                 )}
 
-                <div className="pt-2 border-t border-amber-500/10 flex items-center gap-3">
+                <div className="pt-2 border-t border-amber-200 dark:border-amber-500/10 flex items-center gap-3">
                   <button
                     type="button"
                     onClick={handleCreateIncidentFromNlp}
                     disabled={isCreatingIncident}
-                    className="flex items-center gap-2 rounded-lg bg-emerald-500/20 px-4 py-2 text-xs font-semibold text-emerald-300 border border-emerald-500/30 transition hover:bg-emerald-500/30 disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-lg bg-emerald-500/20 px-4 py-2 text-xs font-semibold text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 transition hover:bg-emerald-500/30 disabled:opacity-50 cursor-pointer"
                   >
                     <Check size={15} />
                     {isCreatingIncident ? "Creating Candidate..." : "Create Candidate Incident (Unverified)"}
@@ -669,98 +668,98 @@ function Incidents() {
 
         {/* Summary cards */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-5">
+          <div className="rounded-xl border border-red-200 bg-red-50/60 p-5 shadow-sm dark:border-red-500/20 dark:bg-red-500/[0.04]">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 Critical
               </p>
 
               <AlertTriangle
                 size={19}
-                className="text-red-400"
+                className="text-red-500 dark:text-red-400"
               />
             </div>
 
-            <p className="mt-3 text-3xl font-bold text-white">
+            <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               {criticalCount}
             </p>
 
-            <p className="mt-1 text-xs text-red-400">
+            <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">
               Immediate attention required
             </p>
           </div>
 
-          <div className="rounded-xl border border-orange-500/20 bg-orange-500/[0.04] p-5">
+          <div className="rounded-xl border border-orange-200 bg-orange-50/60 p-5 shadow-sm dark:border-orange-500/20 dark:bg-orange-500/[0.04]">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 High Severity
               </p>
 
               <ShieldAlert
                 size={19}
-                className="text-orange-400"
+                className="text-orange-500 dark:text-orange-400"
               />
             </div>
 
-            <p className="mt-3 text-3xl font-bold text-white">
+            <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               {highCount}
             </p>
 
-            <p className="mt-1 text-xs text-orange-400">
+            <p className="mt-1 text-xs font-medium text-orange-600 dark:text-orange-400">
               Requires monitoring
             </p>
           </div>
 
-          <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-5">
+          <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/[0.04]">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 Active
               </p>
 
               <Clock3
                 size={19}
-                className="text-amber-400"
+                className="text-amber-500 dark:text-amber-400"
               />
             </div>
 
-            <p className="mt-3 text-3xl font-bold text-white">
+            <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               {activeCount}
             </p>
 
-            <p className="mt-1 text-xs text-amber-400">
+            <p className="mt-1 text-xs font-medium text-amber-600 dark:text-amber-400">
               Under investigation
             </p>
           </div>
 
-          <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-5">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/[0.04]">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 Resolved
               </p>
 
               <CheckCircle2
                 size={19}
-                className="text-emerald-400"
+                className="text-emerald-500 dark:text-emerald-400"
               />
             </div>
 
-            <p className="mt-3 text-3xl font-bold text-white">
+            <p className="mt-3 text-3xl font-bold text-slate-900 dark:text-white">
               {resolvedCount}
             </p>
 
-            <p className="mt-1 text-xs text-emerald-400">
+            <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
               Successfully cleared
             </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
           <div className="flex flex-col gap-3 xl:flex-row">
             <div className="relative flex-1">
               <Search
                 size={17}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
 
               <input
@@ -770,14 +769,14 @@ function Incidents() {
                   setSearch(event.target.value)
                 }
                 placeholder="Search incidents, districts, states..."
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 py-2.5 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-600 focus:border-cyan-500/40"
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-cyan-500 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-600 shadow-sm"
               />
             </div>
 
             <div className="flex items-center gap-2">
               <Filter
                 size={16}
-                className="text-slate-500"
+                className="text-slate-400"
               />
 
               <select
@@ -785,7 +784,7 @@ function Incidents() {
                 onChange={(event) =>
                   setSeverityFilter(event.target.value)
                 }
-                className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-slate-300 outline-none"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
               >
                 <option value="all">All Severity</option>
                 <option value="critical">Critical</option>
@@ -799,7 +798,7 @@ function Incidents() {
                 onChange={(event) =>
                   setStatusFilter(event.target.value)
                 }
-                className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-slate-300 outline-none"
+                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active (Open)</option>
@@ -811,12 +810,12 @@ function Incidents() {
                 <option value="closed">Closed</option>
               </select>
 
-              <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-xs text-slate-400 hover:text-slate-200 select-none">
+              <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-600 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 dark:hover:text-slate-200 select-none">
                 <input
                   type="checkbox"
                   checked={hideTestFixtures}
                   onChange={(e) => setHideTestFixtures(e.target.checked)}
-                  className="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-0 focus:ring-offset-0"
+                  className="rounded border-slate-300 bg-white text-amber-500 focus:ring-0 focus:ring-offset-0 dark:border-slate-700 dark:bg-slate-900"
                 />
                 <span>Hide test fixtures</span>
               </label>
@@ -825,21 +824,21 @@ function Incidents() {
         </div>
 
         {/* Incident table */}
-        <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/70">
-          <div className="border-b border-slate-800 px-5 py-4">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+          <div className="border-b border-slate-200 dark:border-slate-800 px-5 py-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-white">
+                <h3 className="font-semibold text-slate-900 dark:text-white">
                   Incident Feed
                 </h3>
 
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Live incidents received from the operations backend
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" />
                 Live
               </div>
             </div>
@@ -849,7 +848,7 @@ function Incidents() {
             <div className="flex h-64 items-center justify-center">
               <RefreshCw
                 size={22}
-                className="animate-spin text-cyan-400"
+                className="animate-spin text-cyan-600 dark:text-cyan-400"
               />
             </div>
           ) : filteredIncidents.length === 0 ? (
@@ -857,14 +856,14 @@ function Incidents() {
               <div className="text-center">
                 <CheckCircle2
                   size={34}
-                  className="mx-auto text-emerald-400"
+                  className="mx-auto text-emerald-500 dark:text-emerald-400"
                 />
 
-                <p className="mt-3 text-sm font-medium text-slate-300">
+                <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                   No incidents found
                 </p>
 
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   Try changing your filters or search query.
                 </p>
               </div>
@@ -873,7 +872,7 @@ function Incidents() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px] text-left">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950/50 text-xs uppercase tracking-wider text-slate-500">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
                     <th className="px-5 py-3 font-medium">
                       Incident
                     </th>
@@ -904,26 +903,26 @@ function Incidents() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-800">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                   {filteredIncidents.map((incident) => (
                     <tr
                       key={incident.id}
-                      className="transition hover:bg-slate-800/30"
+                      className="transition hover:bg-slate-50/80 dark:hover:bg-slate-800/30"
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="rounded-lg bg-red-500/10 p-2 text-red-400">
+                          <div className="rounded-lg bg-red-500/10 p-2 text-red-500 dark:text-red-400">
                             <AlertTriangle size={16} />
                           </div>
 
                           <div>
-                            <p className="text-sm font-medium text-slate-200">
+                            <p className="text-sm font-medium text-slate-900 dark:text-slate-200">
                               {incident.title ||
                                 incident.incident_type ||
                                 "Road Incident"}
                             </p>
 
-                            <p className="mt-1 max-w-[240px] truncate text-xs text-slate-500">
+                            <p className="mt-1 max-w-[240px] truncate text-xs text-slate-500 dark:text-slate-400">
                               {incident.description ||
                                 "No description available"}
                             </p>
@@ -932,10 +931,10 @@ function Incidents() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <div className="flex items-center gap-2 text-sm text-slate-300">
+                        <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                           <MapPin
                             size={14}
-                            className="text-slate-500"
+                            className="text-slate-400 dark:text-slate-500"
                           />
 
                           {incident.district ||
@@ -945,7 +944,7 @@ function Incidents() {
 
                         {incident.latitude &&
                           incident.longitude && (
-                            <p className="mt-1 text-[10px] text-slate-600">
+                            <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-600 font-mono">
                               {incident.latitude.toFixed(4)},{" "}
                               {incident.longitude.toFixed(4)}
                             </p>
@@ -968,12 +967,12 @@ function Incidents() {
                           "resolved" ? (
                             <CheckCircle2
                               size={14}
-                              className="text-emerald-400"
+                              className="text-emerald-500 dark:text-emerald-400"
                             />
                           ) : (
                             <Clock3
                               size={14}
-                              className="text-amber-400"
+                              className="text-amber-500 dark:text-amber-400"
                             />
                           )}
 
@@ -994,7 +993,7 @@ function Incidents() {
                               AI
                             </span>
 
-                            <span className="text-slate-300">
+                            <span className="text-slate-700 dark:text-slate-300 font-medium">
                               {incident.confidence != null
                                 ? `${Math.round(
                                     incident.confidence <= 1
@@ -1007,9 +1006,9 @@ function Incidents() {
                             </span>
                           </div>
 
-                          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-800">
+                          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                             <div
-                              className="h-full rounded-full bg-cyan-400"
+                              className="h-full rounded-full bg-cyan-500 dark:bg-cyan-400"
                               style={{
                                 width: `${
                                   incident.confidence != null
@@ -1046,7 +1045,7 @@ function Incidents() {
                                   updateIncidentStatus(incident.id, "verified")
                                 }
                                 title="Verify incident and escalate road risk"
-                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50"
+                                className="inline-flex items-center gap-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 transition hover:bg-emerald-500/20 disabled:opacity-50 cursor-pointer"
                               >
                                 <Check size={13} />
                                 Verify
@@ -1059,7 +1058,7 @@ function Incidents() {
                                   updateIncidentStatus(incident.id, "rejected")
                                 }
                                 title="Reject incident as false report"
-                                className="inline-flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs font-medium text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+                                className="inline-flex items-center gap-1 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs font-medium text-rose-700 dark:text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50 cursor-pointer"
                               >
                                 <X size={13} />
                                 Reject
@@ -1072,7 +1071,7 @@ function Incidents() {
                             onClick={() =>
                               setSelectedIncident(incident)
                             }
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs text-slate-300 transition hover:border-cyan-500/30 hover:text-cyan-400"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-cyan-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-cyan-500/30 dark:hover:text-cyan-400 cursor-pointer"
                           >
                             <Eye size={13} />
                             View
@@ -1089,18 +1088,18 @@ function Incidents() {
 
         {/* Bottom info */}
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-cyan-500/10 p-2.5 text-cyan-400">
+              <div className="rounded-lg bg-cyan-500/10 p-2.5 text-cyan-600 dark:text-cyan-400">
                 <MapPin size={18} />
               </div>
 
               <div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Geo-tagged Reports
                 </p>
 
-                <p className="mt-1 text-xl font-semibold text-white">
+                <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                   {incidents.filter(
                     (item) =>
                       item.latitude != null &&
@@ -1111,43 +1110,42 @@ function Incidents() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-purple-500/10 p-2.5 text-purple-400">
+              <div className="rounded-lg bg-purple-500/10 p-2.5 text-purple-600 dark:text-purple-400">
                 <ShieldAlert size={18} />
               </div>
 
               <div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   AI-Assisted Detection
                 </p>
 
-                <p className="mt-1 text-xl font-semibold text-white">
+                <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                   Enabled
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-5">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-emerald-500/10 p-2.5 text-emerald-400">
+              <div className="rounded-lg bg-emerald-500/10 p-2.5 text-emerald-600 dark:text-emerald-400">
                 <CheckCircle2 size={18} />
               </div>
 
               <div>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Auto Verification
                 </p>
 
-                <p className="mt-1 text-xl font-semibold text-white">
+                <p className="mt-1 text-xl font-semibold text-slate-900 dark:text-white">
                   Ready
                 </p>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
       {/* Incident details modal */}
       {selectedIncident && (
@@ -1156,12 +1154,12 @@ function Incidents() {
           onClick={() => setSelectedIncident(null)}
         >
           <div
-            className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 shadow-2xl"
+            className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
               <div>
-                <h3 className="font-semibold text-white">
+                <h3 className="font-semibold text-slate-900 dark:text-white">
                   Incident Details
                 </h3>
 
@@ -1173,7 +1171,7 @@ function Incidents() {
               <button
                 type="button"
                 onClick={() => setSelectedIncident(null)}
-                className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-800 hover:text-white"
+                className="rounded-lg p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-white transition"
               >
                 <XCircle size={20} />
               </button>
@@ -1181,57 +1179,57 @@ function Incidents() {
 
             <div className="space-y-5 p-6">
               {/* OPERATIONAL CAUSAL IMPACT CHAIN */}
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                     Operational Causal Impact Chain
                   </p>
                   <span className="text-[11px] text-slate-500">Live Network Telemetry</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   {/* Node 1: Incident */}
-                  <div className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-1.5 text-xs font-medium text-red-300">
-                    <AlertTriangle size={13} className="text-red-400" />
+                  <div className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300 px-2.5 py-1.5 text-xs font-medium">
+                    <AlertTriangle size={13} className="text-red-500 dark:text-red-400" />
                     <span>Incident #{selectedIncident.id}</span>
                   </div>
 
-                  <ArrowRight size={14} className="text-slate-600" />
+                  <ArrowRight size={14} className="text-slate-400 dark:text-slate-600" />
 
                   {/* Node 2: Affected Road */}
-                  <div className="flex items-center gap-1.5 rounded-lg border border-orange-500/30 bg-orange-500/10 px-2.5 py-1.5 text-xs font-medium text-orange-300">
-                    <Route size={13} className="text-orange-400" />
+                  <div className="flex items-center gap-1.5 rounded-lg border border-orange-500/30 bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300 px-2.5 py-1.5 text-xs font-medium">
+                    <Route size={13} className="text-orange-500 dark:text-orange-400" />
                     <span>Road #{selectedIncident.affected_road_id ?? 135}</span>
                   </div>
 
-                  <ArrowRight size={14} className="text-slate-600" />
+                  <ArrowRight size={14} className="text-slate-400 dark:text-slate-600" />
 
                   {/* Node 3: Disruption Risk */}
-                  <div className="flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-950/40 px-2.5 py-1.5 text-xs font-bold text-red-400">
-                    <ShieldAlert size={13} className="text-red-400" />
+                  <div className="flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-400 px-2.5 py-1.5 text-xs font-bold">
+                    <ShieldAlert size={13} className="text-red-500 dark:text-red-400" />
                     <span>Risk: {selectedIncident.risk_score ? selectedIncident.risk_score.toFixed(1) : "95.0"}</span>
                   </div>
 
-                  <ArrowRight size={14} className="text-slate-600" />
+                  <ArrowRight size={14} className="text-slate-400 dark:text-slate-600" />
 
                   {/* Node 4: Alert */}
-                  <div className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs font-medium text-amber-300">
-                    <Bell size={13} className="text-amber-400" />
+                  <div className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300 px-2.5 py-1.5 text-xs font-medium">
+                    <Bell size={13} className="text-amber-500 dark:text-amber-400" />
                     <span>{connectedAlert ? "Alert Active" : (selectedIncident.status === "verified" ? "Alert Dispatched" : "Awaiting Verification")}</span>
                   </div>
 
-                  <ArrowRight size={14} className="text-slate-600" />
+                  <ArrowRight size={14} className="text-slate-400 dark:text-slate-600" />
 
                   {/* Node 5: Vehicle */}
-                  <div className="flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1.5 text-xs font-medium text-cyan-300">
-                    <Truck size={13} className="text-cyan-400" />
+                  <div className="flex items-center gap-1.5 rounded-lg border border-cyan-500/30 bg-cyan-50 text-cyan-800 dark:bg-cyan-500/10 dark:text-cyan-300 px-2.5 py-1.5 text-xs font-medium">
+                    <Truck size={13} className="text-cyan-600 dark:text-cyan-400" />
                     <span>{connectedVehicle?.vehicle_number || "AS-01-BX-4091"}</span>
                   </div>
 
-                  <ArrowRight size={14} className="text-slate-600" />
+                  <ArrowRight size={14} className="text-slate-400 dark:text-slate-600" />
 
                   {/* Node 6: Trip */}
-                  <div className="flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 px-2.5 py-1.5 text-xs font-medium text-blue-300">
-                    <Navigation size={13} className="text-blue-400" />
+                  <div className="flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-50 text-blue-800 dark:bg-blue-500/10 dark:text-blue-300 px-2.5 py-1.5 text-xs font-medium">
+                    <Navigation size={13} className="text-blue-600 dark:text-blue-400" />
                     <span>Trip #{connectedTrip?.id ?? 318}</span>
                   </div>
                 </div>
@@ -1242,7 +1240,7 @@ function Incidents() {
                   Incident
                 </p>
 
-                <p className="mt-2 text-lg font-semibold text-white">
+                <p className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
                   {selectedIncident.title ||
                     selectedIncident.incident_type ||
                     "Road Incident"}
@@ -1254,26 +1252,26 @@ function Incidents() {
                   Description
                 </p>
 
-                <p className="mt-2 text-sm leading-6 text-slate-300">
+                <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300">
                   {selectedIncident.description ||
                     "No description available."}
                 </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">
                     Location
                   </p>
 
-                  <p className="mt-2 text-sm text-slate-200">
+                  <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
                     {selectedIncident.district ||
                       selectedIncident.state ||
                       "NER Region"}
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">
                     Severity
                   </p>
@@ -1287,7 +1285,7 @@ function Incidents() {
                   </span>
                 </div>
 
-                <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">
                     Status
                   </p>
@@ -1301,12 +1299,12 @@ function Incidents() {
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">
                     AI Confidence
                   </p>
 
-                  <p className="mt-2 text-sm font-medium text-cyan-400">
+                  <p className="mt-2 text-sm font-semibold text-cyan-600 dark:text-cyan-400">
                     {selectedIncident.confidence != null
                       ? `${Math.round(
                           selectedIncident.confidence <= 1
@@ -1322,19 +1320,19 @@ function Incidents() {
 
               {selectedIncident.latitude != null &&
                 selectedIncident.longitude != null && (
-                  <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 p-4">
                     <div className="flex items-center gap-2">
                       <MapPin
                         size={16}
-                        className="text-cyan-400"
+                        className="text-cyan-600 dark:text-cyan-400"
                       />
 
-                      <p className="text-sm text-slate-300">
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-300">
                         GPS Coordinates
                       </p>
                     </div>
 
-                    <p className="mt-2 font-mono text-xs text-slate-500">
+                    <p className="mt-2 font-mono text-xs text-slate-600 dark:text-slate-400">
                       {selectedIncident.latitude},{" "}
                       {selectedIncident.longitude}
                     </p>
@@ -1342,13 +1340,13 @@ function Incidents() {
                 )}
 
               {/* DEDICATED AFFECTED ASSETS & OPERATIONAL IMPACT */}
-              <div className="rounded-xl border border-slate-800 bg-slate-950 p-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-3">
                   <div className="flex items-center gap-2">
-                    <ShieldAlert size={16} className="text-red-400" />
-                    <h4 className="text-sm font-semibold text-white">Affected Assets & Intercepted Logistics</h4>
+                    <ShieldAlert size={16} className="text-red-500 dark:text-red-400" />
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Affected Assets & Intercepted Logistics</h4>
                   </div>
-                  <span className="rounded-full bg-red-500/10 border border-red-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-red-400">
+                  <span className="rounded-full bg-red-100 dark:bg-red-500/10 border border-red-300 dark:border-red-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-red-700 dark:text-red-400">
                     High Impact Zone
                   </span>
                 </div>
@@ -1356,20 +1354,20 @@ function Incidents() {
                 {selectedIncident.affected_road_id ? (
                   <div className="grid gap-3 sm:grid-cols-2">
                     {/* Connected Road */}
-                    <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3.5 flex flex-col justify-between">
+                    <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-3.5 flex flex-col justify-between shadow-sm">
                       <div>
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-medium text-slate-400">Corridor Segment</span>
+                          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Corridor Segment</span>
                           <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${
-                            connectedRoad?.status === "blocked" ? "bg-red-500/20 text-red-400" : "bg-emerald-500/20 text-emerald-400"
+                            connectedRoad?.status === "blocked" ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400"
                           }`}>
                             {connectedRoad?.status || "Open"}
                           </span>
                         </div>
-                        <p className="mt-1.5 text-sm font-bold text-white">
+                        <p className="mt-1.5 text-sm font-bold text-slate-900 dark:text-white">
                           Road #{connectedRoad?.id ?? selectedIncident.affected_road_id}
                         </p>
-                        <p className="text-xs text-slate-300">
+                        <p className="text-xs text-slate-600 dark:text-slate-300">
                           {connectedRoad?.road_name || "NH-15 Guwahati-Tezpur Corridor"}
                         </p>
                         <p className="text-[11px] text-slate-500 mt-1">
@@ -1378,95 +1376,95 @@ function Incidents() {
                       </div>
                       <a
                         href="/road-risk"
-                        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300"
+                        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300"
                       >
                         View Road Risk Analysis →
                       </a>
                     </div>
 
                     {/* Disruption Risk */}
-                    <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-3.5 flex flex-col justify-between">
+                    <div className="rounded-lg border border-red-500/30 bg-red-50 dark:bg-red-950/20 p-3.5 flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-medium text-slate-400">Disruption Risk Score</span>
-                          <span className="rounded bg-red-500/20 border border-red-500/30 px-2 py-0.5 text-[10px] font-bold text-red-400">
+                          <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">Disruption Risk Score</span>
+                          <span className="rounded bg-red-200/80 dark:bg-red-500/20 border border-red-400/50 dark:border-red-500/30 px-2 py-0.5 text-[10px] font-bold text-red-800 dark:text-red-400">
                             CRITICAL RISK
                           </span>
                         </div>
-                        <p className="mt-1.5 text-2xl font-black text-red-400">
+                        <p className="mt-1.5 text-2xl font-black text-red-700 dark:text-red-400">
                           {selectedIncident.risk_score ? selectedIncident.risk_score.toFixed(1) : "95.0"}
-                          <span className="text-xs font-normal text-slate-400 ml-1">/ 100</span>
+                          <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-1">/ 100</span>
                         </p>
-                        <p className="text-xs text-slate-300 mt-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
                           {selectedIncident.severity === "critical"
                             ? "Total corridor impassability for heavy carriers. High vulnerability to seasonal washouts."
                             : "Elevated transit hazard across key mountain corridor sections."}
                         </p>
                       </div>
-                      <div className="mt-3 flex items-center gap-1.5 text-[11px] text-red-300 font-medium">
-                        <AlertTriangle size={12} className="text-red-400" />
+                      <div className="mt-3 flex items-center gap-1.5 text-[11px] text-red-700 dark:text-red-300 font-medium">
+                        <AlertTriangle size={12} className="text-red-500 dark:text-red-400" />
                         <span>Rerouting mandatory for high-priority supplies</span>
                       </div>
                     </div>
 
                     {/* Operational Alert */}
-                    <div className="rounded-lg border border-slate-800 bg-slate-900/80 p-3.5 flex flex-col justify-between">
+                    <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-3.5 flex flex-col justify-between shadow-sm">
                       <div>
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-medium text-slate-400">Operational Alert</span>
+                          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Operational Alert</span>
                           <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold capitalize ${
-                            connectedAlert ? "bg-amber-500/20 text-amber-300" : "bg-slate-800 text-slate-400"
+                            connectedAlert ? "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300" : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400"
                           }`}>
                             {connectedAlert ? connectedAlert.status : (selectedIncident.status === "verified" ? "Active" : "Awaiting Verification")}
                           </span>
                         </div>
-                        <p className="mt-1.5 text-sm font-semibold text-white">
+                        <p className="mt-1.5 text-sm font-semibold text-slate-900 dark:text-white">
                           {connectedAlert?.title || (selectedIncident.status === "verified" ? "Corridor Blocked: NH-15" : "Critical Landslide Warning")}
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                           {connectedAlert?.description || (selectedIncident.status === "verified" ? "Emergency reroute broadcast dispatched to active freight units." : "Alert triggers automated fleet reroute upon operator confirmation.")}
                         </p>
                       </div>
                       <a
                         href="/alerts"
-                        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-amber-400 hover:text-amber-300"
+                        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
                       >
                         Open Alert Feed →
                       </a>
                     </div>
 
                     {/* Impacted Vehicle & Intercepted Trip */}
-                    <div className="rounded-lg border border-cyan-500/20 bg-cyan-950/15 p-3.5 flex flex-col justify-between">
+                    <div className="rounded-lg border border-cyan-500/30 bg-cyan-50/70 dark:border-cyan-500/20 dark:bg-cyan-950/15 p-3.5 flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] font-medium text-cyan-300">Intercepted Transport</span>
-                          <span className="rounded bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 text-[10px] font-semibold uppercase">
+                          <span className="text-[11px] font-medium text-cyan-800 dark:text-cyan-300">Intercepted Transport</span>
+                          <span className="rounded bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300 px-1.5 py-0.5 text-[10px] font-semibold uppercase">
                             {connectedVehicle?.status?.replace("_", " ") || "In Transit"}
                           </span>
                         </div>
-                        <p className="mt-1.5 text-sm font-bold text-white">
+                        <p className="mt-1.5 text-sm font-bold text-slate-900 dark:text-white">
                           {connectedVehicle?.vehicle_number || "AS-01-BX-4091"}
-                          <span className="text-xs font-normal text-slate-400 ml-2">
+                          <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-2">
                             (Vehicle #{connectedVehicle?.id ?? 472})
                           </span>
                         </p>
-                        <p className="text-xs text-cyan-200 mt-0.5 font-medium">
+                        <p className="text-xs text-cyan-900 dark:text-cyan-200 mt-0.5 font-medium">
                           Cargo: {connectedVehicle?.cargo_type || "Critical Vaccines & Cold-Chain Supplies"}
                         </p>
-                        <p className="text-[11px] text-slate-400 mt-1">
+                        <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">
                           Trip #{connectedTrip?.id ?? 318}: {connectedTrip?.origin || "Guwahati"} → {connectedTrip?.destination || "Tezpur"}
                         </p>
                       </div>
                       <div className="mt-3 flex items-center justify-between">
                         <a
                           href="/vehicles"
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300"
                         >
                           Track Vehicle →
                         </a>
                         <a
                           href="/route-planner"
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-400 hover:text-emerald-300"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300"
                         >
                           Route Planner →
                         </a>
@@ -1474,8 +1472,8 @@ function Incidents() {
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed border-slate-800 p-6 text-center">
-                    <p className="text-sm font-medium text-slate-300">
+                  <div className="rounded-lg border border-dashed border-slate-300 dark:border-slate-800 p-6 text-center">
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       No immediate corridor assets impacted
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
@@ -1486,18 +1484,18 @@ function Incidents() {
               </div>
 
               {/* Operator Action Controls */}
-              <div className="rounded-lg border border-slate-800 bg-slate-950 p-4">
+              <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <ShieldCheck size={16} className="text-cyan-400" />
-                    <p className="text-sm font-semibold text-white">Operator Validation & Control</p>
+                    <ShieldCheck size={16} className="text-cyan-600 dark:text-cyan-400" />
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">Operator Validation & Control</p>
                   </div>
                   <span className="text-[11px] text-slate-500">
-                    Role: <span className="font-semibold text-slate-300">{user?.role || "GUEST"}</span>
+                    Role: <span className="font-semibold text-slate-700 dark:text-slate-300">{user?.role || "GUEST"}</span>
                   </span>
                 </div>
 
-                <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   Verifying escalates road disruption risk to critical (95%) and triggers an operational alert.
                   Rejecting marks the report as invalid.
                 </p>
@@ -1506,8 +1504,8 @@ function Incidents() {
                   <div
                     className={`mt-3 rounded-lg border p-3 text-xs ${
                       actionMessage.type === "success"
-                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                        : "border-rose-500/30 bg-rose-500/10 text-rose-300"
+                        ? "border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300"
+                        : "border-rose-500/30 bg-rose-50 text-rose-800 dark:bg-rose-500/10 dark:text-rose-300"
                     }`}
                   >
                     {actionMessage.text}
@@ -1519,7 +1517,7 @@ function Incidents() {
                     type="button"
                     disabled={actionLoadingId === selectedIncident.id || selectedIncident.status === "verified"}
                     onClick={() => updateIncidentStatus(selectedIncident.id, "verified")}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/15 px-3.5 py-2 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/25 disabled:opacity-40"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-600 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25 px-3.5 py-2 text-xs font-semibold transition disabled:opacity-40"
                   >
                     <Check size={14} />
                     {selectedIncident.status === "verified" ? "Verified" : "Verify Disruption"}
@@ -1529,7 +1527,7 @@ function Incidents() {
                     type="button"
                     disabled={actionLoadingId === selectedIncident.id || selectedIncident.status === "rejected"}
                     onClick={() => updateIncidentStatus(selectedIncident.id, "rejected")}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/15 px-3.5 py-2 text-xs font-semibold text-rose-300 transition hover:bg-rose-500/25 disabled:opacity-40"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-rose-600 bg-rose-50 text-rose-800 hover:bg-rose-100 dark:border-rose-500/30 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25 px-3.5 py-2 text-xs font-semibold transition disabled:opacity-40"
                   >
                     <X size={14} />
                     {selectedIncident.status === "rejected" ? "Rejected" : "Reject Report"}
@@ -1539,7 +1537,7 @@ function Incidents() {
                     type="button"
                     disabled={actionLoadingId === selectedIncident.id || selectedIncident.status === "resolved"}
                     onClick={() => updateIncidentStatus(selectedIncident.id, "resolved")}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-medium text-slate-300 transition hover:bg-slate-700 disabled:opacity-40"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-slate-100 text-slate-800 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 px-3.5 py-2 text-xs font-medium transition disabled:opacity-40"
                   >
                     <CheckCircle2 size={14} />
                     {selectedIncident.status === "resolved" ? "Resolved" : "Mark Resolved"}

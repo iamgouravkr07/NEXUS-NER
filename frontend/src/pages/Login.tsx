@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Shield, Lock, User, Mail, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Lock, User, Mail, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export const Login: React.FC = () => {
@@ -94,8 +94,12 @@ export const Login: React.FC = () => {
       <div className="relative w-full max-w-md">
         {/* Branding header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-500/30 bg-cyan-500/10 shadow-lg shadow-cyan-500/10">
-            <Shield className="h-7 w-7 text-cyan-400" />
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-500/30 bg-slate-900/80 p-2 shadow-lg shadow-cyan-500/10">
+            <img
+              src="/nexus-ner-logo.png"
+              alt="NEXUS-NER Logo"
+              className="h-full w-full object-contain rounded-xl"
+            />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">NEXUS-NER</h1>
           <p className="mt-1 text-xs text-slate-400">

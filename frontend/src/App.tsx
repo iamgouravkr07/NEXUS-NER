@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
 import { LanguageProvider } from "./context/LanguageContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import { syncWorker } from "./offline/syncWorker";
@@ -34,9 +35,10 @@ function App() {
     };
   }, []);
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <BrowserRouter>
           <Routes>
             {/* Public Authentication Route */}
             <Route path="/login" element={<Login />} />
@@ -178,7 +180,8 @@ function App() {
         </BrowserRouter>
       </LanguageProvider>
     </AuthProvider>
-  );
+  </ThemeProvider>
+);
 }
 
 export default App;

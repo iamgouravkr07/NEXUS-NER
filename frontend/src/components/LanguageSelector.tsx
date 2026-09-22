@@ -15,11 +15,11 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   return (
     <div
-      className={`flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 p-1 text-xs ${className}`}
+      className={`flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900 p-1 text-xs ${className}`}
       role="group"
       aria-label="Language Selector"
     >
-      <Globe size={14} className="ml-1 mr-0.5 text-cyan-400 shrink-0" />
+      <Globe size={14} className="ml-1 mr-0.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
       <div className="flex gap-0.5">
         {LANGUAGE_OPTIONS.map((opt) => {
           const isActive = language === opt.code;
@@ -29,10 +29,10 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               onClick={() => setLanguage(opt.code)}
               type="button"
               title={`${opt.label} (${opt.nativeLabel})`}
-              className={`rounded px-2 py-0.5 text-[11px] font-semibold transition ${
+              className={`rounded px-2 py-0.5 text-[11px] font-semibold transition cursor-pointer ${
                 isActive
                   ? "bg-cyan-600 text-white shadow-sm"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                  : "text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
               }`}
             >
               {variant === "full" ? opt.nativeLabel : opt.code.toUpperCase()}
