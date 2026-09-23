@@ -17,6 +17,7 @@ import {
 } from "../types/ml";
 import { ShapExplanationPanel } from "./ShapExplanationPanel";
 import { ModelInfoModal } from "./ModelInfoModal";
+import { useLanguage } from "../context/LanguageContext";
 
 interface PredictiveRiskCardProps {
   result?: PredictiveRiskResult | null;
@@ -35,6 +36,7 @@ export const PredictiveRiskCard: React.FC<PredictiveRiskCardProps> = ({
   roadName = "Monitored Corridor",
   compact = false,
 }) => {
+  const { t } = useLanguage();
   const [showShapModal, setShowShapModal] = useState(false);
   const [showModelInfoModal, setShowModelInfoModal] = useState(false);
 
@@ -69,7 +71,7 @@ export const PredictiveRiskCard: React.FC<PredictiveRiskCardProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-semibold tracking-wide text-slate-900 dark:text-white uppercase">
-                  Predictive Disruption Risk
+                  {t.predictiveRisk.cardTitle}
                 </h3>
                 <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:text-purple-300">
                   Advisory Signal
@@ -89,7 +91,7 @@ export const PredictiveRiskCard: React.FC<PredictiveRiskCardProps> = ({
               className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white transition cursor-pointer"
             >
               <Info size={13} className="text-cyan-600 dark:text-cyan-400" />
-              <span>Model Info</span>
+              <span>{t.predictiveRisk.modelDetailsBtn}</span>
             </button>
 
             {onRefresh && (
@@ -176,10 +178,10 @@ export const PredictiveRiskCard: React.FC<PredictiveRiskCardProps> = ({
               <div className="rounded-xl border border-purple-200 bg-purple-50/50 p-4 space-y-2 dark:border-purple-500/20 dark:bg-purple-500/[0.04]">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300">
-                    ML Disruption Likelihood
+                    {t.predictiveRisk.disruptionLikelihood}
                   </span>
                   <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:text-purple-300 font-mono">
-                    Threshold: 55%
+                    {t.predictiveRisk.thresholdLabel}: 55%
                   </span>
                 </div>
 
@@ -272,14 +274,14 @@ export const PredictiveRiskCard: React.FC<PredictiveRiskCardProps> = ({
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                     <BrainCircuit size={13} className="text-purple-600 dark:text-purple-400" />
-                    Key Model Feature Attributions (TreeSHAP)
+                    {t.predictiveRisk.topFactorsTitle} (TreeSHAP)
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowShapModal(true)}
                     className="text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 text-xs flex items-center gap-1 transition cursor-pointer font-medium"
                   >
-                    <span>Why is the model predicting this?</span>
+                    <span>{t.predictiveRisk.explainShapBtn}</span>
                     <ExternalLink size={11} />
                   </button>
                 </div>

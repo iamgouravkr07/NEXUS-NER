@@ -8,10 +8,22 @@ export const LANGUAGE_OPTIONS: { code: Language; label: string; nativeLabel: str
   { code: "as", label: "Assamese", nativeLabel: "অসমীয়া" },
 ];
 
+export const formatString = (
+  template: string,
+  params?: Record<string, string | number>
+): string => {
+  if (!params || !template) return template || "";
+  return Object.entries(params).reduce(
+    (str, [key, val]) => str.split(`{${key}}`).join(String(val)),
+    template
+  );
+};
+
 export interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: TranslationDict;
+  formatString: (template: string, params?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -48,6 +60,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     language,
     setLanguage,
     t: translations[language] || translations.en,
+    formatString,
   };
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

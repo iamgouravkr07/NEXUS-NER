@@ -46,25 +46,13 @@ function App() {
             {/* Access Denied Route */}
             <Route path="/unauthorized" element={<Unauthorized />} />
 
-            {/* Protected Operational & Public Routes */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <Layout />
-                </ProtectedRoute>
-              }
-            >
-              {/* Public-Safe for all authenticated roles */}
-              <Route
-                path="/road-risk"
-                element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"]}>
-                    <RoadRisk />
-                  </ProtectedRoute>
-                }
-              />
+            {/* Main Application Layout */}
+            <Route element={<Layout />}>
+              {/* Public Routes accessible without login */}
+              <Route path="/" element={<Home />} />
+              <Route path="/road-risk" element={<RoadRisk />} />
 
-              {/* Public Citizen Reporting Routes */}
+              {/* Public Citizen Reporting Routes (Protected for authenticated PUBLIC role) */}
               <Route
                 path="/report-problem"
                 element={
@@ -90,15 +78,7 @@ function App() {
                 }
               />
 
-              {/* Control Tower & Driver Mission */}
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "DRIVER"]}>
-                    <Home />
-                  </ProtectedRoute>
-                }
-              />
+              {/* Control Tower & Driver Mission (Operational Route) */}
               <Route
                 path="/control"
                 element={

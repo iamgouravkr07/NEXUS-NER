@@ -10,6 +10,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import type { FeatureAttributionItem, MLPredictionSignal } from "../types/ml";
+import { useLanguage } from "../context/LanguageContext";
 
 interface ShapExplanationPanelProps {
   isOpen: boolean;
@@ -24,6 +25,8 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
   predictionSignal,
   roadName,
 }) => {
+  const { t, formatString } = useLanguage();
+
   if (!isOpen) return null;
   if (typeof document === "undefined") return null;
 
@@ -67,21 +70,21 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 id="shap-panel-title" className="text-base font-semibold text-slate-900 dark:text-white">
-                  TreeSHAP Feature Attribution
+                  {t.shap.title}
                 </h3>
                 <span className="rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] text-purple-700 dark:text-purple-300 font-mono">
-                  Probability-Space
+                  {t.shap.probabilitySpace}
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {roadName ? `Feature attribution analysis for ${roadName}` : "Model prediction decomposition"}
+                {roadName ? formatString(t.shap.featureAnalysisFor, { roadName }) : t.shap.subtitle}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close explainability panel"
+            aria-label={t.common.close}
             className="rounded-lg p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
           >
             <X size={18} />
@@ -95,13 +98,13 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs">
               <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-medium text-slate-500">
-                  Model Baseline Prior
+                  {t.shap.baseValue}
                 </span>
                 <p className="text-base font-bold text-slate-800 dark:text-slate-300">
                   {(baseValue * 100).toFixed(1)}%
                 </p>
                 <p className="text-[10px] text-slate-500">
-                  E[f(x)] across training distribution
+                  {t.shap.baselineSub}
                 </p>
               </div>
 
@@ -111,19 +114,19 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
 
               <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-medium text-slate-500">
-                  Operational Threshold
+                  {t.shap.operationalThreshold}
                 </span>
                 <p className="text-base font-bold text-amber-600 dark:text-amber-400">
                   {(threshold * 100).toFixed(0)}%
                 </p>
-                <p className="text-[10px] text-slate-500">Calibrated decision boundary</p>
+                <p className="text-[10px] text-slate-500">{t.shap.decisionBoundary}</p>
               </div>
 
               <div className="hidden sm:block text-slate-400 dark:text-slate-600 font-mono text-lg">&rarr;</div>
 
               <div className="space-y-0.5">
                 <span className="text-[10px] uppercase font-medium text-slate-500">
-                  Final Model Output
+                  {t.shap.modelPrediction}
                 </span>
                 <p
                   className={`text-base font-bold ${
@@ -133,7 +136,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
                   {probability != null ? `${(probability * 100).toFixed(1)}%` : "N/A"}
                 </p>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                  {isLikely ? "Disruption Likely" : "Disruption Unlikely"}
+                  {isLikely ? t.shap.disruptionLikely : t.shap.disruptionUnlikely}
                 </p>
               </div>
             </div>
@@ -144,11 +147,10 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             <div className="flex items-start gap-2.5">
               <Info size={16} className="mt-0.5 shrink-0 text-cyan-600 dark:text-cyan-400" />
               <div className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                <span className="font-semibold text-cyan-800 dark:text-cyan-300">Non-Causal Statistical Attribution: </span>
-                SHAP (SHapley Additive exPlanations) quantifies which features contributed to shifting the model prediction away from the baseline prior.
-                <span className="text-slate-500 dark:text-slate-400 block mt-0.5">
-                  It reflects learned statistical associations in the training distribution; it does not prove physical causality.
+                <span className="font-semibold text-cyan-800 dark:text-cyan-300">
+                  {t.shap.methodologyTitle}{" "}
                 </span>
+                {t.shap.methodologyDesc}
               </div>
             </div>
           </div>
@@ -158,7 +160,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/60">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 flex items-center gap-1.5">
                 <BrainCircuit size={13} className="text-purple-600 dark:text-purple-400" />
-                Attribution Summary
+                {t.shap.narrativeTitle}
               </p>
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                 {predictionSignal.narrative}
@@ -171,16 +173,16 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400 flex items-center gap-1.5">
                 <TrendingUp size={15} />
-                Factors Associated with Increased Model Output (+&phi;)
+                {t.shap.positiveImpact}
               </h4>
               <span className="text-[11px] text-slate-500">
-                {positiveContributors.length} factor{positiveContributors.length !== 1 ? "s" : ""}
+                {formatString(t.shap.factorsCount, { count: positiveContributors.length })}
               </span>
             </div>
 
             {positiveContributors.length === 0 ? (
               <p className="text-xs text-slate-500 italic p-3 rounded-lg bg-slate-50 dark:bg-slate-950/50">
-                No significant factors driving risk probability upward.
+                {t.shap.noPositiveFactors}
               </p>
             ) : (
               <div className="space-y-2.5">
@@ -233,16 +235,16 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                 <TrendingDown size={15} />
-                Factors Associated with Reduced Model Output (-&phi;)
+                {t.shap.negativeImpact}
               </h4>
               <span className="text-[11px] text-slate-500">
-                {negativeContributors.length} factor{negativeContributors.length !== 1 ? "s" : ""}
+                {formatString(t.shap.factorsCount, { count: negativeContributors.length })}
               </span>
             </div>
 
             {negativeContributors.length === 0 ? (
               <p className="text-xs text-slate-500 italic p-3 rounded-lg bg-slate-50 dark:bg-slate-950/50">
-                No significant mitigating factors observed.
+                {t.shap.noNegativeFactors}
               </p>
             ) : (
               <div className="space-y-2.5">
@@ -296,7 +298,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
               <CheckCircle2 size={16} className="text-emerald-500 dark:text-emerald-400 shrink-0" />
               <div>
                 <p className="font-medium text-slate-800 dark:text-slate-200">
-                  Exact Additive Consistency Verified
+                  {t.shap.additiveConsistency}
                 </p>
                 <p className="text-[11px] text-slate-500 dark:text-slate-500">
                   Base prior + &sum; &phi;<sub>i</sub> = Predicted probability (|error| &lt; 10<sup>-4</sup>)
@@ -304,7 +306,7 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
               </div>
             </div>
             <span className="rounded-md bg-emerald-500/10 px-2 py-1 text-[10px] font-mono font-semibold text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
-              Exact
+              {t.shap.exactLabel}
             </span>
           </div>
         </div>
@@ -313,14 +315,14 @@ export const ShapExplanationPanel: React.FC<ShapExplanationPanelProps> = ({
         <div className="border-t border-slate-200 px-6 py-3.5 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/70 flex items-center justify-between text-xs text-slate-500">
           <span className="flex items-center gap-1.5">
             <HelpCircle size={13} className="text-purple-600 dark:text-purple-400" />
-            TreeSHAP explanations computed in-process via cached singleton
+            {t.shap.footerInfo}
           </span>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg border border-slate-200 bg-white px-4 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white transition cursor-pointer"
           >
-            Done
+            {t.shap.closeBtn}
           </button>
         </div>
       </div>

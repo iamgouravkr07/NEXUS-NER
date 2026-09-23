@@ -27,6 +27,7 @@ import { PredictiveRiskCard } from "../components/PredictiveRiskCard";
 import { mlClient } from "../api/mlClient";
 import type { PredictiveRiskResult } from "../types/ml";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -108,6 +109,7 @@ function getRiskLevel(score: number) {
 }
 
 function RoadRisk() {
+  const { t, formatString } = useLanguage();
   const [risks, setRisks] = useState<RiskItem[]>(demoRisks);
   const [selectedRisk, setSelectedRisk] =
     useState<RiskItem | null>(demoRisks[0]);
@@ -191,6 +193,10 @@ function RoadRisk() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  const canUpdateRoadStatus =
+    user?.role === "ADMIN" ||
+    user?.role === "CONTROL_OPERATOR";
 
   const updateRoadStatus = useCallback(
     async (roadId: number, newStatus: string) => {
@@ -329,18 +335,17 @@ function RoadRisk() {
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                Road Risk Intelligence
+                {t.roads.title}
               </h2>
 
               <span className="flex items-center gap-2 rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1 text-xs text-purple-600 dark:text-purple-400 font-medium">
                 <BrainCircuit size={13} />
-                AI Powered
+                {t.roads.aiPowered}
               </span>
             </div>
 
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              Predictive road accessibility and disruption risk across
-              the North Eastern Region.
+              {t.roads.subtitle}
             </p>
           </div>
 
@@ -354,7 +359,7 @@ function RoadRisk() {
               size={16}
               className={loading ? "animate-spin" : ""}
             />
-            Refresh Risk
+            {loading ? t.common.refreshing : t.roads.refreshRisk}
           </button>
         </div>
 
@@ -368,27 +373,25 @@ function RoadRisk() {
 
               <div>
                 <h3 className="font-semibold text-slate-900 dark:text-white">
-                  Predictive Accessibility Engine
+                  {t.roads.engineTitle}
                 </h3>
 
                 <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">
-                  Risk scores combine terrain characteristics, historical
-                  incidents, road condition indicators and disruption
-                  signals to estimate potential logistics impact.
+                  {t.roads.engineDesc}
                 </p>
               </div>
             </div>
 
             <div className="shrink-0 rounded-lg border border-slate-200 bg-white/90 px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/70">
               <p className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-medium">
-                Model Status
+                {t.roads.modelStatus}
               </p>
 
               <div className="mt-1 flex items-center gap-2">
                 <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" />
 
                 <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                  Operational
+                  {t.roads.operational}
                 </span>
               </div>
 
@@ -404,7 +407,7 @@ function RoadRisk() {
           <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Avg. Risk Score
+                {t.roads.avgNetworkRisk}
               </p>
 
               <ShieldAlert
@@ -428,7 +431,7 @@ function RoadRisk() {
           <div className="rounded-xl border border-red-200 bg-red-50/60 p-5 shadow-sm dark:border-red-500/20 dark:bg-red-500/[0.04]">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Critical
+                {t.common.critical}
               </p>
 
               <AlertTriangle
@@ -442,14 +445,14 @@ function RoadRisk() {
             </p>
 
             <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">
-              Immediate action
+              {t.roads.immediateAction}
             </p>
           </div>
 
           <div className="rounded-xl border border-orange-200 bg-orange-50/60 p-5 shadow-sm dark:border-orange-500/20 dark:bg-orange-500/[0.04]">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                High
+                {t.common.high}
               </p>
 
               <TrendingUp
@@ -463,14 +466,14 @@ function RoadRisk() {
             </p>
 
             <p className="mt-1 text-xs font-medium text-orange-600 dark:text-orange-400">
-              Closely monitor
+              {t.roads.closelyMonitor}
             </p>
           </div>
 
           <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/[0.04]">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Moderate
+                {t.common.medium}
               </p>
 
               <CloudRain
@@ -484,14 +487,14 @@ function RoadRisk() {
             </p>
 
             <p className="mt-1 text-xs font-medium text-amber-600 dark:text-amber-400">
-              Monitor conditions
+              {t.roads.monitorConditions}
             </p>
           </div>
 
           <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/[0.04]">
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Low Risk
+                {t.common.low}
               </p>
 
               <CheckCircle2
@@ -505,7 +508,7 @@ function RoadRisk() {
             </p>
 
             <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-              Normal operations
+              {t.roads.normalOperations}
             </p>
           </div>
         </div>
@@ -518,11 +521,11 @@ function RoadRisk() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
               <div>
                 <h3 className="font-semibold text-slate-900 dark:text-white">
-                  Risk Distribution Map
+                  {t.roads.mapTitle}
                 </h3>
 
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  Predicted disruption hotspots across NER
+                  {t.roads.mapSub}
                 </p>
               </div>
 
@@ -677,11 +680,11 @@ function RoadRisk() {
           <div className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
             <div className="border-b border-slate-200 dark:border-slate-800 px-5 py-4">
               <h3 className="font-semibold text-slate-900 dark:text-white">
-                Highest Risk Corridor
+                {t.roads.highestRiskTitle}
               </h3>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Priority area for operator review
+                {t.roads.highestRiskSub}
               </p>
             </div>
 
@@ -707,7 +710,7 @@ function RoadRisk() {
                   </p>
 
                   <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                    Risk score / 100
+                    {t.roads.riskScoreRatio}
                   </p>
 
                   <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
@@ -738,7 +741,7 @@ function RoadRisk() {
                   <div className="mt-5 grid grid-cols-2 gap-3">
                     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
                       <p className="text-[10px] text-slate-500 dark:text-slate-500">
-                        Probability
+                        {t.roads.colProbability}
                       </p>
 
                       <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
@@ -753,7 +756,7 @@ function RoadRisk() {
 
                     <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
                       <p className="text-[10px] text-slate-500 dark:text-slate-500">
-                        Confidence
+                        {t.common.confidence}
                       </p>
 
                       <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
@@ -771,7 +774,7 @@ function RoadRisk() {
                   onClick={() => setSelectedRisk(highestRisk)}
                   className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 hover:text-cyan-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-cyan-500/30 dark:hover:text-cyan-400 cursor-pointer"
                 >
-                  View Risk Analysis
+                  {t.roads.viewAnalysis}
                   <ChevronRight size={15} />
                 </button>
               </div>
@@ -801,17 +804,17 @@ function RoadRisk() {
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
             <div>
               <h3 className="font-semibold text-slate-900 dark:text-white">
-                Road Risk Assessment
+                {t.roads.tableTitle}
               </h3>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                AI-generated risk scores for monitored road segments
+                {t.roads.tableSub}
               </p>
             </div>
 
             <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <Route size={14} />
-              {risks.length} segments
+              {formatString(t.roads.segmentsCount, { count: risks.length })}
             </div>
           </div>
 
@@ -820,31 +823,31 @@ function RoadRisk() {
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
                   <th className="px-5 py-3 font-medium">
-                    Road
+                    {t.roads.colCorridor}
                   </th>
 
                   <th className="px-5 py-3 font-medium">
-                    Location
+                    {t.roads.colRegion}
                   </th>
 
                   <th className="px-5 py-3 font-medium">
-                    Risk Score
+                    {t.common.riskScore}
                   </th>
 
                   <th className="px-5 py-3 font-medium">
-                    Risk Level
+                    {t.roads.colRiskLevel}
                   </th>
 
                   <th className="px-5 py-3 font-medium">
-                    Hazard
+                    {t.roads.colHazard}
                   </th>
 
                   <th className="px-5 py-3 font-medium">
-                    AI Confidence
+                    {t.roads.colConfidence}
                   </th>
 
                   <th className="px-5 py-3 font-medium text-right">
-                    Action
+                    {t.common.actions}
                   </th>
                 </tr>
               </thead>
@@ -957,7 +960,7 @@ function RoadRisk() {
                           onClick={() => setSelectedRisk(risk)}
                           className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-cyan-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-cyan-500/30 dark:hover:text-cyan-400 cursor-pointer"
                         >
-                          Analyze
+                          {t.common.inspect}
                           <ChevronRight size={13} />
                         </button>
                       </td>
@@ -979,19 +982,17 @@ function RoadRisk() {
 
               <div>
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
-                  AI Prediction
+                  {t.roads.aiPrediction}
                 </p>
 
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Machine learning risk scoring
+                  {t.roads.aiPredictionSub}
                 </p>
               </div>
             </div>
 
             <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
-              Historical landslide and road-condition patterns can be
-              combined with current signals to estimate disruption
-              probability.
+              {t.roads.aiPredictionDesc}
             </p>
           </div>
 
@@ -1003,18 +1004,17 @@ function RoadRisk() {
 
               <div>
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
-                  Weather Signals
+                  {t.roads.weatherSignals}
                 </p>
 
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Rainfall and environmental conditions
+                  {t.roads.weatherSignalsSub}
                 </p>
               </div>
             </div>
 
             <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
-              Weather conditions can increase the probability of
-              flooding, landslides and road accessibility degradation.
+              {t.roads.weatherSignalsDesc}
             </p>
           </div>
 
@@ -1026,18 +1026,17 @@ function RoadRisk() {
 
               <div>
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
-                  Road Condition
+                  {t.roads.roadCondition}
                 </p>
 
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Surface and accessibility indicators
+                  {t.roads.roadConditionSub}
                 </p>
               </div>
             </div>
 
             <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
-              Surface quality, smoothness, terrain and historical
-              incidents help identify vulnerable logistics corridors.
+              {t.roads.roadConditionDesc}
             </p>
           </div>
         </div>
@@ -1070,7 +1069,7 @@ function RoadRisk() {
                     />
 
                     <h3 id="ai-risk-modal-title" className="font-semibold text-slate-900 dark:text-white truncate">
-                      AI Risk Analysis
+                      {t.roads.modalTitle}
                     </h3>
                   </div>
 
@@ -1098,7 +1097,7 @@ function RoadRisk() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Predicted Risk
+                        {t.roads.riskScore}
                       </p>
 
                       <p className="mt-1 text-4xl font-bold text-slate-900 dark:text-white">
@@ -1131,7 +1130,7 @@ function RoadRisk() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Location
+                      {t.common.location}
                     </p>
 
                     <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
@@ -1142,7 +1141,7 @@ function RoadRisk() {
 
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Hazard Type
+                      {t.roads.hazardType}
                     </p>
 
                     <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
@@ -1153,21 +1152,21 @@ function RoadRisk() {
 
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Material
+                      {t.roads.material}
                     </p>
 
                     <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
-                      {selectedRisk.material || "Not available"}
+                      {selectedRisk.material || t.roads.notAvailable}
                     </p>
                   </div>
 
                   <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Surface
+                      {t.roads.surface}
                     </p>
 
                     <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
-                      {selectedRisk.surface || "Not available"}
+                      {selectedRisk.surface || t.roads.notAvailable}
                     </p>
                   </div>
                 </div>
@@ -1182,82 +1181,130 @@ function RoadRisk() {
 
                     <div>
                       <p className="text-sm font-medium text-slate-900 dark:text-white">
-                        AI Recommendation
+                        {t.roads.aiRecommendation}
                       </p>
 
                       <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
-                        Consider alternate routing and increased monitoring
-                        for this corridor when the risk score remains
-                        elevated.
+                        {t.roads.aiRecommendationDesc}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Operator Corridor Status Control */}
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck size={16} className="text-cyan-600 dark:text-cyan-400" />
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                        Operator Corridor Status Control
-                      </p>
+                {canUpdateRoadStatus && (
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck size={16} className="text-cyan-600 dark:text-cyan-400" />
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {t.roads.operatorControlTitle}
+                        </p>
+                      </div>
+
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {t.roads.roleLabel}: <span className="font-semibold text-slate-700 dark:text-slate-300">{user?.role || "GUEST"}</span>
+                      </span>
                     </div>
 
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                      Role: <span className="font-semibold text-slate-700 dark:text-slate-300">{user?.role || "GUEST"}</span>
-                    </span>
-                  </div>
+                    <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                      {t.roads.operatorControlDesc}
+                    </p>
 
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Update live corridor operational status to adjust deterministic network risk and recalculate predictive models.
-                  </p>
+                    {statusMessage && (
+                      <div
+                        className={`mt-3 rounded-lg border p-3 text-xs ${
+                          statusMessage.type === "success"
+                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                            : "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300"
+                        }`}
+                      >
+                        {statusMessage.text}
+                      </div>
+                    )}
 
-                  {statusMessage && (
-                    <div
-                      className={`mt-3 rounded-lg border p-3 text-xs ${
-                        statusMessage.type === "success"
-                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                          : "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300"
-                      }`}
-                    >
-                      {statusMessage.text}
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {[
+                        {
+                          id: "open",
+                          label: t.roads.statusOpen,
+                          score: "0%",
+                          activeStyles:
+                            "bg-emerald-100 border-emerald-600 text-emerald-950 ring-2 ring-emerald-600/40 font-bold shadow-sm hover:bg-emerald-200/90 active:bg-emerald-300/80 dark:bg-emerald-900/70 dark:border-emerald-400 dark:text-white dark:ring-2 dark:ring-emerald-400/60 dark:hover:bg-emerald-900/90 dark:active:bg-emerald-950",
+                          inactiveStyles:
+                            "bg-emerald-50/70 border-emerald-300 text-emerald-900 hover:bg-emerald-100 hover:border-emerald-400 hover:text-emerald-950 active:bg-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 dark:hover:bg-emerald-900/50 dark:hover:border-emerald-600 dark:hover:text-emerald-100 dark:active:bg-emerald-900/80",
+                          focusStyles:
+                            "focus-visible:ring-emerald-500 dark:focus-visible:ring-emerald-400",
+                          subtextActive: "text-emerald-800 dark:text-emerald-200",
+                          subtextInactive: "text-emerald-700 dark:text-emerald-400",
+                        },
+                        {
+                          id: "restricted",
+                          label: t.roads.statusRestricted,
+                          score: "50%",
+                          activeStyles:
+                            "bg-amber-100 border-amber-600 text-amber-950 ring-2 ring-amber-600/40 font-bold shadow-sm hover:bg-amber-200/90 active:bg-amber-300/80 dark:bg-amber-900/70 dark:border-amber-400 dark:text-white dark:ring-2 dark:ring-amber-400/60 dark:hover:bg-amber-900/90 dark:active:bg-amber-950",
+                          inactiveStyles:
+                            "bg-amber-50/70 border-amber-300 text-amber-900 hover:bg-amber-100 hover:border-amber-400 hover:text-amber-950 active:bg-amber-200 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/50 dark:hover:border-amber-600 dark:hover:text-amber-100 dark:active:bg-amber-900/80",
+                          focusStyles:
+                            "focus-visible:ring-amber-500 dark:focus-visible:ring-amber-400",
+                          subtextActive: "text-amber-800 dark:text-amber-200",
+                          subtextInactive: "text-amber-700 dark:text-amber-400",
+                        },
+                        {
+                          id: "under_repair",
+                          label: t.roads.statusUnderRepair,
+                          score: "70%",
+                          activeStyles:
+                            "bg-blue-100 border-blue-600 text-blue-950 ring-2 ring-blue-600/40 font-bold shadow-sm hover:bg-blue-200/90 active:bg-blue-300/80 dark:bg-blue-900/70 dark:border-blue-400 dark:text-white dark:ring-2 dark:ring-blue-400/60 dark:hover:bg-blue-900/90 dark:active:bg-blue-950",
+                          inactiveStyles:
+                            "bg-blue-50/70 border-blue-300 text-blue-900 hover:bg-blue-100 hover:border-blue-400 hover:text-blue-950 active:bg-blue-200 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/50 dark:hover:border-blue-600 dark:hover:text-blue-100 dark:active:bg-blue-900/80",
+                          focusStyles:
+                            "focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400",
+                          subtextActive: "text-blue-800 dark:text-blue-200",
+                          subtextInactive: "text-blue-700 dark:text-blue-400",
+                        },
+                        {
+                          id: "blocked",
+                          label: t.roads.statusBlocked,
+                          score: "95%",
+                          activeStyles:
+                            "bg-red-100 border-red-600 text-red-950 ring-2 ring-red-600/40 font-bold shadow-sm hover:bg-red-200/90 active:bg-red-300/80 dark:bg-red-900/70 dark:border-red-400 dark:text-white dark:ring-2 dark:ring-red-400/60 dark:hover:bg-red-900/90 dark:active:bg-red-950",
+                          inactiveStyles:
+                            "bg-red-50/70 border-red-300 text-red-900 hover:bg-red-100 hover:border-red-400 hover:text-red-950 active:bg-red-200 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/50 dark:hover:border-red-600 dark:hover:text-red-100 dark:active:bg-red-900/80",
+                          focusStyles:
+                            "focus-visible:ring-red-500 dark:focus-visible:ring-red-400",
+                          subtextActive: "text-red-800 dark:text-red-200",
+                          subtextInactive: "text-red-700 dark:text-red-400",
+                        },
+                      ].map((st) => {
+                        const isActive = (selectedRisk.status || "open").toLowerCase() === st.id;
+                        return (
+                          <button
+                            key={st.id}
+                            type="button"
+                            disabled={statusUpdating}
+                            onClick={() => updateRoadStatus(selectedRisk.id, st.id)}
+                            className={`flex flex-col items-center justify-center rounded-lg border p-2.5 text-xs transition-all cursor-pointer font-medium select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              st.focusStyles
+                            } ${
+                              isActive ? st.activeStyles : st.inactiveStyles
+                            }`}
+                          >
+                            <span>{st.label}</span>
+                            <span
+                              className={`mt-0.5 text-[10px] font-mono ${
+                                isActive ? st.subtextActive : st.subtextInactive
+                              }`}
+                            >
+                              Risk: {st.score}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
-                  )}
-
-                  <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    {[
-                      { id: "open", label: "Open", score: "0%", color: "emerald" },
-                      { id: "restricted", label: "Restricted", score: "50%", color: "amber" },
-                      { id: "under_repair", label: "Under Repair", score: "70%", color: "orange" },
-                      { id: "blocked", label: "Blocked", score: "95%", color: "red" },
-                    ].map((st) => {
-                      const isActive = (selectedRisk.status || "open").toLowerCase() === st.id;
-                      return (
-                        <button
-                          key={st.id}
-                          type="button"
-                          disabled={statusUpdating}
-                          onClick={() => updateRoadStatus(selectedRisk.id, st.id)}
-                          className={`flex flex-col items-center justify-center rounded-lg border p-2.5 text-xs transition cursor-pointer ${
-                            isActive
-                              ? st.color === "emerald"
-                                ? "border-emerald-600 bg-emerald-100 text-emerald-950 dark:border-emerald-500 dark:bg-emerald-500/20 dark:text-emerald-300 ring-2 ring-emerald-500/30 font-bold shadow-sm"
-                                : st.color === "amber"
-                                ? "border-amber-600 bg-amber-100 text-amber-950 dark:border-amber-500 dark:bg-amber-500/20 dark:text-amber-300 ring-2 ring-amber-500/30 font-bold shadow-sm"
-                                : st.color === "orange"
-                                ? "border-orange-600 bg-orange-100 text-orange-950 dark:border-orange-500 dark:bg-orange-500/20 dark:text-orange-300 ring-2 ring-orange-500/30 font-bold shadow-sm"
-                                : "border-red-600 bg-red-100 text-red-950 dark:border-red-500 dark:bg-red-500/20 dark:text-red-300 ring-2 ring-red-500/30 font-bold shadow-sm"
-                              : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-700 dark:hover:text-slate-200"
-                          } disabled:opacity-50`}
-                        >
-                          <span>{st.label}</span>
-                          <span className="mt-0.5 text-[10px] opacity-80">Risk: {st.score}</span>
-                        </button>
-                      );
-                    })}
                   </div>
-                </div>
+                )}
 
                 {selectedRisk.latitude != null &&
                   selectedRisk.longitude != null && (

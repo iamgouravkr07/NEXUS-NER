@@ -2,9 +2,11 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldAlert, LogOut, Navigation } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
 export const Unauthorized: React.FC = () => {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const role = (user?.role || "UNKNOWN").toUpperCase();
@@ -12,16 +14,16 @@ export const Unauthorized: React.FC = () => {
   const getSafeDestination = () => {
     switch (role) {
       case "PUBLIC":
-        return { label: "View Public Road Risk", path: "/road-risk" };
+        return { label: t.auth.viewRoadRiskBtn, path: "/road-risk" };
       case "DRIVER":
-        return { label: "Return to Mission Cockpit", path: "/" };
+        return { label: t.auth.returnMissionCockpitBtn, path: "/" };
       case "FIELD_OFFICER":
-        return { label: "Return to Field Reports", path: "/field-report" };
+        return { label: t.auth.returnFieldReportsBtn, path: "/field-report" };
       case "CONTROL_OPERATOR":
       case "ADMIN":
-        return { label: "Return to Control Tower", path: "/" };
+        return { label: t.auth.returnControlTowerBtn, path: "/" };
       default:
-        return { label: "Return to Home", path: "/" };
+        return { label: t.auth.returnHomeBtn, path: "/" };
     }
   };
 
@@ -41,31 +43,31 @@ export const Unauthorized: React.FC = () => {
 
         <div className="mt-6 text-center">
           <span className="inline-block rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400">
-            HTTP 403 Forbidden
+            {t.auth.http403Forbidden}
           </span>
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Access Denied
+            {t.auth.unauthorizedTitle}
           </h1>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-            You do not have permission to access this operational area.
+            {t.auth.unauthorizedDesc}
           </p>
         </div>
 
         <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/70">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-slate-400">Authenticated Account:</span>
+            <span className="text-slate-500 dark:text-slate-400">{t.auth.authenticatedAccount}</span>
             <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
               {user?.username || "Session Active"}
             </span>
           </div>
           <div className="mt-2 flex items-center justify-between text-xs">
-            <span className="text-slate-500 dark:text-slate-400">Active Role:</span>
+            <span className="text-slate-500 dark:text-slate-400">{t.auth.activeRole}</span>
             <span className="rounded border border-cyan-200 bg-cyan-50 px-2 py-0.5 font-mono text-[11px] font-semibold text-cyan-800 dark:border-cyan-800/50 dark:bg-cyan-950/80 dark:text-cyan-300">
               {role}
             </span>
           </div>
           <p className="mt-3 border-t border-slate-200 pt-2.5 text-[11px] leading-relaxed text-slate-500 dark:border-slate-800/80 dark:text-slate-400">
-            Role-Based Access Control (RBAC) restricts this operational interface to authorized roles.
+            {t.auth.rbacNotice}
           </p>
         </div>
 
@@ -84,7 +86,7 @@ export const Unauthorized: React.FC = () => {
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             <LogOut size={16} />
-            <span>Sign Out & Switch Account</span>
+            <span>{t.auth.signOutBtn}</span>
           </button>
         </div>
       </div>

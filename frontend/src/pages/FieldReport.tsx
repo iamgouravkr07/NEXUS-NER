@@ -713,7 +713,7 @@ function FieldReport() {
                   {t.fieldReport.aiAssistantTitle}
                 </h3>
                 <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">
-                  Advisory Ingestion
+                  {t.fieldReport.advisoryIngestionBadge}
                 </span>
               </div>
               <button
@@ -721,7 +721,7 @@ function FieldReport() {
                 onClick={() => setShowNlpAssistant(!showNlpAssistant)}
                 className="text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               >
-                {showNlpAssistant ? "Hide Assistant" : "Show Assistant"}
+                {showNlpAssistant ? t.fieldReport.hideAssistant : t.fieldReport.showAssistant}
               </button>
             </div>
 
@@ -769,7 +769,7 @@ function FieldReport() {
                       }}
                       className="text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                     >
-                      Clear
+                      {t.common.clear}
                     </button>
                   )}
                 </div>
@@ -779,7 +779,7 @@ function FieldReport() {
                   <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs space-y-3 dark:border-amber-500/30 dark:bg-amber-500/5">
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 pb-2 dark:border-amber-500/10">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-amber-900 dark:text-amber-300">Extraction Candidate Preview</span>
+                        <span className="font-semibold text-amber-900 dark:text-amber-300">{t.incidents.candidateTitle}</span>
                         <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                           {t.fieldReport.aiProvider}: {nlpExtraction.provider === "gemini" ? "Gemini 2.5 Flash" : "Deterministic Fallback Engine"}
                         </span>
@@ -791,11 +791,11 @@ function FieldReport() {
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       <div>
-                        <span className="text-slate-500 dark:text-slate-400 block">Type:</span>
+                        <span className="text-slate-500 dark:text-slate-400 block">{t.incidents.typeLabel}:</span>
                         <span className="font-semibold text-slate-900 capitalize dark:text-white">{nlpExtraction.extraction.incident_type?.replace("_", " ")}</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 dark:text-slate-400 block">Severity:</span>
+                        <span className="text-slate-500 dark:text-slate-400 block">{t.incidents.severityLabel}:</span>
                         <span className="font-semibold text-slate-900 capitalize dark:text-white">{nlpExtraction.extraction.severity}</span>
                       </div>
                       <div>
@@ -803,21 +803,21 @@ function FieldReport() {
                         <span className="font-semibold text-amber-700 dark:text-amber-400">{(nlpExtraction.extraction.confidence * 100).toFixed(0)}%</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 dark:text-slate-400 block">Corridor:</span>
-                        <span className="font-semibold text-slate-900 dark:text-white">{nlpExtraction.extraction.road_corridor || "Not detected"}</span>
+                        <span className="text-slate-500 dark:text-slate-400 block">{t.incidents.corridorLabel}:</span>
+                        <span className="font-semibold text-slate-900 dark:text-white">{nlpExtraction.extraction.road_corridor || t.roads.notAvailable}</span>
                       </div>
                     </div>
 
                     {nlpExtraction.extraction.location_text && (
                       <div>
-                        <span className="text-slate-500 dark:text-slate-400">Location Reference: </span>
+                        <span className="text-slate-500 dark:text-slate-400">{t.incidents.locationRefLabel}: </span>
                         <span className="text-slate-800 dark:text-slate-200 font-medium">{nlpExtraction.extraction.location_text}</span>
                       </div>
                     )}
 
                     {nlpExtraction.warning && (
                       <p className="text-[11px] text-amber-800 italic dark:text-amber-400/80">
-                        Notice: {nlpExtraction.warning}
+                        {t.incidents.noticeLabel}: {nlpExtraction.warning}
                       </p>
                     )}
 
@@ -1074,7 +1074,7 @@ function FieldReport() {
                       {t.fieldReport.takePhotoBtn}
                     </p>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Take photo on device
+                      {t.fieldReport.takePhotoSub}
                     </p>
                   </button>
 
@@ -1090,7 +1090,7 @@ function FieldReport() {
                       {t.fieldReport.photoGalleryBtn}
                     </p>
                     <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Upload local file
+                      {t.fieldReport.uploadGallerySub}
                     </p>
                   </button>
                 </div>
@@ -1133,8 +1133,8 @@ function FieldReport() {
                   <Sparkles size={19} />
                 </div>
                 <div>
-                  <h2 className="font-semibold text-purple-900 dark:text-white">AI Verification</h2>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">Automated incident validation</p>
+                  <h2 className="font-semibold text-purple-900 dark:text-white">{t.fieldReport.aiVerificationTitle}</h2>
+                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{t.fieldReport.aiVerificationSub}</p>
                 </div>
               </div>
             </div>
@@ -1144,9 +1144,9 @@ function FieldReport() {
                 <div className="flex items-center gap-3">
                   <ShieldCheck size={18} className="text-purple-600 dark:text-purple-400" />
                   <div>
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">Verification Pipeline</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{t.fieldReport.verificationPipeline}</p>
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      {isSubmitting ? "Processing submission..." : "Ready for field report"}
+                      {isSubmitting ? t.fieldReport.processingSubmission : t.fieldReport.readyForReport}
                     </p>
                   </div>
                 </div>
@@ -1154,8 +1154,8 @@ function FieldReport() {
 
               <div>
                 <div className="mb-2 flex justify-between text-xs">
-                  <span className="text-slate-600 dark:text-slate-400 font-medium">Image evidence</span>
-                  <span className="text-slate-700 dark:text-slate-300 font-semibold">{photo ? "Attached (Local)" : "Pending"}</span>
+                  <span className="text-slate-600 dark:text-slate-400 font-medium">{t.fieldReport.imageEvidence}</span>
+                  <span className="text-slate-700 dark:text-slate-300 font-semibold">{photo ? t.fieldReport.attachedLocal : t.fieldReport.pendingStatus}</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-800">
                   <div
@@ -1168,9 +1168,9 @@ function FieldReport() {
 
               <div>
                 <div className="mb-2 flex justify-between text-xs">
-                  <span className="text-slate-600 dark:text-slate-400 font-medium">Location validation</span>
+                  <span className="text-slate-600 dark:text-slate-400 font-medium">{t.fieldReport.locationValidation}</span>
                   <span className="text-slate-700 dark:text-slate-300 font-semibold">
-                    {latitude && longitude ? "NER Validated" : "Pending GPS"}
+                    {latitude && longitude ? t.fieldReport.nerValidated : t.fieldReport.pendingGps}
                   </span>
                 </div>
                 <div className="h-1.5 rounded-full bg-slate-200 dark:bg-slate-800">
@@ -1184,7 +1184,7 @@ function FieldReport() {
 
               <div className="border-t border-purple-200 pt-4 dark:border-purple-500/10">
                 <p className="text-xs leading-5 text-slate-600 dark:text-slate-400">
-                  Reports are analyzed with geo-location risk mapping and incident classification before escalating corridor alerts.
+                  {t.fieldReport.verificationDesc}
                 </p>
               </div>
             </div>
@@ -1197,29 +1197,29 @@ function FieldReport() {
                 <LocateFixed size={19} />
               </div>
               <div>
-                <h2 className="font-semibold text-slate-900 dark:text-white">GPS Information</h2>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Current device positioning</p>
+                <h2 className="font-semibold text-slate-900 dark:text-white">{t.fieldReport.gpsInfoTitle}</h2>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.fieldReport.gpsInfoSub}</p>
               </div>
             </div>
 
             <div className="mt-5 space-y-3">
               <div className="flex justify-between rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-transparent dark:bg-slate-950">
-                <span className="text-xs text-slate-500 dark:text-slate-400">Status</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{t.fieldReport.gpsStatusLabel}</span>
                 <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  {latitude && longitude ? "Position Acquired" : "Ready on demand"}
+                  {latitude && longitude ? t.fieldReport.positionAcquired : t.fieldReport.readyOnDemand}
                 </span>
               </div>
 
               <div className="flex justify-between rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-transparent dark:bg-slate-950">
-                <span className="text-xs text-slate-500 dark:text-slate-400">Accuracy</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{t.fieldReport.accuracyLabel}</span>
                 <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
                   {gpsAccuracy ? `±${gpsAccuracy} m` : "—"}
                 </span>
               </div>
 
               <div className="flex justify-between rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-transparent dark:bg-slate-950">
-                <span className="text-xs text-slate-500 dark:text-slate-400">Last update</span>
-                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{gpsTimestamp || "Never"}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400">{t.fieldReport.lastUpdateLabel}</span>
+                <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{gpsTimestamp || t.fieldReport.neverLabel}</span>
               </div>
             </div>
           </div>
@@ -1234,9 +1234,9 @@ function FieldReport() {
               <AlertTriangle size={18} />
             </div>
             <div>
-              <h2 className="font-semibold text-slate-900 dark:text-white">Incoming Citizen Reports (Under Review)</h2>
+              <h2 className="font-semibold text-slate-900 dark:text-white">{t.fieldReport.publicQueueTitle}</h2>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                Ground observations submitted by citizens awaiting field verification
+                {t.fieldReport.publicQueueSub}
               </p>
             </div>
           </div>
@@ -1247,7 +1247,7 @@ function FieldReport() {
             className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300"
           >
             <RefreshCw size={13} className={loadingPublicReports ? "animate-spin" : ""} />
-            <span>Refresh Queue</span>
+            <span>{t.common.refresh}</span>
           </button>
         </div>
 
@@ -1255,7 +1255,7 @@ function FieldReport() {
           {publicReports.length === 0 ? (
             <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
               <CheckCircle2 size={24} className="mx-auto mb-2 text-emerald-600 dark:text-emerald-400/80" />
-              <span>No pending unverified citizen reports in queue. All observations processed.</span>
+              <span>{t.fieldReport.emptyPublicQueue}</span>
             </div>
           ) : (
             publicReports.map((p) => (
@@ -1263,18 +1263,18 @@ function FieldReport() {
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-mono text-xs font-bold text-cyan-700 dark:text-cyan-400">
-                      Report #{p.id}
+                      #{p.id}
                     </span>
                     <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-800 uppercase tracking-wide dark:border-transparent dark:bg-slate-800 dark:text-white">
                       {p.report_type.replace(/_/g, " ")}
                     </span>
                     {p.severity_hint && (
                       <span className="rounded-full bg-amber-100 border border-amber-300 px-2 py-0.5 text-[10px] font-bold text-amber-800 capitalize dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-300">
-                        Perceived: {p.severity_hint}
+                        {t.publicReport.impactLevelLabel}: {p.severity_hint}
                       </span>
                     )}
                     <span className="text-[10px] text-slate-500 dark:text-slate-400">
-                      Submitted {new Date(p.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {t.myReports.submittedOn}: {new Date(p.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
 
@@ -1289,7 +1289,7 @@ function FieldReport() {
                     </span>
                     {p.road_name && (
                       <span className="text-slate-700 font-sans font-medium dark:text-slate-300">
-                        • Corridor: {p.road_name}
+                        • {t.common.corridor}: {p.road_name}
                       </span>
                     )}
                   </div>
@@ -1304,7 +1304,7 @@ function FieldReport() {
                     className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3.5 py-2 text-xs font-bold text-white shadow-md transition disabled:opacity-50"
                   >
                     <CheckCircle2 size={14} />
-                    <span>{publicReportActionId === p.id ? "Processing..." : "Verify & Escalate"}</span>
+                    <span>{publicReportActionId === p.id ? t.fieldReport.processingBtn : t.fieldReport.verifyPublicBtn}</span>
                   </button>
 
                   <button
@@ -1314,7 +1314,7 @@ function FieldReport() {
                     className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-2 text-xs font-semibold text-red-700 transition disabled:opacity-50 dark:border-red-500/40 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-300"
                   >
                     <X size={14} />
-                    <span>Reject</span>
+                    <span>{t.fieldReport.rejectPublicBtn}</span>
                   </button>
                 </div>
               </div>

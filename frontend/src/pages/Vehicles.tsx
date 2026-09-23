@@ -12,6 +12,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
 type BackendVehicle = {
   id: number;
@@ -108,11 +109,37 @@ function Vehicles() {
   const [error, setError] = useState("");
 
   const { getAuthHeader } = useAuth();
+  const { t, formatString } = useLanguage();
   const { subscribe } = useWebSocket();
   const [anomalies, setAnomalies] = useState<
     Record<number, { anomaly_type: string; severity: string; description: string }>
   >({});
   const [driverAssignments, setDriverAssignments] = useState<Record<number, string>>({});
+
+  function getStatusLabel(statusStr: string) {
+    switch (statusStr.toLowerCase()) {
+      case "in_transit":
+      case "moving":
+        return t.vehicles.tabMoving;
+      case "delayed":
+        return t.vehicles.tabDelayed;
+      case "stopped":
+        return t.vehicles.tabStopped;
+      case "offline":
+        return t.vehicles.tabOffline;
+      case "idle":
+        return t.vehicles.tabIdle;
+      default:
+        return formatStatus(statusStr);
+    }
+  }
+
+  const filterLabels: Record<string, string> = {
+    All: t.vehicles.tabAll,
+    Moving: t.vehicles.tabMoving,
+    Delayed: t.vehicles.tabDelayed,
+    Offline: t.vehicles.tabOffline,
+  };
 
   useEffect(() => {
     async function loadVehicles() {
@@ -272,11 +299,10 @@ function Vehicles() {
       {/* Page Header */}
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Vehicles</h1>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">{t.vehicles.title}</h1>
 
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Monitor logistics vehicles and their current movement across the
-            North Eastern Region
+            {t.vehicles.subtitle}
           </p>
         </div>
 
@@ -284,7 +310,7 @@ function Vehicles() {
           <Wifi size={17} className="text-emerald-600 dark:text-emerald-400" />
 
           <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
-            GPS Tracking Active
+            {t.vehicles.liveGpsSignal}
           </span>
         </div>
       </div>
@@ -300,7 +326,7 @@ function Vehicles() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Vehicles</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{t.vehicles.totalVehicles}</p>
 
             <Truck size={20} className="text-cyan-600 dark:text-cyan-400" />
           </div>
@@ -310,13 +336,13 @@ function Vehicles() {
           </p>
 
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Registered vehicles
+            {t.vehicles.totalVehiclesSub}
           </p>
         </div>
 
         <div className="rounded-xl border border-emerald-200 bg-white p-5 shadow-sm dark:border-emerald-500/10 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Moving</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{t.vehicles.tabMoving}</p>
 
             <Navigation size={20} className="text-emerald-600 dark:text-emerald-400" />
           </div>
@@ -325,12 +351,12 @@ function Vehicles() {
             {moving}
           </p>
 
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Currently on route</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.vehicles.inTransitSub}</p>
         </div>
 
         <div className="rounded-xl border border-amber-200 bg-white p-5 shadow-sm dark:border-amber-500/10 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Delayed</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{t.vehicles.tabDelayed}</p>
 
             <Clock3 size={20} className="text-amber-600 dark:text-amber-400" />
           </div>
@@ -340,13 +366,13 @@ function Vehicles() {
           </p>
 
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Requiring attention
+            {t.vehicles.delayedSub}
           </p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Offline</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{t.vehicles.tabOffline}</p>
 
             <WifiOff size={20} className="text-slate-400 dark:text-slate-500" />
           </div>
@@ -356,7 +382,7 @@ function Vehicles() {
           </p>
 
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            No recent GPS signal
+            {t.vehicles.stoppedOfflineSub}
           </p>
         </div>
       </div>
@@ -371,7 +397,7 @@ function Vehicles() {
               type="text"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search vehicle, type or cargo..."
+              placeholder={t.vehicles.searchPlaceholder}
               className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-600 lg:w-80"
             />
           </div>
@@ -389,7 +415,7 @@ function Vehicles() {
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
                   }`}
                 >
-                  {filter}
+                  {filterLabels[filter] || filter}
                 </button>
               ),
             )}
@@ -404,27 +430,27 @@ function Vehicles() {
             <thead className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/50">
               <tr>
                 <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Vehicle
+                  {t.vehicles.colVehicle}
                 </th>
 
                 <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Current Location
+                  {t.vehicles.colGps}
                 </th>
 
                 <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Cargo
+                  {t.vehicles.colCargo}
                 </th>
 
                 <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Vehicle Type
+                  {t.vehicles.colType}
                 </th>
 
                 <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Status
+                  {t.vehicles.colStatus}
                 </th>
 
                 <th className="px-5 py-4 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Action
+                  {t.vehicles.colActions}
                 </th>
               </tr>
             </thead>
@@ -436,7 +462,7 @@ function Vehicles() {
                     colSpan={6}
                     className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400"
                   >
-                    Loading vehicles from backend...
+                    {t.common.loading}
                   </td>
                 </tr>
               ) : filteredVehicles.length === 0 ? (
@@ -445,7 +471,7 @@ function Vehicles() {
                     colSpan={6}
                     className="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400"
                   >
-                    No vehicles found in the backend database.
+                    {t.vehicles.noVehiclesFound}
                   </td>
                 </tr>
               ) : (
@@ -471,7 +497,7 @@ function Vehicles() {
                             </p>
 
                             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                              ID: {vehicle.id} {driverAssignments[vehicle.id] && <span className="font-mono text-cyan-700 dark:text-cyan-400">• Driver: {driverAssignments[vehicle.id]}</span>}
+                              ID: {vehicle.id} {driverAssignments[vehicle.id] && <span className="font-mono text-cyan-700 dark:text-cyan-400">• {t.vehicles.assignmentDetails}: {driverAssignments[vehicle.id]}</span>}
                             </p>
                           </div>
                         </div>
@@ -488,7 +514,7 @@ function Vehicles() {
                               ? `${vehicle.latitude.toFixed(
                                   4,
                                 )}, ${vehicle.longitude.toFixed(4)}`
-                              : "Location unavailable"}
+                              : t.vehicles.lastSeen}
                           </span>
                         </div>
                       </td>
@@ -501,7 +527,7 @@ function Vehicles() {
                           </p>
 
                           <p className="mt-1 text-xs capitalize text-slate-500 dark:text-slate-400">
-                            Priority: {vehicle.cargo_priority}
+                            {t.vehicles.colPriority}: {vehicle.cargo_priority}
                           </p>
                         </div>
                       </td>
@@ -522,7 +548,7 @@ function Vehicles() {
                             )}`}
                           >
                             <StatusIcon status={status} />
-                            {formatStatus(vehicle.status)}
+                            {getStatusLabel(vehicle.status)}
                           </span>
                           {anomalies[vehicle.id] && (
                             <span
@@ -549,7 +575,7 @@ function Vehicles() {
                           }}
                           className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-50 dark:border-slate-700 dark:bg-transparent dark:text-cyan-400 dark:hover:border-cyan-500/40 dark:hover:bg-cyan-500/10"
                         >
-                          View Details
+                          {t.vehicles.viewDetails}
                         </button>
                       </td>
                     </tr>
@@ -563,13 +589,12 @@ function Vehicles() {
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-slate-200 px-5 py-4 dark:border-slate-800">
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Showing {filteredVehicles.length} of {vehicles.length} registered
-            vehicles
+            {formatString(t.incidents.showingCount, { count: filteredVehicles.length, total: vehicles.length })}
           </p>
 
           <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
             <span className="h-2 w-2 rounded-full bg-emerald-500 dark:bg-emerald-400" />
-            {moving} vehicles transmitting GPS
+            {moving} {t.vehicles.inTransitSub}
           </div>
         </div>
       </div>
@@ -583,12 +608,11 @@ function Vehicles() {
 
         <div>
           <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-400">
-            Live vehicle tracking
+            {t.vehicles.title}
           </p>
 
           <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
-            Vehicle information is now being loaded directly from the NEXUS-NER
-            backend. GPS coordinates are shown when available.
+            {t.vehicles.subtitle}
           </p>
         </div>
       </div>
@@ -607,7 +631,7 @@ function Vehicles() {
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5 dark:border-slate-800">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-cyan-700 dark:text-cyan-400">
-                  Vehicle Details
+                  {t.vehicles.modalTitle}
                 </p>
 
                 <h2 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
@@ -648,35 +672,35 @@ function Vehicles() {
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Vehicle ID</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.unitDetails}</p>
                 <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.id}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Vehicle Number</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.colVehicle}</p>
                 <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.vehicle_number}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Assigned Driver</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.assignmentDetails}</p>
                 <p className="mt-2 font-mono text-sm font-medium text-cyan-700 dark:text-cyan-300">
-                  {driverAssignments[selectedVehicle.id] || "No Driver Assigned"}
+                  {driverAssignments[selectedVehicle.id] || t.vehicles.unassignedTrip}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Vehicle Type</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.colType}</p>
                 <p className="mt-2 text-sm font-semibold capitalize text-slate-900 dark:text-white">
                   {selectedVehicle.vehicle_type}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Status</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.colStatus}</p>
                 <div className="mt-2">
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusStyles(
@@ -686,20 +710,20 @@ function Vehicles() {
                     <StatusIcon
                       status={displayStatus(selectedVehicle.status)}
                     />
-                    {formatStatus(selectedVehicle.status)}
+                    {getStatusLabel(selectedVehicle.status)}
                   </span>
                 </div>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Cargo Type</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.cargoDetails}</p>
                 <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.cargo_type}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Cargo Priority</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.colPriority}</p>
                 <p className="mt-2 text-sm font-semibold capitalize text-slate-900 dark:text-white">
                   {selectedVehicle.cargo_priority}
                 </p>
@@ -708,24 +732,24 @@ function Vehicles() {
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:col-span-2">
                 <div className="flex items-center gap-2">
                   <MapPin size={16} className="text-cyan-600 dark:text-cyan-400" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400">GPS Location</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.telemetryDetails}</p>
                 </div>
 
                 <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.latitude !== null &&
                   selectedVehicle.longitude !== null
                     ? `${selectedVehicle.latitude}, ${selectedVehicle.longitude}`
-                    : "GPS location unavailable"}
+                    : t.vehicles.lastSeen}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:col-span-2">
-                <p className="text-xs text-slate-500 dark:text-slate-400">Current Trip</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t.vehicles.colTrip}</p>
 
                 <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
                   {selectedVehicle.current_trip_id !== null
                     ? `Trip #${selectedVehicle.current_trip_id}`
-                    : "No active trip assigned"}
+                    : t.vehicles.unassignedTrip}
                 </p>
               </div>
             </div>
@@ -738,7 +762,7 @@ function Vehicles() {
                 onClick={() => setSelectedVehicle(null)}
                 className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-500 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
               >
-                Close
+                {t.common.close}
               </button>
             </div>
           </div>

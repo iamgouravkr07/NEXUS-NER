@@ -30,6 +30,7 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { MapErrorBoundary } from "../components/MapErrorBoundary";
 import { networkService } from "../services/network";
@@ -297,6 +298,7 @@ function parseCoordinates(geometry: any): [number, number][] {
 function RoutePlanner() {
   const [searchParams] = useSearchParams();
   const { getAuthHeader } = useAuth();
+  const { t } = useLanguage();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
@@ -1024,11 +1026,11 @@ function RoutePlanner() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Route Planner
+            {t.routes.title}
           </h1>
 
           <p className="mt-2 text-slate-500 dark:text-slate-400">
-            Interactive route planning for NER logistics operations
+            {t.routes.subtitle}
           </p>
         </div>
 
@@ -1037,7 +1039,7 @@ function RoutePlanner() {
           className="flex w-fit items-center gap-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 px-4 py-2 text-sm font-medium transition shadow-sm"
         >
           <RefreshCw size={16} />
-          Refresh Data
+          {t.common.refresh}
         </button>
       </div>
 
@@ -1081,7 +1083,7 @@ function RoutePlanner() {
             <Truck size={18} className="text-cyan-600 dark:text-cyan-400" />
 
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Select Vehicle
+              {t.routes.assignedVehicleLabel}
             </p>
           </div>
 
@@ -1094,7 +1096,7 @@ function RoutePlanner() {
             className="w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white px-3 py-3 text-sm outline-none focus:border-blue-500"
           >
             {loadingVehicles ? (
-              <option>Loading vehicles...</option>
+              <option>{t.common.loading}</option>
             ) : (
               vehicles.map((vehicle) => (
                 <option key={vehicle.id} value={vehicle.id}>
@@ -1111,17 +1113,17 @@ function RoutePlanner() {
             <MapPin size={18} className="text-emerald-600 dark:text-emerald-400" />
 
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Origin
+              {t.dashboard.legendOrigin}
             </p>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950 px-3 py-3">
             <p className="text-sm font-medium text-slate-900 dark:text-white">
-              {origin?.name ?? "Select a trip"}
+              {origin?.name ?? t.routes.selectTripPrompt}
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
-              {selectedTrip?.origin ?? "No origin selected"}
+              {selectedTrip?.origin ?? t.routes.selectTripPrompt}
             </p>
           </div>
         </div>
@@ -1132,18 +1134,18 @@ function RoutePlanner() {
             <MapPin size={18} className="text-red-500 dark:text-red-400" />
 
             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Destination
+              {t.dashboard.legendDestination}
             </p>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950 px-3 py-3">
             <p className="text-sm font-medium text-slate-900 dark:text-white">
-              {destination?.name ?? "Select a trip"}
+              {destination?.name ?? t.routes.selectTripPrompt}
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
               {selectedTrip?.destination ??
-                "No destination selected"}
+                t.routes.selectTripPrompt}
             </p>
           </div>
         </div>
@@ -1159,11 +1161,11 @@ function RoutePlanner() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-slate-900 dark:text-white">
-                    Available Trips
+                    {t.routes.tripListTitle}
                   </h2>
 
                   <p className="mt-1 text-xs text-slate-500">
-                    Click any trip to load it on the map
+                    {t.routes.selectTripPrompt}
                   </p>
                 </div>
 
@@ -1182,7 +1184,7 @@ function RoutePlanner() {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search vehicle, route, cargo..."
+                  placeholder={t.routes.searchTrip}
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white py-2.5 pl-9 pr-3 text-sm outline-none placeholder:text-slate-400 focus:border-blue-500"
                 />
               </div>
@@ -1191,11 +1193,11 @@ function RoutePlanner() {
             <div className="max-h-[430px] overflow-y-auto p-3">
               {loadingTrips ? (
                 <div className="p-6 text-center text-sm text-slate-500">
-                  Loading trips...
+                  {t.common.loading}
                 </div>
               ) : filteredTrips.length === 0 ? (
                 <div className="p-6 text-center text-sm text-slate-500">
-                  No trips found.
+                  {t.routes.noTripsFound}
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -1281,7 +1283,7 @@ function RoutePlanner() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-slate-900 dark:text-white">
-                    Selected Trip
+                    {t.routes.tripListTitle}
                   </h2>
 
                   <p className="mt-1 text-xs text-slate-500">
@@ -1307,7 +1309,7 @@ function RoutePlanner() {
 
                   <div>
                     <p className="text-[11px] uppercase text-slate-500">
-                      Origin
+                      {t.dashboard.legendOrigin}
                     </p>
 
                     <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
@@ -1326,7 +1328,7 @@ function RoutePlanner() {
 
                   <div>
                     <p className="text-[11px] uppercase text-slate-500">
-                      Destination
+                      {t.dashboard.legendDestination}
                     </p>
 
                     <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
@@ -1339,12 +1341,12 @@ function RoutePlanner() {
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-3">
                   <p className="text-[11px] text-slate-500">
-                    Distance
+                    {t.routes.distanceLabel}
                   </p>
 
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
                     {routeDistanceKm !== null
-                      ? routeDistanceKm.toFixed(1)
+                      ? `${routeDistanceKm.toFixed(1)} km`
                       : selectedTrip.route_distance_km != null
                       ? `${selectedTrip.route_distance_km} km`
                       : "Direct corridor"}
@@ -1353,7 +1355,7 @@ function RoutePlanner() {
 
                 <div className="rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-3">
                   <p className="text-[11px] text-slate-500">
-                    ETA
+                    {t.routes.etaLabel}
                   </p>
 
                   <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
@@ -1374,7 +1376,7 @@ function RoutePlanner() {
 
                 <div>
                   <p className="text-[11px] text-slate-500">
-                    Cargo
+                    {t.vehicles.cargoDetails}
                   </p>
 
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200">
@@ -1392,7 +1394,7 @@ function RoutePlanner() {
                     className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-blue-500 disabled:opacity-50 shadow-sm"
                   >
                     <RouteIcon size={16} />
-                    {routing && !isRerouted ? "Calculating..." : "Primary Route"}
+                    {routing && !isRerouted ? t.routes.calculatingBtn : t.routes.calculateBtn}
                   </button>
 
                   <button
@@ -1406,10 +1408,10 @@ function RoutePlanner() {
                   >
                     <RefreshCw size={16} className={routing ? "animate-spin" : ""} />
                     {routing
-                      ? "Evaluating Detour..."
+                      ? t.routes.reroutingBtn
                       : isRerouted
-                      ? "Detour Active"
-                      : "Execute Dynamic Detour"}
+                      ? t.routes.safeDetourActive
+                      : t.routes.rerouteBtn}
                   </button>
                 </div>
 
@@ -1417,12 +1419,12 @@ function RoutePlanner() {
                 {isRerouted ? (
                   <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300 p-2.5 text-xs">
                     <CheckCircle2 size={15} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
-                    <span>Dynamic detour active • Status: Rerouting via safe alternate corridor</span>
+                    <span>{t.routes.safeDetourActive} • {t.routes.mapSubActive}</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-50 text-amber-800 dark:bg-amber-950/20 dark:text-amber-300/90 p-2.5 text-xs">
                     <AlertTriangle size={15} className="shrink-0 text-amber-600 dark:text-amber-400" />
-                    <span>Corridor hazard on NH-15 • Click Execute Dynamic Detour to bypass</span>
+                    <span>{t.routes.routeBlockedDelayed} • {t.routes.rerouteBtn}</span>
                   </div>
                 )}
               </div>
@@ -1438,8 +1440,8 @@ function RoutePlanner() {
                     <Navigation size={18} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900 dark:text-white">Live Vehicle Tracking</h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">Hardware & Telematics Telemetry</p>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">{t.vehicles.title}</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{t.vehicles.subtitle}</p>
                   </div>
                 </div>
 
@@ -1457,27 +1459,27 @@ function RoutePlanner() {
               {/* Coordinates Display Card */}
               <div className="rounded-lg border border-cyan-200 bg-cyan-50/50 dark:border-cyan-500/20 dark:bg-cyan-950/20 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-cyan-800 dark:text-cyan-300/80">GPS Coordinates</span>
+                  <span className="text-xs font-medium text-cyan-800 dark:text-cyan-300/80">{t.vehicles.telemetryDetails}</span>
                   <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     {selectedVehicle.last_gps_timestamp
                       ? new Date(selectedVehicle.last_gps_timestamp).toLocaleTimeString()
-                      : "Live Stream"}
+                      : t.vehicles.liveGpsSignal}
                   </span>
                 </div>
                 <div className="mt-2 grid grid-cols-3 gap-2 font-mono text-xs text-slate-900 dark:text-cyan-200">
                   <div className="rounded border border-cyan-100 dark:border-transparent bg-white dark:bg-slate-950/80 p-2">
-                    <span className="block text-[10px] text-slate-500">LATITUDE</span>
+                    <span className="block text-[10px] text-slate-500">{t.fieldReport.latitudeLabel}</span>
                     <span className="font-semibold">{selectedVehicle.latitude.toFixed(5)}°</span>
                   </div>
                   <div className="rounded border border-cyan-100 dark:border-transparent bg-white dark:bg-slate-950/80 p-2">
-                    <span className="block text-[10px] text-slate-500">LONGITUDE</span>
+                    <span className="block text-[10px] text-slate-500">{t.fieldReport.longitudeLabel}</span>
                     <span className="font-semibold">{selectedVehicle.longitude.toFixed(5)}°</span>
                   </div>
                   <div className="rounded border border-cyan-100 dark:border-transparent bg-white dark:bg-slate-950/80 p-2 text-right">
-                    <span className="block text-[10px] text-slate-500">SIGNAL</span>
+                    <span className="block text-[10px] text-slate-500">{t.common.status}</span>
                     <span className="inline-flex items-center gap-1 font-sans text-[11px] text-emerald-600 dark:text-emerald-400">
                       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" />
-                      Active
+                      {t.common.active}
                     </span>
                   </div>
                 </div>
@@ -1486,15 +1488,15 @@ function RoutePlanner() {
               {/* Vehicle & Trip Info */}
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-2.5">
-                  <span className="text-slate-500">Unit ID</span>
+                  <span className="text-slate-500">{t.vehicles.unitDetails}</span>
                   <p className="mt-0.5 font-medium text-slate-800 dark:text-slate-200">
                     {selectedVehicle.vehicle_number} ({selectedVehicle.vehicle_type})
                   </p>
                 </div>
                 <div className="rounded-lg border border-slate-100 dark:border-transparent bg-slate-50 dark:bg-slate-950 p-2.5">
-                  <span className="text-slate-500">Assigned Trip</span>
+                  <span className="text-slate-500">{t.vehicles.assignmentDetails}</span>
                   <p className="mt-0.5 font-medium text-slate-800 dark:text-slate-200">
-                    {selectedTrip ? `Trip #${selectedTrip.id}` : "Idle"}
+                    {selectedTrip ? `Trip #${selectedTrip.id}` : t.vehicles.unassignedTrip}
                   </p>
                 </div>
               </div>
@@ -1504,7 +1506,7 @@ function RoutePlanner() {
                 <div className="flex items-center justify-between text-xs">
                   <span className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
                     <Play size={13} className="text-cyan-600 dark:text-cyan-400" />
-                    GPS Simulator
+                    {t.routes.simulatorTitle}
                   </span>
                   <div className="flex items-center gap-1">
                     {[1, 2, 5].map((spd) => (
@@ -1535,7 +1537,7 @@ function RoutePlanner() {
                     }`}
                   >
                     {isSimulating ? <Pause size={14} /> : <Play size={14} />}
-                    {isSimulating ? "Pause Simulator" : "Start Simulation"}
+                    {isSimulating ? t.routes.pauseSim : t.routes.startSim}
                   </button>
 
                   <button
@@ -1544,7 +1546,7 @@ function RoutePlanner() {
                     className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 py-2 text-xs font-medium transition dark:hover:bg-slate-700"
                   >
                     <RotateCcw size={14} />
-                    Reset Start
+                    {t.routes.resetSim}
                   </button>
                 </div>
               </div>
@@ -1557,13 +1559,13 @@ function RoutePlanner() {
           <div className="flex flex-col gap-3 border-b border-slate-200 p-5 dark:border-slate-800 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="font-semibold text-slate-900 dark:text-white">
-                Route GIS Visualization
+                {t.routes.mapTitle}
               </h2>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {isRerouted
-                  ? "Dynamic detour active — comparing blocked corridor against safe road alternative"
-                  : "Select a trip and calculate route or evaluate dynamic reroute"}
+                  ? t.routes.mapSubActive
+                  : t.routes.mapSubIdle}
               </p>
             </div>
 
@@ -1573,18 +1575,18 @@ function RoutePlanner() {
                   rerouteResult?.new_route ? (
                     <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
                       <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400" />
-                      <span>Safe Detour Active</span>
+                      <span>{t.routes.safeDetourActive}</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-medium text-red-700 dark:text-red-400">
                       <ShieldAlert size={14} className="text-red-600 dark:text-red-400" />
-                      <span>Route Blocked - Delayed</span>
+                      <span>{t.routes.routeBlockedDelayed}</span>
                     </div>
                   )
                 ) : (
                   <div className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
                     <CheckCircle2 size={14} className="text-blue-600 dark:text-blue-400" />
-                    <span>Route Calculated</span>
+                    <span>{t.routes.routeCalculated}</span>
                   </div>
                 )}
               </div>
@@ -1592,7 +1594,7 @@ function RoutePlanner() {
           </div>
 
           <div className="relative h-[650px]">
-            <MapErrorBoundary fallbackMessage="Map tiles unavailable — offline mode">
+            <MapErrorBoundary fallbackMessage={t.routes.offlineBanner}>
               <MapContainer
                 center={[26.2, 92.5]}
                 zoom={6}
@@ -1914,10 +1916,6 @@ function RoutePlanner() {
         const deltaEtaStr = deltaEtaNum > 0 ? `+${deltaEtaNum}` : `${deltaEtaNum}`;
         const deltaRiskNum = Number((origRisk - detourRisk).toFixed(1));
 
-        const obstructionTitle =
-          rerouteResult.blockage?.title ||
-          "verified landslide on NH-15 near Kharupetia";
-
         return (
           <div className="space-y-5 rounded-xl border border-amber-300 bg-amber-50/40 p-6 shadow-sm dark:border-amber-500/30 dark:bg-slate-900">
             {/* Incident / Detour Header */}
@@ -1930,19 +1928,19 @@ function RoutePlanner() {
                   <div className="flex items-center gap-2">
                     <h3 className="font-bold text-amber-900 dark:text-amber-300">
                       {rerouteResult.new_route
-                        ? "Corridor Blockage Intercepted — Dynamic Detour Active"
-                        : "Corridor Blockage Intercepted — No Safe Detour"}
+                        ? t.routes.comparisonTitle
+                        : t.routes.routeBlockedDelayed}
                     </h3>
                     <span
                       className={`rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${getStatusStyle(
                         selectedTrip.status
                       )}`}
                     >
-                      {selectedTrip.status === "in_transit" ? "Rerouting / Detour Active" : selectedTrip.status}
+                      {selectedTrip.status === "in_transit" ? t.routes.safeDetourActive : selectedTrip.status}
                     </span>
                   </div>
                   <p className="mt-1 text-xs text-slate-700 dark:text-slate-300">
-                    {rerouteResult.reason || "Trip dynamically rerouted around confirmed hazardous corridor."}
+                    {rerouteResult.reason || t.routes.comparisonSub}
                   </p>
                   {rerouteResult.blockage && (
                     <p className="mt-1 text-[11px] text-amber-800 dark:text-amber-400/80 font-medium">
@@ -1955,7 +1953,7 @@ function RoutePlanner() {
 
               <div className="flex items-center gap-3 self-end sm:self-center">
                 <span className="rounded-md border border-emerald-500/30 bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300">
-                  Detour Active
+                  {t.routes.safeDetourActive}
                 </span>
                 <span className="rounded-md border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
                   Reroute #{selectedTrip.reroute_count ?? rerouteResult.reroute_count ?? 1}
@@ -1969,7 +1967,7 @@ function RoutePlanner() {
               <div className="rounded-lg border border-red-200 bg-white p-4 shadow-sm dark:border-red-500/30 dark:bg-slate-950">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                    Original Route
+                    {t.routes.originalBlocked}
                   </span>
                   <span className="rounded-full bg-red-100 border border-red-200 px-2 py-0.5 text-[10px] font-bold text-red-700 dark:bg-red-500/20 dark:border-red-500/30 dark:text-red-400">
                     Risk: {origRisk.toFixed(1)} ({origRiskLevel})
@@ -1977,21 +1975,21 @@ function RoutePlanner() {
                 </div>
                 <div className="mt-3 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Distance:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.routes.distanceLabel}:</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
                       {origDist.toFixed(1)} km
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Original ETA:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.routes.etaLabel}:</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
                       {formatDuration(origEta)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Corridor Status:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.common.status}:</span>
                     <span className="font-bold capitalize text-red-600 dark:text-red-400">
-                      Impassable / Blocked
+                      {t.routes.routeBlockedDelayed}
                     </span>
                   </div>
                 </div>
@@ -2001,7 +1999,7 @@ function RoutePlanner() {
               <div className="rounded-lg border border-emerald-300 bg-white p-4 shadow-sm dark:border-emerald-500/40 dark:bg-slate-950">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                    Recommended Detour
+                    {t.routes.detourProposed}
                   </span>
                   <span className="rounded-full bg-emerald-100 border border-emerald-300 px-2 py-0.5 text-[10px] font-bold text-emerald-800 dark:bg-emerald-500/20 dark:border-emerald-500/30 dark:text-emerald-300">
                     Risk: {detourRisk.toFixed(1)} ({detourRiskLevel})
@@ -2009,21 +2007,21 @@ function RoutePlanner() {
                 </div>
                 <div className="mt-3 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Distance:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.routes.distanceLabel}:</span>
                     <span className="font-semibold text-emerald-700 dark:text-emerald-300">
                       {detourDist.toFixed(1)} km
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Updated ETA:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.routes.etaLabel}:</span>
                     <span className="font-semibold text-slate-900 dark:text-white">
                       {formatDuration(detourEta)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Corridor Status:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.common.status}:</span>
                     <span className="font-bold capitalize text-emerald-600 dark:text-emerald-400">
-                      Clear & Navigable
+                      {t.routes.safeDetourActive}
                     </span>
                   </div>
                 </div>
@@ -2033,7 +2031,7 @@ function RoutePlanner() {
               <div className="rounded-lg border border-purple-200 bg-white p-4 shadow-sm dark:border-purple-500/30 dark:bg-slate-950">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-purple-700 dark:text-purple-300">
-                    Operational Deltas
+                    {t.routes.comparisonSub}
                   </span>
                   <span className="rounded-full bg-purple-100 border border-purple-200 px-2 py-0.5 text-[10px] font-bold text-purple-700 dark:bg-purple-500/20 dark:border-purple-500/30 dark:text-purple-300">
                     Safety Delta
@@ -2041,19 +2039,19 @@ function RoutePlanner() {
                 </div>
                 <div className="mt-3 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Distance Delta:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.routes.distanceDelta}:</span>
                     <span className="font-bold text-amber-600 dark:text-amber-400">
                       {deltaDistStr} km
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Time Impact:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.routes.timeDelta}:</span>
                     <span className="font-bold text-amber-600 dark:text-amber-400">
                       {deltaEtaStr} min
                     </span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Risk Reduction:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t.routes.riskDelta}:</span>
                     <span className="font-bold text-emerald-600 dark:text-emerald-400">
                       {origRiskLevel} → {detourRiskLevel} (-{deltaRiskNum} pts)
                     </span>
@@ -2068,7 +2066,7 @@ function RoutePlanner() {
                 <div className="flex items-center gap-2">
                   <Sparkles size={17} className="text-blue-600 dark:text-cyan-400" />
                   <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider dark:text-white">
-                    Why This Route? — AI Operator Trade-Off Analysis
+                    {t.routes.aiTradeOffTitle}
                   </h4>
                 </div>
                 <span className="rounded bg-blue-100 border border-blue-200 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-500/20 dark:border-blue-500/30 dark:text-cyan-300">
@@ -2077,22 +2075,20 @@ function RoutePlanner() {
               </div>
 
               <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
-                Avoids <strong className="text-red-600 dark:text-red-400">{obstructionTitle}</strong>.
-                Detours via <strong className="text-blue-700 dark:text-cyan-300">Mangaldai-Tangla-Tezpur</strong> secondary corridor.
-                Adds <strong className="text-amber-700 dark:text-amber-400">{deltaDistStr} km</strong> and <strong className="text-amber-700 dark:text-amber-400">{deltaEtaStr} min</strong>, but eliminates critical corridor hazard and reduces risk by <strong className="text-emerald-700 dark:text-emerald-400">{deltaRiskNum} points</strong>.
+                {t.routes.tradeOffText}
               </p>
 
               <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-3 text-xs">
                 <div className="rounded border border-slate-200 bg-white/80 p-2.5 dark:border-slate-800 dark:bg-slate-900/80">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Priority Cargo Safety</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">{t.routes.priorityBadge}</span>
                   <span className="text-slate-800 dark:text-slate-200 font-medium">{selectedTrip.cargo_type}</span>
                 </div>
                 <div className="rounded border border-slate-200 bg-white/80 p-2.5 dark:border-slate-800 dark:bg-slate-900/80">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Corridor Alternatives</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">{t.routes.riskAvoidance}</span>
                   <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{rerouteResult.safe_alternatives_found ?? 1} safe path confirmed</span>
                 </div>
                 <div className="rounded border border-slate-200 bg-white/80 p-2.5 dark:border-slate-800 dark:bg-slate-900/80">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">Vehicle Telemetry</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-semibold">{t.vehicles.telemetryDetails}</span>
                   <span className="text-cyan-700 dark:text-cyan-400 font-semibold">{selectedVehicle?.vehicle_number || "AS-01-BX-4091"} synced</span>
                 </div>
               </div>
@@ -2107,7 +2103,7 @@ function RoutePlanner() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="font-semibold text-slate-900 dark:text-white">
-                Route Calculation Result
+                {t.routes.resultTitle}
               </h2>
 
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -2119,7 +2115,7 @@ function RoutePlanner() {
               <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-transparent dark:bg-slate-950">
                 <RouteIcon size={17} className="text-blue-600 dark:text-blue-400" />
                 <div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Distance</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">{t.routes.distanceLabel}</p>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     {routeDistanceKm !== null
                       ? `${routeDistanceKm.toFixed(1)} km`
@@ -2133,7 +2129,7 @@ function RoutePlanner() {
               <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-transparent dark:bg-slate-950">
                 <Clock3 size={17} className="text-orange-600 dark:text-orange-400" />
                 <div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">ETA</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">{t.routes.etaLabel}</p>
                   <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     {formatDuration(
                       routeDurationMinutes !== null
@@ -2147,7 +2143,7 @@ function RoutePlanner() {
               <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-transparent dark:bg-slate-950">
                 <CheckCircle2 size={17} className="text-emerald-600 dark:text-emerald-400" />
                 <div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Status</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">{t.routes.statusLabel}</p>
                   <p className="text-sm font-semibold capitalize text-slate-900 dark:text-white">
                     {selectedTrip.status}
                   </p>
@@ -2164,7 +2160,7 @@ function RoutePlanner() {
                 </div>
 
                 <div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Assigned Vehicle</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t.routes.assignedVehicleLabel}</p>
                   <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {selectedVehicle?.vehicle_number ??
                       (selectedTrip.vehicle_id === 472 ? "AS-01-BX-4091" : `Vehicle #${selectedTrip.vehicle_id}`)}
@@ -2195,31 +2191,28 @@ function RoutePlanner() {
 
           <div>
             <h3 className="font-semibold text-purple-900 dark:text-purple-300">
-              AI Risk-Aware GIS Rerouting Engine Active
+              {t.routes.gisBannerTitle}
             </h3>
 
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">
-              Connected to backend PostGIS spatial database and OSRM routing engine.
-              The planner dynamically computes perpendicular corridor detours around
-              verified landslides, floods, and road blockages, rejecting any detour that
-              intersects active hazard zones.
+              {t.routes.gisBannerDesc}
             </p>
 
             <div className="mt-3 flex flex-wrap gap-2">
               <span className="rounded-full border border-emerald-200 bg-white px-3 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-400">
-                OSRM Routing Engine: Online
+                {t.routes.osrmStatus}
               </span>
 
               <span className="rounded-full border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-500/30 dark:bg-slate-900 dark:text-blue-400">
-                GIS Detour Corridor Snapping: Active
+                {t.routes.corridorSnapping}
               </span>
 
               <span className="rounded-full border border-purple-200 bg-white px-3 py-1 text-xs font-medium text-purple-700 dark:border-purple-500/30 dark:bg-slate-900 dark:text-purple-400">
-                AI Risk Scoring: Real-time
+                {t.routes.aiRiskScoring}
               </span>
 
               <span className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-medium text-amber-700 dark:border-amber-500/30 dark:bg-slate-900 dark:text-amber-400">
-                Dynamic Hazard Avoidance: Enabled
+                {t.routes.hazardAvoidance}
               </span>
             </div>
           </div>

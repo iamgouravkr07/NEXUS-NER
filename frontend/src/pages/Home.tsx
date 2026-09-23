@@ -11,6 +11,7 @@ import {
   CloudRain,
   Droplets,
   Eye,
+  LogIn,
   MapPin,
   Navigation,
   Radio,
@@ -267,6 +268,7 @@ function StatCard({
   icon,
   badgeText,
   badgeType = "info",
+  postgisLabel = "PostGIS Live",
 }: {
   title: string;
   value: string | number;
@@ -274,6 +276,7 @@ function StatCard({
   icon: React.ReactNode;
   badgeText?: string;
   badgeType?: "critical" | "warning" | "success" | "info";
+  postgisLabel?: string;
 }) {
   const badgeColors = {
     critical: "border-red-500/30 bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400",
@@ -304,7 +307,7 @@ function StatCard({
             <span className="h-1.5 w-1.5 rounded-full bg-current" />
             {badgeText}
           </span>
-          <span className="text-[10px] text-slate-400 shrink-0">PostGIS Live</span>
+          <span className="text-[10px] text-slate-400 shrink-0">{postgisLabel}</span>
         </div>
       )}
     </div>
@@ -772,7 +775,9 @@ function DriverMissionCockpit({
 function Home() {
   const { user, getAuthHeader } = useAuth();
   const { subscribe } = useWebSocket();
+  const { t, formatString } = useLanguage();
   const isDriver = user?.role === "DRIVER";
+  const isOperator = user?.role === "ADMIN" || user?.role === "CONTROL_OPERATOR" || user?.role === "FIELD_OFFICER";
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -819,6 +824,10 @@ function Home() {
   const [predictiveError, setPredictiveError] = useState<string | null>(null);
 
   const fetchPredictiveRisk = useCallback(async (idx: number) => {
+    if (!user || user.role === "PUBLIC") {
+      setLoadingPredictive(false);
+      return;
+    }
     const hub = WEATHER_HUBS[idx];
     setLoadingPredictive(true);
     setPredictiveError(null);
@@ -833,7 +842,7 @@ function Home() {
     } finally {
       setLoadingPredictive(false);
     }
-  }, [roads]);
+  }, [roads, user]);
 
   useEffect(() => {
     fetchHubWeather(selectedHubIdx);
@@ -927,6 +936,22 @@ function Home() {
   const loadDashboard = useCallback(async () => {
     try {
       const authHeaders = getAuthHeader();
+
+      // If user is unauthenticated guest or public citizen, fetch ONLY public roads (never call protected operational endpoints)
+      if (!user || user.role === "PUBLIC") {
+        const roadsResponse = await fetch(`${API_URL}/roads/`, { headers: authHeaders }).catch(() => null);
+        if (roadsResponse && roadsResponse.ok) {
+          const roadsData = await roadsResponse.json();
+          if (Array.isArray(roadsData)) {
+            setRoads(roadsData);
+          }
+        }
+        setBackendOnline(true);
+        setLoading(false);
+        setLoadingAlerts(false);
+        return;
+      }
+
       const [vehicleResponse, incidentResponse, alertResponse, tripsResponse, roadsResponse, assignResponse, summaryResponse] =
         await Promise.all([
           fetch(`${API_URL}/vehicles/`, { headers: authHeaders }),
@@ -988,7 +1013,7 @@ function Home() {
       setLoading(false);
       setLoadingAlerts(false);
     }
-  }, [getAuthHeader]);
+  }, [getAuthHeader, user]);
 
   useEffect(() => {
     if (isDriver) {
@@ -1178,7 +1203,7 @@ function Home() {
             driverUsername={user?.username || driverAssignment?.driver_username}
           />
         </div>
-      ) : (
+      ) : isOperator ? (
         /* Control Tower Dashboard for Operators and Admins */
         <div className="space-y-6">
           {/* COMPACT OPERATIONAL STATUS STRIP (Replaces duplicate Control Tower title) */}
@@ -1186,28 +1211,28 @@ function Home() {
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-300">
             <Activity size={14} className="text-cyan-600 dark:text-cyan-400" />
-            <span>NEXUS-NER Control Central</span>
+            <span>{t.dashboard.controlCentralTitle}</span>
           </div>
           <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">Guwahati Regional Dispatch Terminal</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">{t.dashboard.dispatchTerminal}</span>
           <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
           <span className="rounded bg-cyan-50 text-cyan-800 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/25 px-2 py-0.5 text-[10px] font-bold dark:text-cyan-300">
-            PostGIS Geofencing Active
+            {t.dashboard.geofencingActive}
           </span>
           {publicReportSummary && (
             <>
               <span className="text-slate-300 dark:text-slate-600 hidden sm:inline">•</span>
               <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-700 dark:text-slate-300">
-                <span className="text-slate-500 dark:text-slate-400">Citizen Reports:</span>
+                <span className="text-slate-500 dark:text-slate-400">{t.dashboard.citizenReports}</span>
                 <span className="rounded bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 px-1.5 py-0.5 font-bold font-mono">
-                  {publicReportSummary.unverified} Unverified
+                  {publicReportSummary.unverified} {t.common.unverified}
                 </span>
                 <span className="rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 px-1.5 py-0.5 font-bold font-mono">
-                  {publicReportSummary.verified} Verified
+                  {publicReportSummary.verified} {t.common.verified}
                 </span>
                 {publicReportSummary.rejected > 0 && (
                   <span className="rounded bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 px-1.5 py-0.5 font-mono">
-                    {publicReportSummary.rejected} Rejected
+                    {publicReportSummary.rejected} {t.common.rejected}
                   </span>
                 )}
               </div>
@@ -1224,12 +1249,12 @@ function Home() {
             }`}
           >
             {backendOnline ? <Wifi size={12} /> : <WifiOff size={12} />}
-            <span>{backendOnline ? "Telemetry Synchronized" : "Backend Offline"}</span>
+            <span>{backendOnline ? t.dashboard.telemetrySynced : t.dashboard.backendOffline}</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
             <Clock3 size={13} className="text-cyan-600 dark:text-cyan-400" />
-            <span>Live • 30s auto-refresh</span>
+            <span>{t.dashboard.autoRefresh}</span>
           </div>
         </div>
       </div>
@@ -1245,10 +1270,10 @@ function Home() {
               <div>
                 <div className="flex items-center gap-2.5 flex-wrap">
                   <span className="rounded-md bg-red-100 text-red-800 border border-red-300 dark:bg-red-500/20 dark:border-red-500/40 px-2.5 py-0.5 text-xs font-bold dark:text-red-300 uppercase tracking-wider">
-                    Critical Disruption Active
+                    {t.dashboard.criticalDisruptionActive}
                   </span>
                   <span className="text-xs text-slate-600 dark:text-slate-400">
-                    Incident #{activeDisruption.id} • Status: <span className="capitalize font-semibold text-amber-700 dark:text-amber-300">{activeDisruption.status || "Reported"}</span>
+                    {formatString(t.dashboard.incidentStatus, { id: activeDisruption.id, status: activeDisruption.status || "Reported" })}
                   </span>
                 </div>
                 <h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">
@@ -1263,13 +1288,13 @@ function Home() {
                 className="flex-1 sm:flex-none justify-center rounded-lg bg-amber-500 hover:bg-amber-400 px-4 py-2.5 text-xs font-bold text-slate-950 transition flex items-center gap-1.5 shadow-md shadow-amber-500/20"
               >
                 <Route size={15} />
-                Execute Dynamic Detour →
+                {t.dashboard.executeDynamicDetour}
               </Link>
               <Link
                 to="/incidents"
                 className="flex-1 sm:flex-none justify-center rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 px-3.5 py-2.5 text-xs font-medium dark:text-slate-300 transition"
               >
-                Inspect Incident →
+                {t.dashboard.inspectIncident}
               </Link>
             </div>
           </div>
@@ -1279,9 +1304,9 @@ function Home() {
             <div className="flex items-center justify-between mb-2.5">
               <span className="text-xs font-bold uppercase tracking-wider text-red-700 dark:text-red-300 flex items-center gap-1.5">
                 <ShieldAlert size={14} className="text-red-500 dark:text-red-400" />
-                Operational Causal Impact Chain
+                {t.dashboard.causalChainTitle}
               </span>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400">Interactive Telemetry Graph</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">{t.dashboard.interactiveGraph}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -1292,7 +1317,7 @@ function Home() {
                 className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-300 px-2.5 py-1.5 font-semibold transition hover:bg-red-100 dark:hover:bg-red-500/20"
               >
                 <AlertTriangle size={13} className="text-red-500 dark:text-red-400" />
-                <span>Incident #{activeDisruption.id}</span>
+                <span>{t.common.incident} #{activeDisruption.id}</span>
               </Link>
 
               <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
@@ -1304,7 +1329,7 @@ function Home() {
                 className="flex items-center gap-1.5 rounded-lg border border-orange-500/30 bg-orange-50 text-orange-700 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-300 px-2.5 py-1.5 font-semibold transition hover:bg-orange-100 dark:hover:bg-orange-500/20"
               >
                 <Route size={13} className="text-orange-500 dark:text-orange-400" />
-                <span>Road #{affectedRoad?.id ?? 135}</span>
+                <span>{t.dashboard.roadNode} #{affectedRoad?.id ?? 135}</span>
               </Link>
 
               <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
@@ -1312,7 +1337,7 @@ function Home() {
               {/* Node 3: Disruption Risk */}
               <div className="flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-100 text-red-800 dark:border-red-500/50 dark:bg-red-950/60 dark:text-red-400 px-2.5 py-1.5 font-bold">
                 <ShieldAlert size={13} className="text-red-500 dark:text-red-400" />
-                <span>Risk: {activeDisruption.risk_score ? activeDisruption.risk_score.toFixed(1) : "95.0"}</span>
+                <span>{t.dashboard.riskNode}: {activeDisruption.risk_score ? activeDisruption.risk_score.toFixed(1) : "95.0"}</span>
               </div>
 
               <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
@@ -1324,7 +1349,7 @@ function Home() {
                 className="flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-50 text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 px-2.5 py-1.5 font-semibold transition hover:bg-amber-100 dark:hover:bg-amber-500/20"
               >
                 <Bell size={13} className="text-amber-500 dark:text-amber-400" />
-                <span>Alert Active</span>
+                <span>{t.dashboard.alertActiveNode}</span>
               </Link>
 
               <ArrowRight size={13} className="text-slate-400 dark:text-slate-600 shrink-0" />
@@ -1348,7 +1373,7 @@ function Home() {
                 className="flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-50 text-blue-800 dark:border-blue-500/40 dark:bg-blue-500/10 dark:text-blue-300 px-2.5 py-1.5 font-semibold transition hover:bg-blue-100 dark:hover:bg-blue-500/20"
               >
                 <Navigation size={13} className="text-blue-600 dark:text-blue-400" />
-                <span>Trip #{interceptedTrip?.id ?? 318}</span>
+                <span>{t.dashboard.tripNode} #{interceptedTrip?.id ?? 318}</span>
               </Link>
             </div>
           </div>
@@ -1359,17 +1384,17 @@ function Home() {
             <div className="rounded-lg border border-red-200 bg-white dark:border-red-500/20 dark:bg-slate-950/80 p-4 shadow-sm">
               <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                 <span className="font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider text-[11px]">
-                  1. Is Anything Wrong?
+                  1. {t.dashboard.disruptionsTitle}
                 </span>
                 <span className="rounded bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300 px-1.5 py-0.5 text-[10px] font-bold">
-                  Risk: {activeDisruption.risk_score ? activeDisruption.risk_score.toFixed(1) : "95.0"}
+                  {t.common.risk}: {activeDisruption.risk_score ? activeDisruption.risk_score.toFixed(1) : "95.0"}
                 </span>
               </div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                Corridor Blockage Confirmed
+                {t.dashboard.disruptionsSub}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
-                Major landslide blocking NH-15 corridor near Kharupetia. Impassable for heavy logistics units.
+                {activeDisruption.description || "Major landslide blocking NH-15 corridor near Kharupetia. Impassable for heavy logistics units."}
               </p>
             </div>
 
@@ -1377,10 +1402,10 @@ function Home() {
             <div className="rounded-lg border border-orange-200 bg-white dark:border-orange-500/20 dark:bg-slate-950/80 p-4 shadow-sm">
               <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                 <span className="font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider text-[11px]">
-                  2. What Is Affected?
+                  2. {t.dashboard.fleetAttention}
                 </span>
                 <Link to="/road-risk" className="text-[10px] text-cyan-600 dark:text-cyan-400 hover:underline">
-                  Road #{affectedRoad?.id ?? 135} →
+                  {t.dashboard.roadNode} #{affectedRoad?.id ?? 135} →
                 </Link>
               </div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
@@ -1390,15 +1415,15 @@ function Home() {
                 to="/vehicles"
                 className="text-xs text-cyan-700 dark:text-cyan-300 hover:text-cyan-800 dark:hover:text-cyan-200 mt-1 font-medium block"
               >
-                {impactedVehicle?.vehicle_number || "AS-01-BX-4091"} (Trip #{interceptedTrip?.id ?? 318}) →
+                {impactedVehicle?.vehicle_number || "AS-01-BX-4091"} ({t.dashboard.tripNode} #{interceptedTrip?.id ?? 318}) →
               </Link>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-                <span>Driver: <strong className="text-slate-800 dark:text-slate-200 font-mono">{vehicleAssignments[impactedVehicle?.id ?? 472] || "driver"}</strong></span>
+                <span>{t.common.assigned}: <strong className="text-slate-800 dark:text-slate-200 font-mono">{vehicleAssignments[impactedVehicle?.id ?? 472] || "driver"}</strong></span>
                 <span>•</span>
-                <span>GPS: <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">Live</strong></span>
+                <span>GPS: <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">{t.common.online}</strong></span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                Cargo: {impactedVehicle?.cargo_type || "Critical Vaccines & Cold-Chain Supplies"}
+                {t.dashboard.tableColCargo}: {impactedVehicle?.cargo_type || "Critical Vaccines & Cold-Chain Supplies"}
               </p>
             </div>
 
@@ -1406,14 +1431,14 @@ function Home() {
             <div className="rounded-lg border border-emerald-200 bg-white dark:border-emerald-500/20 dark:bg-slate-950/80 p-4 shadow-sm">
               <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-[11px]">
-                  3. What Is Being Done?
+                  3. {t.dashboard.safeAlternative}
                 </span>
                 <span className="rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 px-1.5 py-0.5 text-[10px] font-bold">
-                  Detour Available
+                  {t.common.verified}
                 </span>
               </div>
               <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                Safe Alternate Corridor Available
+                {t.dashboard.safeAlternative}
               </p>
               <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
                 Dynamic detour via Mangaldai-Tangla corridor computed. Reduces corridor risk by 70 points.
@@ -1430,7 +1455,7 @@ function Home() {
               </div>
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  All Logistics Corridors Operational • 0 Network Disruptions
+                  {t.dashboard.fleetPassable}
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                   Primary highway corridors across all 8 NER states are clear. Automated PostGIS risk telemetry and AI hazard tracking active.
@@ -1438,7 +1463,7 @@ function Home() {
               </div>
             </div>
             <span className="hidden sm:inline-flex rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-500/10 dark:border-emerald-500/20 px-3 py-1 text-xs font-semibold dark:text-emerald-400">
-              Network Status: Optimal
+              {t.common.normal}
             </span>
           </div>
         </div>
@@ -1447,48 +1472,53 @@ function Home() {
       {/* REAL OPERATIONAL KPI CARDS (No fake SaaS percentages) */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
-          title="Active Logistics Units"
+          title={t.dashboard.activeConvoysTitle}
           value={loading ? "—" : activeVehicles}
-          subtitle={`${vehicles.length} heavy unit registered (${impactedVehicle?.vehicle_number || "AS-01-BX-4091"})`}
+          subtitle={`${vehicles.length} ${t.vehicles.totalUnits} (${impactedVehicle?.vehicle_number || "AS-01-BX-4091"})`}
           icon={<Truck size={21} />}
-          badgeText="Live Telemetry"
+          badgeText={t.dashboard.postgisLive}
           badgeType="success"
+          postgisLabel={t.dashboard.postgisLive}
         />
 
         <StatCard
-          title="Active Corridor Hazards"
+          title={t.dashboard.disruptionsTitle}
           value={loading ? "—" : openIncidents.length}
-          subtitle={`${criticalIncidents} critical road disruption reported`}
+          subtitle={`${criticalIncidents} ${t.incidents.criticalHazards}`}
           icon={<AlertTriangle size={21} />}
-          badgeText={openIncidents.length > 0 ? "Immediate Intervention" : "Optimal"}
+          badgeText={openIncidents.length > 0 ? t.common.critical : t.common.normal}
           badgeType={openIncidents.length > 0 ? "critical" : "success"}
+          postgisLabel={t.dashboard.postgisLive}
         />
 
         <StatCard
-          title="Citizen Field Reports"
+          title={t.dashboard.citizenReports}
           value={loading ? "—" : (publicReportSummary?.unverified ?? 0)}
-          subtitle={`${publicReportSummary?.total ?? 0} observations (${publicReportSummary?.verified ?? 0} verified)`}
+          subtitle={`${publicReportSummary?.total ?? 0} (${publicReportSummary?.verified ?? 0} ${t.common.verified})`}
           icon={<AlertTriangle size={21} />}
-          badgeText={(publicReportSummary?.unverified ?? 0) > 0 ? "Under Review" : "Nominal"}
+          badgeText={(publicReportSummary?.unverified ?? 0) > 0 ? t.fieldReport.statusPending : t.common.normal}
           badgeType={(publicReportSummary?.unverified ?? 0) > 0 ? "warning" : "success"}
+          postgisLabel={t.dashboard.postgisLive}
         />
 
         <StatCard
-          title="Monitored Freight Corridors"
+          title={t.dashboard.roadRiskTitle}
           value={loading ? "—" : tripsCount}
-          subtitle="NH-15 Corridor (Guwahati → Tezpur)"
+          subtitle="NH-15 (Guwahati → Tezpur)"
           icon={<Route size={21} />}
-          badgeText={activeDisruption ? "Disruption Intercepted" : "Nominal"}
+          badgeText={activeDisruption ? t.alerts.statusActive : t.common.normal}
           badgeType={activeDisruption ? "warning" : "info"}
+          postgisLabel={t.dashboard.postgisLive}
         />
 
         <StatCard
-          title="Priority Cargo Protection"
-          value="Vaccines & Cold-Chain"
-          subtitle="AS-01-BX-4091 • Temperature Nominal"
+          title={t.driverCockpit.priority}
+          value="Cold-Chain"
+          subtitle="AS-01-BX-4091 • Nominal"
           icon={<ShieldAlert size={21} />}
-          badgeText="Cold-Chain Nominal"
+          badgeText={t.common.verified}
           badgeType="info"
+          postgisLabel={t.dashboard.postgisLive}
         />
       </div>
 
@@ -1502,29 +1532,29 @@ function Home() {
               <div className="flex items-center gap-2">
                 <Navigation size={16} className="text-cyan-600 dark:text-cyan-400" />
                 <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
-                  NER Tactical Corridor Map
+                  {t.dashboard.mapTitle}
                 </h3>
                 <span className="rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 dark:bg-cyan-500/15 dark:border-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold dark:text-cyan-300">
-                  PostGIS GIS Telemetry
+                  {t.dashboard.mapSub}
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                Live corridor routing, active hazard geofencing, and transport tracking
+                {t.dashboard.liveTracking}
               </p>
             </div>
 
             <div className="flex items-center gap-3 text-xs">
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-cyan-500 shadow-[0_0_8px_#22d3ee]" />
-                <span className="text-slate-700 dark:text-slate-300 font-medium">Unit AS-01-BX-4091</span>
+                <span className="text-slate-700 dark:text-slate-300 font-medium">{t.common.unit} AS-01-BX-4091</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" />
-                <span className="text-slate-700 dark:text-slate-300 font-medium">Kharupetia Blockage</span>
+                <span className="text-slate-700 dark:text-slate-300 font-medium">NH-15 {t.roads.statusBlocked}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
-                <span className="text-slate-700 dark:text-slate-300 font-medium">NH-15 Corridor</span>
+                <span className="text-slate-700 dark:text-slate-300 font-medium">NH-15 {t.common.corridor}</span>
               </div>
             </div>
           </div>
@@ -1689,16 +1719,16 @@ function Home() {
               <div>
                 <div className="flex items-center gap-2">
                   <CloudRain size={16} className="text-cyan-600 dark:text-cyan-400" />
-                  <h3 className="font-semibold text-slate-900 dark:text-white">Corridor Weather</h3>
+                  <h3 className="font-semibold text-slate-900 dark:text-white">{t.dashboard.weatherTitle}</h3>
                 </div>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Real-time atmospheric conditions across NER routes</p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.dashboard.weatherSub}</p>
               </div>
               <button
                 type="button"
                 onClick={() => fetchHubWeather(selectedHubIdx)}
                 aria-label="Refresh atmospheric conditions"
                 className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 transition dark:hover:border-slate-700 dark:hover:text-white"
-                title="Refresh weather"
+                title={t.common.refresh}
               >
                 <RefreshCw size={13} className={loadingWeather ? "animate-spin text-cyan-600 dark:text-cyan-400" : ""} />
               </button>
@@ -1706,7 +1736,7 @@ function Home() {
 
             {/* Hub Selector Dropdown */}
             <div className="border-b border-slate-100 dark:border-slate-800/80 p-3">
-              <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1.5">Monitored Corridor / Logistics Hub:</label>
+              <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1.5">{t.dashboard.legendTelemetry}:</label>
               <select
                 value={selectedHubIdx}
                 onChange={(e) => setSelectedHubIdx(Number(e.target.value))}
@@ -1725,18 +1755,18 @@ function Home() {
               {loadingWeather && !weatherData ? (
                 <div className="flex h-36 items-center justify-center text-xs text-slate-500 dark:text-slate-400">
                   <RefreshCw size={16} className="animate-spin text-cyan-600 dark:text-cyan-400 mr-2" />
-                  Fetching atmospheric telemetry...
+                  {t.common.loading}
                 </div>
               ) : weatherError && !weatherData ? (
                 <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10 p-3 text-xs text-red-700 dark:text-red-400">
-                  <p className="font-medium">Atmospheric Service Unavailable</p>
+                  <p className="font-medium">{t.common.error}</p>
                   <p className="mt-1 text-[11px] text-red-600 dark:text-red-400/80">{weatherError}</p>
                   <button
                     type="button"
                     onClick={() => fetchHubWeather(selectedHubIdx)}
                     className="mt-2 text-[11px] underline hover:text-red-800 dark:hover:text-red-300"
                   >
-                    Retry connection
+                    {t.common.refresh}
                   </button>
                 </div>
               ) : weatherData ? (
@@ -1749,7 +1779,7 @@ function Home() {
                           {weatherData.temperature_c !== undefined ? `${weatherData.temperature_c}°C` : "—"}
                         </span>
                         {weatherData.feels_like_c !== undefined && (
-                          <span className="text-xs text-slate-500 dark:text-slate-400">Feels {weatherData.feels_like_c}°C</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">{t.dashboard.feelsLike} {weatherData.feels_like_c}°C</span>
                         )}
                       </div>
                       <p className="mt-0.5 text-xs font-medium text-cyan-600 dark:text-cyan-400">
@@ -1770,10 +1800,10 @@ function Home() {
                             : "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
                         }`}
                       >
-                        {weatherData.risk_signal?.risk_level || "Low"} Weather Risk
+                        {weatherData.risk_signal?.risk_level || "Low"} {t.dashboard.threatTitle}
                       </span>
                       <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
-                        Score: {weatherData.risk_signal?.risk_score ?? 0}/100
+                        {t.dashboard.threatScore}: {weatherData.risk_signal?.risk_score ?? 0}/100
                       </p>
                     </div>
                   </div>
@@ -1783,7 +1813,7 @@ function Home() {
                     <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
                       <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
                         <Droplets size={13} className="text-cyan-600 dark:text-cyan-400" />
-                        <span>Precipitation</span>
+                        <span>{t.dashboard.rain}</span>
                       </div>
                       <p className="font-semibold text-slate-900 dark:text-white">
                         {weatherData.rainfall_mm !== undefined ? `${weatherData.rainfall_mm} mm` : "0 mm"}
@@ -1793,7 +1823,7 @@ function Home() {
                     <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
                       <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
                         <Wind size={13} className="text-cyan-600 dark:text-cyan-400" />
-                        <span>Wind Speed</span>
+                        <span>{t.dashboard.wind}</span>
                       </div>
                       <p className="font-semibold text-slate-900 dark:text-white">
                         {weatherData.wind_speed_kmh !== undefined ? `${weatherData.wind_speed_kmh} km/h` : "—"}
@@ -1803,7 +1833,7 @@ function Home() {
                     <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
                       <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
                         <Eye size={13} className="text-cyan-600 dark:text-cyan-400" />
-                        <span>Visibility</span>
+                        <span>{t.dashboard.visibility}</span>
                       </div>
                       <p className="font-semibold text-slate-900 dark:text-white">
                         {weatherData.visibility_km !== undefined ? `${weatherData.visibility_km} km` : "—"}
@@ -1813,7 +1843,7 @@ function Home() {
                     <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
                       <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
                         <Thermometer size={13} className="text-cyan-600 dark:text-cyan-400" />
-                        <span>Humidity</span>
+                        <span>{t.dashboard.humidity}</span>
                       </div>
                       <p className="font-semibold text-slate-900 dark:text-white">
                         {weatherData.humidity_percent !== undefined ? `${weatherData.humidity_percent}%` : "—"}
@@ -1833,8 +1863,8 @@ function Home() {
 
                   {/* Metadata footer */}
                   <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/60 pt-2 text-[10px] text-slate-500 dark:text-slate-400">
-                    <span>Source: {weatherData.source} {weatherData.cached ? "(Cached)" : "(Live)"}</span>
-                    <span>Updated: {weatherLastUpdated || "Just now"}</span>
+                    <span>{t.dashboard.source}: {weatherData.source} {weatherData.cached ? "(Cached)" : "(Live)"}</span>
+                    <span>{t.dashboard.observedAt}: {weatherLastUpdated || "Just now"}</span>
                   </div>
                 </div>
               ) : null}
@@ -1846,7 +1876,7 @@ function Home() {
               to="/road-risk"
               className="text-xs font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 transition inline-flex items-center gap-1"
             >
-              Inspect Complete Regional Road Risk &rarr;
+              {t.roads.title} &rarr;
             </Link>
           </div>
         </div>
@@ -1862,41 +1892,41 @@ function Home() {
               <div className="flex items-center gap-2">
                 <ShieldAlert size={18} className="text-red-500 dark:text-red-400" />
                 <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                  Corridor Threat & Vulnerability Assessment
+                  {t.dashboard.threatTitle}
                 </h3>
               </div>
               <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                Real-time PostGIS hazard geofencing and multi-factor corridor risk telemetry
+                {t.dashboard.threatSub}
               </p>
             </div>
 
             <span className="self-start sm:self-center rounded-full bg-red-100 text-red-800 border border-red-300 dark:bg-red-500/15 dark:border-red-500/30 px-3 py-1 text-xs font-bold dark:text-red-400">
-              Corridor Threat: 95.0 / 100
+              {t.dashboard.threatTitle}: 95.0 / 100
             </span>
           </div>
 
           {/* 4 Threat Assessment Fact Blocks */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/80 p-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Monitored Corridor</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{t.dashboard.roadNode}</span>
               <p className="text-sm font-bold text-slate-900 dark:text-white mt-1">Road #135 — NH-15 Guwahati-Tezpur</p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Length: 175.5 km • Baseline: 15.0 • Elevated: 95.0</p>
             </div>
 
             <div className="rounded-lg border border-red-200 bg-red-50/70 dark:border-red-500/30 dark:bg-red-950/20 p-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-red-700 dark:text-red-300">Active Geofenced Hazard</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-red-700 dark:text-red-300">{t.driverCockpit.hazardAlert}</span>
               <p className="text-sm font-bold text-red-700 dark:text-red-300 mt-1">Incident #15 — Major Landslide</p>
               <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Near Kharupetia (26.40°N, 91.93°E) • Impassable</p>
             </div>
 
             <div className="rounded-lg border border-cyan-200 bg-cyan-50/70 dark:border-cyan-500/30 dark:bg-cyan-950/20 p-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">Intercepted Logistics Asset</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">{t.dashboard.vehicleNode}</span>
               <p className="text-sm font-bold text-slate-900 dark:text-white mt-1">AS-01-BX-4091 (Trip #318)</p>
               <p className="text-xs text-cyan-800 dark:text-cyan-200 mt-0.5">Cargo: Critical Vaccines & Cold-Chain Supplies</p>
             </div>
 
             <div className="rounded-lg border border-emerald-200 bg-emerald-50/70 dark:border-emerald-500/30 dark:bg-emerald-950/20 p-3.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">Detour Corridor Status</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">{t.driverCockpit.activeDetour}</span>
               <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300 mt-1">Mangaldai-Tangla-Tezpur Detour</p>
               <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Detour Delta: +44.3 km • Detour Risk: 25.0 (-70 pts)</p>
             </div>
@@ -1905,8 +1935,8 @@ function Home() {
           {/* Vulnerability Severity Meter */}
           <div className="space-y-1.5 pt-1">
             <div className="flex justify-between text-xs font-semibold">
-              <span className="text-slate-700 dark:text-slate-300">Composite Corridor Vulnerability Meter</span>
-              <span className="text-red-600 dark:text-red-400 font-bold">95.0 / 100 (Immediate Reroute Enforced)</span>
+              <span className="text-slate-700 dark:text-slate-300">{t.dashboard.threatTitle}</span>
+              <span className="text-red-600 dark:text-red-400 font-bold">95.0 / 100</span>
             </div>
             <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
               <div
@@ -1929,17 +1959,17 @@ function Home() {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-slate-900 dark:text-white">
-                    Critical Alerts
+                    {t.dashboard.criticalAlertsTitle}
                   </h3>
                   {criticalAlerts.length > 0 && (
                     <span className="rounded-full bg-red-100 text-red-800 border border-red-300 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30 px-2 py-0.5 text-[10px] font-bold">
-                      {criticalAlerts.length} Active
+                      {criticalAlerts.length} {t.common.active}
                     </span>
                   )}
                 </div>
 
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  Requires operator attention
+                  {t.dashboard.criticalAlertsSub}
                 </p>
               </div>
 
@@ -1965,16 +1995,16 @@ function Home() {
               ) : alertsError && criticalAlerts.length === 0 ? (
                 <div className="p-8 text-center">
                   <AlertTriangle size={24} className="mx-auto text-amber-500 dark:text-amber-400 mb-2" />
-                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Unable to load critical alerts</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Connecting to backend...</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t.common.error}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t.dashboard.backendOffline}</p>
                 </div>
               ) : criticalAlerts.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 size={20} />
                   </div>
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">All Corridors Normal</p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">No active critical alerts require operator intervention.</p>
+                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{t.dashboard.noAlerts}</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.dashboard.recentAlertsSub}</p>
                 </div>
               ) : (
                 criticalAlerts.map((alert) => {
@@ -2020,7 +2050,7 @@ function Home() {
               to="/alerts"
               className="text-xs font-medium text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 transition inline-flex items-center gap-1"
             >
-              View All Regional Alerts &rarr;
+              {t.dashboard.viewAllAlerts} &rarr;
             </Link>
           </div>
         </div>
@@ -2043,10 +2073,10 @@ function Home() {
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
             <div>
               <h3 className="font-semibold text-slate-900 dark:text-white">
-                Recent Reported Incidents
+                {t.incidents.title}
               </h3>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Latest field and system-reported network events
+                {t.incidents.subtitle}
               </p>
             </div>
 
@@ -2075,7 +2105,7 @@ function Home() {
                       <p className="mt-1 truncate text-xs text-slate-500 dark:text-slate-400">
                         {incident.district ||
                           incident.state ||
-                          "Northeast Region"} • Risk: {incident.risk_score ?? 95.0}
+                          "Northeast Region"} • {t.common.risk}: {incident.risk_score ?? 95.0}
                       </p>
                     </div>
                   </div>
@@ -2086,7 +2116,7 @@ function Home() {
                       incident.severity
                     )}`}
                   >
-                    Inspect →
+                    {t.common.inspect} →
                   </Link>
                 </div>
               ))}
@@ -2099,10 +2129,10 @@ function Home() {
                   className="mx-auto text-emerald-500 dark:text-emerald-400"
                 />
                 <p className="mt-3 text-sm text-slate-700 dark:text-slate-300">
-                  No active incidents
+                  {t.incidents.noIncidentsFound}
                 </p>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                  All primary corridors reported open.
+                  {t.dashboard.fleetPassable}
                 </p>
               </div>
             </div>
@@ -2115,12 +2145,12 @@ function Home() {
             <div>
               <div className="flex items-center gap-2">
                 <Truck size={17} className="text-cyan-600 dark:text-cyan-400" />
-                <h3 className="font-bold text-slate-900 dark:text-white text-base">Active Freight Unit Telemetry</h3>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">{t.dashboard.fleetTitle}</h3>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Real-time GPS tracking and cold-chain integrity</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{t.dashboard.fleetSub}</p>
             </div>
             <Link to="/vehicles" className="text-xs font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300">
-              Open Fleet View →
+              {t.vehicles.title} →
             </Link>
           </div>
 
@@ -2137,33 +2167,33 @@ function Home() {
                   <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium">{impactedVehicle.cargo_type}</p>
                 </div>
                 <div className="text-right text-xs">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Current Mission</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">{t.driverCockpit.missionActive}</span>
                   <span className="font-bold text-cyan-600 dark:text-cyan-400">Trip #{interceptedTrip?.id ?? 318}</span>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/60">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Assigned Corridor</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">{t.driverCockpit.corridor}</span>
                   <span className="font-semibold text-slate-900 dark:text-white">Guwahati → Tezpur</span>
                 </div>
                 <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/60">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Cold-Chain Status</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">{t.driverCockpit.cargoManifest}</span>
                   <span className="font-semibold text-emerald-600 dark:text-emerald-400">Nominal (2.4°C)</span>
                 </div>
                 <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/60">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Live GPS Telemetry</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">{t.dashboard.legendTelemetry}</span>
                   <span className="font-mono text-slate-700 dark:text-slate-300">{impactedVehicle.latitude?.toFixed(4)}°N, {impactedVehicle.longitude?.toFixed(4)}°E</span>
                 </div>
                 <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/60">
-                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">Interception Status</span>
-                  <span className="font-semibold text-amber-600 dark:text-amber-400">Detour Enforced</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px]">{t.driverCockpit.missionStatus}</span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">{t.driverCockpit.activeDetour}</span>
                 </div>
               </div>
             </div>
           ) : (
             <div className="p-8 text-center text-xs text-slate-500 dark:text-slate-400">
-              No active freight units currently registered.
+              {t.vehicles.noVehiclesFound}
             </div>
           )}
         </div>
@@ -2176,7 +2206,7 @@ function Home() {
             <Navigation size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Trip #318 Corridor ETA</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Trip #318 {t.common.eta}</p>
             <p className="mt-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               126 min direct • +59 min detour
             </p>
@@ -2188,9 +2218,9 @@ function Home() {
             <ShieldAlert size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Active Geofenced Hazards</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t.dashboard.disruptionsTitle}</p>
             <p className="mt-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              1 Critical Blockage (NH-15)
+              1 {t.roads.statusBlocked} (NH-15)
             </p>
           </div>
         </div>
@@ -2200,14 +2230,424 @@ function Home() {
             <CheckCircle2 size={20} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Control Operator Session</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t.dashboard.controlCentralTitle}</p>
             <p className="mt-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              CONTROL_OPERATOR Active
+              {t.common.online}
             </p>
           </div>
         </div>
-      </div>
-      </div>
+        </div>
+        </div>
+      ) : (
+        /* Public-Safe Corridor & Weather Intelligence Experience for Guests & Public Citizens */
+        <div className="space-y-6">
+          {/* Public Hero / Welcome Card */}
+          <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-5 sm:p-6 shadow-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="rounded-md bg-cyan-100 text-cyan-800 border border-cyan-300 dark:bg-cyan-500/20 dark:border-cyan-500/40 px-2.5 py-0.5 text-xs font-bold dark:text-cyan-300 uppercase tracking-wider">
+                    Public Road &amp; Weather Intelligence
+                  </span>
+                  <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 text-[11px] font-medium">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Live Monitoring</span>
+                  </div>
+                </div>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                  North Eastern Region Corridor Portal
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+                  Real-time transport corridor status, atmospheric condition monitoring, and road hazard intelligence for Assam, Meghalaya, Manipur, Sikkim, and Arunachal Pradesh.
+                </p>
+              </div>
+
+              {/* Quick Public Action Buttons */}
+              <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+                <Link
+                  to="/road-risk"
+                  className="flex items-center gap-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition"
+                >
+                  <Activity size={15} />
+                  <span>Explore Corridor Risks</span>
+                  <ArrowRight size={14} />
+                </Link>
+                <Link
+                  to="/report-problem"
+                  className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-3.5 py-2.5 text-xs font-medium transition"
+                >
+                  <AlertTriangle size={15} className="text-amber-500" />
+                  <span>Report Road Hazard</span>
+                </Link>
+                {!user && (
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-3.5 py-2.5 text-xs font-medium transition"
+                  >
+                    <LogIn size={15} className="text-cyan-600 dark:text-cyan-400" />
+                    <span>Operator Sign In</span>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Public Key Metrics Strip */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              title="Strategic Corridors"
+              value={roads.length || 6}
+              subtitle="Regional Highways Monitored"
+              icon={<Route size={22} />}
+              badgeText="Active GIS"
+              badgeType="info"
+            />
+            <StatCard
+              title="Open &amp; Passable"
+              value={roads.filter((r) => r.status?.toLowerCase() === "open").length}
+              subtitle="Unrestricted Corridors"
+              icon={<ShieldCheck size={22} className="text-emerald-500" />}
+              badgeText="Clear Flow"
+              badgeType="success"
+            />
+            <StatCard
+              title="Corridors With Advisories"
+              value={roads.filter((r) => r.status?.toLowerCase() !== "open").length}
+              subtitle="Restricted / Repair / Blocked"
+              icon={<AlertTriangle size={22} className="text-amber-500" />}
+              badgeText="Caution"
+              badgeType="warning"
+            />
+            <StatCard
+              title="Regional Weather Hubs"
+              value={WEATHER_HUBS.length}
+              subtitle="Active Atmospheric Sensors"
+              icon={<CloudRain size={22} className="text-cyan-500" />}
+              badgeText="Telemetry Live"
+              badgeType="info"
+            />
+          </div>
+
+          {/* Regional Map + Corridor Weather Intelligence */}
+          <div className="grid gap-6 xl:grid-cols-3">
+            {/* Public-Safe Corridor Map (NO driver GPS or vehicle fleet units) */}
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm xl:col-span-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-3.5 gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Navigation size={16} className="text-cyan-600 dark:text-cyan-400" />
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+                      North Eastern Regional Corridor Map
+                    </h3>
+                    <span className="rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 dark:bg-cyan-500/15 dark:border-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold dark:text-cyan-300">
+                      Public GIS
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    Inter-state arterial connectivity &amp; atmospheric observation stations
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Logistics Hubs</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
+                    <span className="text-slate-700 dark:text-slate-300 font-medium">Weather Stations</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative h-[380px] bg-slate-100 dark:bg-slate-950 overflow-hidden">
+                <MapErrorBoundary fallbackMessage="Regional corridor map tiles offline — cached geometry available">
+                  <MapContainer
+                    center={[26.20, 92.50]}
+                    zoom={7}
+                    scrollWheelZoom={false}
+                    className="h-full w-full"
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+
+                    {/* Regional Weather Hubs Markers */}
+                    {WEATHER_HUBS.map((hub, idx) => (
+                      <CircleMarker
+                        key={hub.name}
+                        center={[hub.lat, hub.lon]}
+                        radius={6}
+                        pathOptions={{
+                          color: selectedHubIdx === idx ? "#06b6d4" : "#0284c7",
+                          fillColor: selectedHubIdx === idx ? "#22d3ee" : "#38bdf8",
+                          fillOpacity: 0.9,
+                          weight: 2,
+                        }}
+                      >
+                        <Popup>
+                          <div className="text-xs">
+                            <strong className="text-cyan-600 dark:text-cyan-400">{hub.name}</strong>
+                            <br />State: {hub.state}
+                            <br />Lat: {hub.lat.toFixed(4)}, Lon: {hub.lon.toFixed(4)}
+                          </div>
+                        </Popup>
+                      </CircleMarker>
+                    ))}
+
+                    {/* Guwahati Primary Origin Hub */}
+                    <CircleMarker
+                      center={[26.1445, 91.7362]}
+                      radius={8}
+                      pathOptions={{ color: "#10b981", fillColor: "#059669", fillOpacity: 0.9, weight: 2 }}
+                    >
+                      <Popup>
+                        <div className="text-xs">
+                          <strong className="text-emerald-600">Guwahati Regional Logistics Gateway</strong>
+                          <br />NH-27 Central Interchange
+                        </div>
+                      </Popup>
+                    </CircleMarker>
+
+                    {/* Tezpur Hub */}
+                    <CircleMarker
+                      center={[26.6528, 92.7926]}
+                      radius={8}
+                      pathOptions={{ color: "#3b82f6", fillColor: "#2563eb", fillOpacity: 0.9, weight: 2 }}
+                    >
+                      <Popup>
+                        <div className="text-xs">
+                          <strong className="text-blue-600">Tezpur North Bank Hub</strong>
+                          <br />NH-15 Northern Corridor
+                        </div>
+                      </Popup>
+                    </CircleMarker>
+                  </MapContainer>
+                </MapErrorBoundary>
+
+                <div className="absolute bottom-3 left-3 z-[1000] rounded-lg border border-slate-200 bg-white/95 text-slate-900 dark:border-slate-800 dark:bg-slate-950/90 dark:text-white px-3 py-1.5 backdrop-blur shadow-md">
+                  <div className="flex items-center gap-2">
+                    <Route size={14} className="text-cyan-600 dark:text-cyan-400" />
+                    <span className="text-xs font-semibold">NER Arterial Corridors</span>
+                    <span className="rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] font-bold px-1.5 py-0.5">
+                      Public GIS View
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Weather Intelligence Panel */}
+            <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CloudRain size={16} className="text-cyan-600 dark:text-cyan-400" />
+                      <h3 className="font-semibold text-slate-900 dark:text-white">{t.dashboard.weatherTitle}</h3>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.dashboard.weatherSub}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => fetchHubWeather(selectedHubIdx)}
+                    aria-label="Refresh atmospheric conditions"
+                    className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 transition dark:hover:border-slate-700 dark:hover:text-white"
+                    title={t.common.refresh}
+                  >
+                    <RefreshCw size={13} className={loadingWeather ? "animate-spin text-cyan-600 dark:text-cyan-400" : ""} />
+                  </button>
+                </div>
+
+                <div className="border-b border-slate-100 dark:border-slate-800/80 p-3">
+                  <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1.5">
+                    Select Weather Observation Hub:
+                  </label>
+                  <select
+                    value={selectedHubIdx}
+                    onChange={(e) => setSelectedHubIdx(Number(e.target.value))}
+                    className="w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-cyan-500"
+                  >
+                    {WEATHER_HUBS.map((hub, idx) => (
+                      <option key={hub.name} value={idx}>
+                        {hub.name} ({hub.lat.toFixed(2)}°N, {hub.lon.toFixed(2)}°E)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="p-4">
+                  {loadingWeather && !weatherData ? (
+                    <div className="flex h-36 items-center justify-center text-xs text-slate-500 dark:text-slate-400">
+                      <RefreshCw size={16} className="animate-spin text-cyan-600 dark:text-cyan-400 mr-2" />
+                      {t.common.loading}
+                    </div>
+                  ) : weatherError && !weatherData ? (
+                    <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10 p-3 text-xs text-red-700 dark:text-red-400">
+                      <p className="font-medium">{t.common.error}</p>
+                      <p className="mt-1 text-[11px] text-red-600 dark:text-red-400/80">{weatherError}</p>
+                      <button
+                        type="button"
+                        onClick={() => fetchHubWeather(selectedHubIdx)}
+                        className="mt-2 text-[11px] underline hover:text-red-800 dark:hover:text-red-300"
+                      >
+                        {t.common.refresh}
+                      </button>
+                    </div>
+                  ) : weatherData ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-950/70 p-3.5 border border-slate-200 dark:border-slate-800/60">
+                        <div>
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold text-slate-900 dark:text-white">
+                              {weatherData.temperature_c !== undefined ? `${weatherData.temperature_c}°C` : "—"}
+                            </span>
+                            {weatherData.feels_like_c !== undefined && (
+                              <span className="text-xs text-slate-500 dark:text-slate-400">
+                                {t.dashboard.feelsLike} {weatherData.feels_like_c}°C
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-0.5 text-xs font-medium text-cyan-600 dark:text-cyan-400">
+                            {weatherData.weather_condition || "Clear"}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <span
+                            className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${
+                              weatherData.risk_signal?.risk_level === "Critical"
+                                ? "border-red-300 bg-red-100 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400"
+                                : weatherData.risk_signal?.risk_level === "High"
+                                ? "border-orange-300 bg-orange-100 text-orange-800 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400"
+                                : weatherData.risk_signal?.risk_level === "Moderate"
+                                ? "border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400"
+                                : "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
+                            }`}
+                          >
+                            {weatherData.risk_signal?.risk_level || "Low"} {t.dashboard.threatTitle}
+                          </span>
+                          <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+                            {t.dashboard.threatScore}: {weatherData.risk_signal?.risk_score ?? 0}/100
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
+                          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
+                            <Droplets size={13} className="text-cyan-600 dark:text-cyan-400" />
+                            <span>{t.dashboard.rain}</span>
+                          </div>
+                          <p className="font-semibold text-slate-900 dark:text-white">
+                            {weatherData.rainfall_mm !== undefined ? `${weatherData.rainfall_mm} mm` : "0 mm"}
+                          </p>
+                        </div>
+
+                        <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
+                          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
+                            <Wind size={13} className="text-cyan-600 dark:text-cyan-400" />
+                            <span>{t.dashboard.wind}</span>
+                          </div>
+                          <p className="font-semibold text-slate-900 dark:text-white">
+                            {weatherData.wind_speed_kmh !== undefined ? `${weatherData.wind_speed_kmh} km/h` : "—"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              {weatherLastUpdated && (
+                <div className="border-t border-slate-100 dark:border-slate-800/80 px-4 py-2 bg-slate-50/50 dark:bg-slate-950/40 text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                  <span>Observation Time: {weatherLastUpdated}</span>
+                  <span className="text-cyan-600 dark:text-cyan-400">Station Online</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Strategic Corridors Status Cards */}
+          <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm p-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-2">
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                  Strategic Highway Corridors
+                </h3>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  Current accessibility, disruption risk, and operational status for primary routes
+                </p>
+              </div>
+              <Link
+                to="/road-risk"
+                className="text-xs font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 inline-flex items-center gap-1 transition"
+              >
+                <span>View Full Road Risk GIS</span>
+                <ArrowRight size={13} />
+              </Link>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {roads.slice(0, 6).map((road) => {
+                const statusLower = road.status?.toLowerCase();
+                const statusBadgeClass =
+                  statusLower === "open"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                    : statusLower === "restricted"
+                    ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                    : statusLower === "under_repair"
+                    ? "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
+                    : "bg-red-50 text-red-800 border-red-300 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20";
+
+                return (
+                  <div
+                    key={road.id}
+                    className="rounded-lg border border-slate-200 dark:border-slate-800 p-3.5 bg-slate-50/50 dark:bg-slate-950/40 hover:border-cyan-500/40 transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                          {road.road_name}
+                        </span>
+                        <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0 ${statusBadgeClass}`}>
+                          {road.status?.replace("_", " ")}
+                        </span>
+                      </div>
+                      <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                        <span>Disruption Risk</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {Math.round(road.risk_score)}%
+                        </span>
+                      </div>
+                      <div className="mt-1 h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            road.risk_score >= 80
+                              ? "bg-red-500"
+                              : road.risk_score >= 50
+                              ? "bg-amber-500"
+                              : "bg-emerald-500"
+                          }`}
+                          style={{ width: `${Math.min(100, Math.max(5, road.risk_score))}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <Link
+                      to="/road-risk"
+                      className="mt-3.5 text-[11px] font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 inline-flex items-center gap-1 transition"
+                    >
+                      <span>Corridor Details</span>
+                      <ArrowRight size={11} />
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

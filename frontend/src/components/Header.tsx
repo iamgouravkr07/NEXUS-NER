@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, Search, User, LogOut, UploadCloud, Sun, Moon } from "lucide-react";
+import { Bell, Search, User, LogOut, UploadCloud, Sun, Moon, LogIn } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -85,7 +85,13 @@ function Header() {
       {/* Left */}
       <div className="min-w-0 shrink">
         <div className="flex items-center gap-2 sm:gap-2.5">
-          <h2 className="text-base sm:text-lg font-semibold truncate text-slate-900 dark:text-white">{t.nav.controlTower}</h2>
+          <h2 className="text-base sm:text-lg font-semibold truncate text-slate-900 dark:text-white">
+            {user?.role === "DRIVER"
+              ? (t.driverCockpit?.missionActive || "Mission Cockpit")
+              : user?.role === "ADMIN" || user?.role === "CONTROL_OPERATOR"
+              ? t.nav.controlTower
+              : "NEXUS-NER"}
+          </h2>
           {isLive ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 shrink-0">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
@@ -99,7 +105,7 @@ function Header() {
           )}
         </div>
         <p className="hidden md:block text-xs text-slate-500 dark:text-slate-400 truncate">
-          North Eastern Region Logistics Intelligence
+          {t.auth.platformSubtitle}
         </p>
       </div>
 
@@ -112,8 +118,8 @@ function Header() {
         <button
           type="button"
           onClick={toggleTheme}
-          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          aria-label={isDark ? t.nav.lightMode : t.nav.darkMode}
+          title={isDark ? t.nav.lightMode : t.nav.darkMode}
           className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
         >
           {isDark ? (
@@ -134,71 +140,86 @@ function Header() {
           />
         </div>
 
-        {/* Outbox Pending */}
-        <Link
-          to="/field-report"
-          aria-label="Offline Outbox"
-          title={
-            pendingOutboxCount > 0
-              ? `${pendingOutboxCount} offline reports queued in outbox`
-              : "Offline Outbox (All synced)"
-          }
-          className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
-        >
-          <UploadCloud size={19} className={pendingOutboxCount > 0 ? "text-amber-500 dark:text-amber-400" : ""} />
+        {/* Operational Outbox Pending and Notifications */}
+        {user && user.role !== "PUBLIC" && (
+          <>
+            <Link
+              to="/field-report"
+              aria-label={t.fieldReport.pendingOutboxBadge}
+              title={
+                pendingOutboxCount > 0
+                  ? `${pendingOutboxCount} ${t.fieldReport.pendingOutboxBadge}`
+                  : t.fieldReport.allSynced
+              }
+              className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
+            >
+              <UploadCloud size={19} className={pendingOutboxCount > 0 ? "text-amber-500 dark:text-amber-400" : ""} />
 
-          {pendingOutboxCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-slate-950 shadow-sm ring-2 ring-white dark:ring-slate-950">
-              {pendingOutboxCount > 99 ? "99+" : pendingOutboxCount}
-            </span>
-          )}
-        </Link>
+              {pendingOutboxCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-slate-950 shadow-sm ring-2 ring-white dark:ring-slate-950">
+                  {pendingOutboxCount > 99 ? "99+" : pendingOutboxCount}
+                </span>
+              )}
+            </Link>
 
-        {/* Notifications */}
-        <Link
-          to="/alerts"
-          aria-label="Alerts and Notifications"
-          title={
-            criticalCount > 0
-              ? `${criticalCount} Critical Alerts requiring attention`
-              : "View Alerts & Notifications"
-          }
-          className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
-        >
-          <Bell size={19} />
+            <Link
+              to="/alerts"
+              aria-label={t.nav.notifications}
+              title={
+                criticalCount > 0
+                  ? `${criticalCount} ${t.alerts.criticalAlerts}`
+                  : t.nav.notifications
+              }
+              className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
+            >
+              <Bell size={19} />
 
-          {criticalCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-950">
-              {criticalCount > 99 ? "99+" : criticalCount}
-            </span>
-          )}
-        </Link>
+              {criticalCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-slate-950">
+                  {criticalCount > 99 ? "99+" : criticalCount}
+                </span>
+              )}
+            </Link>
+          </>
+        )}
 
-        {/* User */}
-        <div className="flex items-center gap-2 sm:gap-2.5 border-l border-slate-200 pl-2 sm:pl-3 dark:border-slate-800">
-          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
-            <User size={18} />
+        {/* User / Sign In */}
+        {user ? (
+          <div className="flex items-center gap-2 sm:gap-2.5 border-l border-slate-200 pl-2 sm:pl-3 dark:border-slate-800">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+              <User size={18} />
+            </div>
+
+            <div className="hidden lg:block">
+              <p className="text-xs font-medium text-slate-900 dark:text-white leading-tight">
+                {user.username}
+              </p>
+
+              <p className="text-[9px] font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">
+                {user.role}
+              </p>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              aria-label="Sign Out"
+              title={t.nav.logout}
+              className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-red-400 transition cursor-pointer"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
-
-          <div className="hidden lg:block">
-            <p className="text-xs font-medium text-slate-900 dark:text-white leading-tight">
-              {user?.username || "Control Operator"}
-            </p>
-
-            <p className="text-[9px] font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider">
-              {user?.role || "OPERATOR"}
-            </p>
+        ) : (
+          <div className="flex items-center border-l border-slate-200 pl-2 sm:pl-3 dark:border-slate-800">
+            <Link
+              to="/login"
+              className="flex items-center gap-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition"
+            >
+              <LogIn size={15} />
+              <span>{t.auth?.tabLogin || "Sign In"}</span>
+            </Link>
           </div>
-
-          <button
-            onClick={handleLogout}
-            aria-label="Sign Out"
-            title={t.nav.logout}
-            className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-red-400 transition cursor-pointer"
-          >
-            <LogOut size={16} />
-          </button>
-        </div>
+        )}
       </div>
     </header>
   );

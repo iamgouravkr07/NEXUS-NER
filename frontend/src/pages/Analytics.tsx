@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import {
   Activity,
   AlertTriangle,
@@ -171,6 +172,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number; className?: s
 };
 
 function Analytics() {
+  const { t } = useLanguage();
   const { getAuthHeader } = useAuth();
   const [days, setDays] = useState("7");
   const [data, setData] = useState<AnalyticsResponse | null>(null);
@@ -222,18 +224,32 @@ function Analytics() {
     safe_percentage: 100.0,
   };
 
+  const getKpiTitle = (title: string) => {
+    switch (title) {
+      case "Routes Completed":
+        return t.analytics.routesCompleted;
+      case "Average ETA":
+        return t.analytics.avgEta;
+      case "Active Vehicles":
+        return t.analytics.activeVehicles;
+      case "Road Accessibility":
+        return t.analytics.accessibilityRate;
+      default:
+        return title;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            Logistics Analytics
+            {t.analytics.title}
           </h1>
 
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Operational performance, incident trends and regional
-            logistics intelligence
+            {t.analytics.subtitle}
           </p>
         </div>
 
@@ -241,7 +257,7 @@ function Analytics() {
           {loading && (
             <div className="flex items-center gap-2 text-xs text-cyan-600 dark:text-cyan-400">
               <RefreshCw size={14} className="animate-spin" />
-              <span>Updating...</span>
+              <span>{t.common.refreshing}</span>
             </div>
           )}
 
@@ -250,9 +266,9 @@ function Analytics() {
             onChange={(e) => setDays(e.target.value)}
             className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs text-slate-700 shadow-sm outline-none focus:border-cyan-500/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
           >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
+            <option value="7">{t.analytics.last7d}</option>
+            <option value="30">{t.analytics.last30d}</option>
+            <option value="90">{t.analytics.lastQuarter}</option>
           </select>
         </div>
       </div>
@@ -269,7 +285,7 @@ function Analytics() {
             className="flex items-center gap-1 font-semibold text-amber-700 underline hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300"
           >
             <RefreshCw size={12} />
-            Retry
+            {t.common.retry}
           </button>
         </div>
       )}
@@ -287,7 +303,7 @@ function Analytics() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                    {kpi.title}
+                    {getKpiTitle(kpi.title)}
                   </p>
 
                   <p className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
@@ -333,11 +349,11 @@ function Analytics() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-slate-900 dark:text-white">
-                Incident Trend
+                {t.analytics.incidentTrendTitle}
               </h2>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Reported incidents during the selected period
+                {t.analytics.incidentTrendSub}
               </p>
             </div>
 
@@ -412,11 +428,11 @@ function Analytics() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-slate-900 dark:text-white">
-                Average Route Time
+                {t.analytics.deliveryTrendTitle}
               </h2>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Average completion time in hours
+                {t.analytics.deliveryTrendSub}
               </p>
             </div>
 
@@ -467,7 +483,7 @@ function Analytics() {
                   }}
                   formatter={(value) => [
                     `${Number(value).toFixed(1)} hrs`,
-                    "Average Time",
+                    t.common.duration,
                   ]}
                 />
 
@@ -497,11 +513,11 @@ function Analytics() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-slate-900 dark:text-white">
-                Regional Operations
+                {t.analytics.regionalTitle}
               </h2>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Vehicle activity and incident volume by region
+                {t.analytics.regionalSub}
               </p>
             </div>
 
@@ -552,14 +568,14 @@ function Analytics() {
 
                 <Bar
                   dataKey="vehicles"
-                  name="Vehicles"
+                  name={t.vehicles.title}
                   fill="#06b6d4"
                   radius={[4, 4, 0, 0]}
                 />
 
                 <Bar
                   dataKey="incidents"
-                  name="Incidents"
+                  name={t.incidents.title}
                   fill="#f59e0b"
                   radius={[4, 4, 0, 0]}
                 />
@@ -572,7 +588,7 @@ function Analytics() {
               <span className="h-2.5 w-2.5 rounded-sm bg-cyan-500" />
 
               <span className="text-xs text-slate-600 dark:text-slate-400">
-                Vehicles
+                {t.vehicles.title}
               </span>
             </div>
 
@@ -580,7 +596,7 @@ function Analytics() {
               <span className="h-2.5 w-2.5 rounded-sm bg-amber-500" />
 
               <span className="text-xs text-slate-600 dark:text-slate-400">
-                Incidents
+                {t.incidents.title}
               </span>
             </div>
           </div>
@@ -591,11 +607,11 @@ function Analytics() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-slate-900 dark:text-white">
-                Road Risk
+                {t.roads.title}
               </h2>
 
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Current monitored roads
+                {t.analytics.riskDistSub}
               </p>
             </div>
 
@@ -626,6 +642,15 @@ function Analytics() {
                       ? "text-amber-600 dark:text-amber-400"
                       : "text-emerald-600 dark:text-emerald-400";
 
+              const localizedName =
+                risk.name === "Critical"
+                  ? t.common.critical
+                  : risk.name === "High"
+                    ? t.common.high
+                    : risk.name === "Medium"
+                      ? t.common.medium
+                      : t.common.low;
+
               return (
                 <div key={risk.name}>
                   <div className="mb-2 flex items-center justify-between">
@@ -635,7 +660,7 @@ function Analytics() {
                       />
 
                       <span className="text-xs text-slate-600 dark:text-slate-400">
-                        {risk.name}
+                        {localizedName}
                       </span>
                     </div>
 
@@ -662,7 +687,7 @@ function Analytics() {
           <div className="mt-8 border-t border-slate-200 pt-5 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                Total monitored roads
+                {t.analytics.totalMonitoredRoads}
               </span>
 
               <span className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -672,7 +697,7 @@ function Analytics() {
 
             <div className="mt-3 flex items-center justify-between">
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                Safe / Low Risk
+                {t.analytics.safeLowRisk}
               </span>
 
               <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
@@ -695,7 +720,7 @@ function Analytics() {
 
             <div>
               <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-400">
-                Fleet Utilization
+                {t.analytics.fleetUtilization}
               </p>
 
               <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
@@ -705,8 +730,7 @@ function Analytics() {
           </div>
 
           <p className="mt-4 text-xs leading-5 text-slate-600 dark:text-slate-400">
-            Most active vehicles are currently assigned to
-            essential supply routes.
+            {t.analytics.insight3}
           </p>
         </div>
 
@@ -720,7 +744,7 @@ function Analytics() {
 
             <div>
               <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-400">
-                Route Safety
+                {t.analytics.routeSafety}
               </p>
 
               <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
@@ -730,8 +754,7 @@ function Analytics() {
           </div>
 
           <p className="mt-4 text-xs leading-5 text-slate-600 dark:text-slate-400">
-            Recommended routes are avoiding most currently
-            identified high-risk road segments.
+            {t.analytics.insight2}
           </p>
         </div>
 
@@ -745,7 +768,7 @@ function Analytics() {
 
             <div>
               <p className="text-sm font-semibold text-amber-900 dark:text-amber-400">
-                Incident Resolution
+                {t.analytics.incidentResolution}
               </p>
 
               <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
@@ -755,8 +778,7 @@ function Analytics() {
           </div>
 
           <p className="mt-4 text-xs leading-5 text-slate-600 dark:text-slate-400">
-            Reported road incidents are being resolved or
-            acknowledged by field teams.
+            {t.analytics.insight1}
           </p>
         </div>
       </div>
@@ -771,13 +793,11 @@ function Analytics() {
 
           <div>
             <p className="text-sm font-semibold text-slate-900 dark:text-white">
-              Analytics intelligence
+              {t.analytics.footerTitle}
             </p>
 
             <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
-              Live operational analytics computed from vehicle telemetry, verified
-              incidents, road-risk assessments, route history and regional
-              logistics activity across the North Eastern Region.
+              {t.analytics.footerDesc}
             </p>
           </div>
         </div>

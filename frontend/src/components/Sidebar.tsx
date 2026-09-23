@@ -6,6 +6,7 @@ import {
   ChevronRight,
   FileText,
   LayoutDashboard,
+  LogIn,
   Route,
   ShieldAlert,
   Truck,
@@ -29,6 +30,12 @@ const navigation = [
     roles: ["DRIVER"],
   },
   {
+    name: "Home",
+    path: "/",
+    icon: LayoutDashboard,
+    roles: ["GUEST"],
+  },
+  {
     name: "Incidents",
     path: "/incidents",
     icon: ShieldAlert,
@@ -50,7 +57,7 @@ const navigation = [
     name: "Road Risk",
     path: "/road-risk",
     icon: Activity,
-    roles: ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"],
+    roles: ["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC", "GUEST"],
   },
   {
     name: "Alerts",
@@ -74,7 +81,7 @@ const navigation = [
     name: "Report Problem",
     path: "/report-problem",
     icon: AlertTriangle,
-    roles: ["PUBLIC"],
+    roles: ["PUBLIC", "GUEST"],
   },
   {
     name: "My Reports",
@@ -82,19 +89,36 @@ const navigation = [
     icon: FileText,
     roles: ["PUBLIC"],
   },
+  {
+    name: "Sign In",
+    path: "/login",
+    icon: LogIn,
+    roles: ["GUEST"],
+  },
 ];
 
 function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const { t } = useLanguage();
-  const role = (user?.role || "").toUpperCase();
+  const role = (user?.role || "GUEST").toUpperCase();
 
   const getLabel = (item: { name: string; path: string; roles: string[] }) => {
     if (item.path === "/") {
-      return role === "DRIVER" ? "Mission Cockpit" : t.nav.controlTower;
+      if (role === "DRIVER") return t.driverCockpit?.missionActive || "Mission Cockpit";
+      if (role === "GUEST") return "Home";
+      return t.nav.controlTower;
     }
+    if (item.path === "/incidents") return t.nav.incidents;
+    if (item.path === "/vehicles") return t.nav.vehicles;
+    if (item.path === "/routes") return t.nav.routes;
+    if (item.path === "/road-risk") return t.nav.roads;
+    if (item.path === "/alerts") return t.nav.alerts;
+    if (item.path === "/analytics") return t.nav.analytics;
     if (item.path === "/field-report") return t.nav.fieldReport;
+    if (item.path === "/report-problem") return t.nav.reportProblem;
+    if (item.path === "/my-reports") return t.nav.myReports;
+    if (item.path === "/login") return t.auth?.tabLogin || "Sign In";
     return item.name;
   };
 
@@ -164,7 +188,7 @@ function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-3 py-6">
         {isOpen && (
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-600">
-            Operations
+            {t.nav.operations}
           </p>
         )}
 
@@ -236,18 +260,18 @@ function Sidebar() {
               ? "gap-2 px-3 py-3"
               : "justify-center px-2 py-3"
           }`}
-          title={!isOpen ? "System Operational" : undefined}
+          title={!isOpen ? t.nav.systemOperational : undefined}
         >
           <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" />
 
           {isOpen && (
             <div>
               <p className="text-xs font-medium text-slate-800 dark:text-slate-300">
-                System Operational
+                {t.nav.systemOperational}
               </p>
 
               <p className="mt-0.5 text-[10px] text-slate-500 dark:text-slate-600">
-                All services running
+                {t.nav.allServicesRunning}
               </p>
             </div>
           )}

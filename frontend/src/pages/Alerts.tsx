@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth, getAuthApiUrl } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import { useWebSocket } from "../hooks/useWebSocket";
 
 type AlertSeverity = "Critical" | "High" | "Medium" | "Low";
@@ -114,6 +115,7 @@ function alertIcon(type: string) {
 
 function Alerts() {
   const { getAuthHeader } = useAuth();
+  const { t, formatString } = useLanguage();
   const { subscribe } = useWebSocket();
   const apiBase = getAuthApiUrl();
 
@@ -345,35 +347,35 @@ function Alerts() {
 
     return [
       {
-        label: "Total Alerts",
+        label: t.alerts.totalAlerts,
         value: String(totalCount).padStart(2, "0"),
-        description: "Recorded incidents & risks",
+        description: t.alerts.totalAlertsSub,
         icon: Bell,
         iconClass: "border border-cyan-200 bg-cyan-50 text-cyan-700 dark:border-transparent dark:bg-cyan-500/10 dark:text-cyan-400",
       },
       {
-        label: "Critical",
+        label: t.alerts.criticalAlerts,
         value: String(critCount).padStart(2, "0"),
-        description: "Requires immediate action",
+        description: t.alerts.criticalAlertsSub,
         icon: ShieldAlert,
         iconClass: "border border-red-200 bg-red-50 text-red-700 dark:border-transparent dark:bg-red-500/10 dark:text-red-400",
       },
       {
-        label: "High Priority",
+        label: t.alerts.highMediumAlerts,
         value: String(highCount).padStart(2, "0"),
-        description: "Needs active monitoring",
+        description: t.alerts.highMediumAlertsSub,
         icon: AlertTriangle,
         iconClass: "border border-orange-200 bg-orange-50 text-orange-700 dark:border-transparent dark:bg-orange-500/10 dark:text-orange-400",
       },
       {
-        label: "Acknowledged",
+        label: t.alerts.statusAcknowledged,
         value: String(ackCount).padStart(2, "0"),
-        description: "Reviewed by operators",
+        description: t.alerts.acknowledgedBadge,
         icon: CheckCircle2,
         iconClass: "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-transparent dark:bg-emerald-500/10 dark:text-emerald-400",
       },
     ];
-  }, [summary, alerts]);
+  }, [summary, alerts, t]);
 
   const criticalCount = summary?.critical ?? alerts.filter((a) => a.severity === "Critical" && a.status === "Active").length;
 
@@ -383,10 +385,10 @@ function Alerts() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
-            Alerts & Notifications
+            {t.alerts.title}
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Monitor critical logistics, road, weather, reroute, and vehicle alerts across the North Eastern Region
+            {t.alerts.subtitle}
           </p>
         </div>
 
@@ -398,12 +400,12 @@ function Alerts() {
             className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-            Refresh
+            {t.common.refresh}
           </button>
 
           <div className="flex items-center gap-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
             <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500 dark:bg-emerald-400" />
-            Alert Engine Online
+            {t.common.online}
           </div>
         </div>
       </div>
@@ -426,7 +428,7 @@ function Alerts() {
             onClick={() => setActionError("")}
             className="text-amber-700 hover:text-amber-900 ml-4 font-semibold dark:text-amber-400/70 dark:hover:text-amber-300"
           >
-            Dismiss
+            {t.common.close}
           </button>
         </div>
       )}
@@ -464,10 +466,10 @@ function Alerts() {
             </div>
             <div>
               <p className="text-sm font-semibold text-red-900 dark:text-red-400">
-                {criticalCount} critical alert{criticalCount > 1 ? "s" : ""} require attention
+                {criticalCount} {t.alerts.criticalAlerts}
               </p>
               <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                These alerts indicate verified blockages, hazardous corridor conditions, or delayed supply trips requiring immediate operator action.
+                {t.alerts.criticalAlertsSub}
               </p>
             </div>
           </div>
@@ -477,7 +479,7 @@ function Alerts() {
             onClick={() => setSelectedSeverity("Critical")}
             className="rounded-lg border border-red-200 bg-white px-4 py-2 text-xs font-semibold text-red-700 shadow-sm transition hover:bg-red-100 dark:border-transparent dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500/20"
           >
-            View Critical Alerts
+            {t.common.view} {t.alerts.criticalAlerts}
           </button>
         </div>
       )}
@@ -486,9 +488,9 @@ function Alerts() {
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="font-semibold text-slate-900 dark:text-white">Alert Center</h2>
+            <h2 className="font-semibold text-slate-900 dark:text-white">{t.alerts.title}</h2>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Live operational alerts ({filteredAlerts.length} matching)
+              {formatString(t.incidents.showingCount, { count: filteredAlerts.length, total: alerts.length })}
             </p>
           </div>
 
@@ -499,7 +501,7 @@ function Alerts() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search alerts..."
+                placeholder={t.alerts.searchPlaceholder}
                 className="w-full bg-transparent text-xs text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-slate-600 sm:w-44"
               />
             </div>
@@ -509,10 +511,10 @@ function Alerts() {
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
             >
-              <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Acknowledged">Acknowledged</option>
-              <option value="Resolved">Resolved</option>
+              <option value="All">{t.alerts.filterStatusAll}</option>
+              <option value="Active">{t.alerts.statusActive}</option>
+              <option value="Acknowledged">{t.alerts.statusAcknowledged}</option>
+              <option value="Resolved">{t.alerts.statusResolved}</option>
             </select>
 
             <select
@@ -520,11 +522,11 @@ function Alerts() {
               onChange={(e) => setSelectedSeverity(e.target.value)}
               className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
             >
-              <option value="All">All Severities</option>
-              <option value="Critical">Critical</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
+              <option value="All">{t.alerts.filterSeverityAll}</option>
+              <option value="Critical">{t.common.critical}</option>
+              <option value="High">{t.common.high}</option>
+              <option value="Medium">{t.common.medium}</option>
+              <option value="Low">{t.common.low}</option>
             </select>
 
             <select
@@ -532,7 +534,7 @@ function Alerts() {
               onChange={(e) => setSelectedType(e.target.value)}
               className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
             >
-              <option value="All">All Types</option>
+              <option value="All">{t.common.all}</option>
               <option value="Predictive Disruption">Predictive Disruption</option>
               <option value="Confirmed Corridor Blockage">Confirmed Corridor Blockage</option>
               <option value="Road Incident">Road Incident</option>
@@ -550,7 +552,7 @@ function Alerts() {
                 onChange={(e) => setHideTestFixtures(e.target.checked)}
                 className="rounded border-slate-300 bg-white text-cyan-600 focus:ring-0 focus:ring-offset-0 dark:border-slate-700 dark:bg-slate-900 dark:text-cyan-500"
               />
-              <span>Hide test fixtures</span>
+              <span>{t.incidents.hideTest}</span>
             </label>
           </div>
         </div>
@@ -561,16 +563,16 @@ function Alerts() {
         {loading && (
           <div className="flex items-center justify-center rounded-xl border border-slate-200 bg-white p-12 text-slate-500 text-xs shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <RefreshCw size={18} className="mr-2 animate-spin text-cyan-600 dark:text-cyan-400" />
-            Loading operational alerts...
+            {t.common.loading}
           </div>
         )}
 
         {!loading && filteredAlerts.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <CheckCircle2 size={32} className="text-emerald-500 dark:text-emerald-400" />
-            <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-white">No matching alerts</p>
+            <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-white">{t.alerts.noAlertsFound}</p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              All monitored logistics corridors and active vehicles are operating normally.
+              {t.alerts.sourcesSub}
             </p>
           </div>
         )}
@@ -689,7 +691,11 @@ function Alerts() {
                               : "bg-slate-400 dark:bg-slate-600"
                         }`}
                       />
-                      {alert.status}
+                      {alert.status === "Active"
+                        ? t.alerts.statusActive
+                        : alert.status === "Acknowledged"
+                        ? t.alerts.statusAcknowledged
+                        : t.alerts.statusResolved}
                     </span>
 
                     {alert.status === "Active" && (
@@ -699,7 +705,7 @@ function Alerts() {
                         disabled={actionLoadingId === alert.rawId}
                         className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 hover:text-slate-900 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:text-white"
                       >
-                        {actionLoadingId === alert.rawId ? "Updating..." : "Acknowledge"}
+                        {actionLoadingId === alert.rawId ? t.common.saving : t.alerts.acknowledgeBtn}
                       </button>
                     )}
 
@@ -710,13 +716,13 @@ function Alerts() {
                         disabled={actionLoadingId === alert.rawId}
                         className="rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2 text-xs font-medium text-emerald-800 shadow-sm transition hover:bg-emerald-100 disabled:opacity-50 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
                       >
-                        {actionLoadingId === alert.rawId ? "Updating..." : "Resolve"}
+                        {actionLoadingId === alert.rawId ? t.common.saving : t.alerts.resolveBtn}
                       </button>
                     )}
 
                     {alert.status === "Resolved" && (
                       <span className="rounded-lg border border-slate-200 bg-slate-100 px-3 py-1.5 text-[11px] font-medium text-slate-600 dark:border-transparent dark:bg-slate-950 dark:text-slate-500">
-                        Resolved
+                        {t.alerts.statusResolved}
                       </span>
                     )}
                   </div>
@@ -734,28 +740,28 @@ function Alerts() {
               <Bell size={19} />
             </div>
             <div>
-              <h2 className="font-semibold text-slate-900 dark:text-white">Alert Sources</h2>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Where operational alerts originate</p>
+              <h2 className="font-semibold text-slate-900 dark:text-white">{t.alerts.sourcesTitle}</h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.alerts.sourcesSub}</p>
             </div>
           </div>
 
           <div className="mt-5 space-y-3">
             <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-transparent dark:bg-slate-950">
-              <span className="text-xs text-slate-600 dark:text-slate-400">Road & Landslide Monitoring</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">{t.alerts.sourceIncident}</span>
               <span className="text-xs font-medium text-slate-900 dark:text-white">
                 {alerts.filter((a) => a.type === "Road Incident" || a.type === "Road Risk").length} alerts
               </span>
             </div>
 
             <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-transparent dark:bg-slate-950">
-              <span className="text-xs text-slate-600 dark:text-slate-400">Dynamic Reroute & Trip Delay</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">{t.alerts.sourceGps}</span>
               <span className="text-xs font-medium text-slate-900 dark:text-white">
                 {alerts.filter((a) => a.type === "Reroute" || a.type === "Trip Delay").length} alerts
               </span>
             </div>
 
             <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-3 dark:border-transparent dark:bg-slate-950">
-              <span className="text-xs text-slate-600 dark:text-slate-400">Vehicle Telemetry & Tracking</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400">{t.vehicles.telemetryDetails}</span>
               <span className="text-xs font-medium text-slate-900 dark:text-white">
                 {alerts.filter((a) => a.type === "Vehicle").length} alerts
               </span>
@@ -769,8 +775,8 @@ function Alerts() {
               <ShieldAlert size={19} />
             </div>
             <div>
-              <h2 className="font-semibold text-slate-900 dark:text-white">Alert Intelligence</h2>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Automated risk detection & duplicate suppression</p>
+              <h2 className="font-semibold text-slate-900 dark:text-white">{t.alerts.sourceAiModel}</h2>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.alerts.sourcesSub}</p>
             </div>
           </div>
 
@@ -809,9 +815,9 @@ function Alerts() {
       <div className="flex items-start gap-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-4 dark:border-cyan-500/10 dark:bg-cyan-500/5">
         <AlertCircle size={18} className="mt-0.5 shrink-0 text-cyan-600 dark:text-cyan-400" />
         <div>
-          <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-400">Intelligent alerting active</p>
+          <p className="text-sm font-semibold text-cyan-900 dark:text-cyan-400">{t.alerts.title}</p>
           <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-400">
-            NEXUS-NER automatically generates prioritized operational alerts when field disruptions occur, road corridor risks escalate, active trips encounter blockages, or vehicles are dynamically rerouted. Duplicate suppression avoids operator fatigue.
+            {t.alerts.subtitle}
           </p>
         </div>
       </div>

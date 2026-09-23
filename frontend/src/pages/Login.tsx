@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Lock, User, Mail, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
+import LanguageSelector from "../components/LanguageSelector";
 
 export const Login: React.FC = () => {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -14,6 +16,7 @@ export const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login, register } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -85,7 +88,12 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-4 py-12 text-white">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-4 py-12 text-white relative">
+      {/* Language Switcher in top right corner */}
+      <div className="absolute top-4 right-4 z-20">
+        <LanguageSelector variant="compact" />
+      </div>
+
       {/* Background radial glow */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute left-1/2 top-1/3 -translate-x-1/2 -translate-y-1/2 h-[450px] w-[650px] rounded-full bg-cyan-500/10 blur-[130px]" />
@@ -103,7 +111,7 @@ export const Login: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">NEXUS-NER</h1>
           <p className="mt-1 text-xs text-slate-400">
-            North Eastern Region Logistics Intelligence & Security Platform
+            {t.auth.platformSubtitle}
           </p>
         </div>
 
@@ -124,7 +132,7 @@ export const Login: React.FC = () => {
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              Sign In
+              {t.auth.tabLogin}
             </button>
             <button
               type="button"
@@ -139,18 +147,16 @@ export const Login: React.FC = () => {
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              Register (Public)
+              {t.auth.tabRegister}
             </button>
           </div>
 
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-white">
-              {mode === "login" ? "Operator Sign In" : "Public User Registration"}
+              {mode === "login" ? t.auth.loginTitle : t.auth.registerTitle}
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              {mode === "login"
-                ? "Enter your credentials to access the North East Control Tower"
-                : "Create a standard public account for regional citizen access"}
+              {mode === "login" ? t.auth.loginSubtitle : t.auth.registerSubtitle}
             </p>
           </div>
 
@@ -172,7 +178,7 @@ export const Login: React.FC = () => {
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Username or Email
+                  {t.auth.usernameLabel}
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
@@ -182,7 +188,7 @@ export const Login: React.FC = () => {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="e.g. operator or admin"
+                    placeholder={t.auth.usernamePlaceholder}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     required
                   />
@@ -191,7 +197,7 @@ export const Login: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Password
+                  {t.auth.passwordLabel}
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
@@ -201,7 +207,7 @@ export const Login: React.FC = () => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
+                    placeholder={t.auth.passwordPlaceholder}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     required
                   />
@@ -214,10 +220,10 @@ export const Login: React.FC = () => {
                 className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:from-cyan-400 hover:to-blue-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <span>Authenticating...</span>
+                  <span>{t.auth.authenticating}</span>
                 ) : (
                   <>
-                    <span>Sign In to Control Tower</span>
+                    <span>{t.auth.loginSubmitBtn}</span>
                     <ArrowRight size={16} />
                   </>
                 )}
@@ -227,7 +233,7 @@ export const Login: React.FC = () => {
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Username
+                  {t.auth.usernameLabel}
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
@@ -237,7 +243,7 @@ export const Login: React.FC = () => {
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="e.g. rahul_sharma"
+                    placeholder={t.auth.usernamePlaceholder}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     required
                   />
@@ -246,7 +252,7 @@ export const Login: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Email Address
+                  {t.auth.emailLabel}
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
@@ -256,7 +262,7 @@ export const Login: React.FC = () => {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. rahul@example.com"
+                    placeholder={t.auth.emailPlaceholder}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     required
                   />
@@ -265,7 +271,7 @@ export const Login: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Password
+                  {t.auth.passwordLabel}
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
@@ -275,7 +281,7 @@ export const Login: React.FC = () => {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="At least 6 characters"
+                    placeholder={t.auth.passwordPlaceholder}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     required
                   />
@@ -284,7 +290,7 @@ export const Login: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Confirm Password
+                  {t.auth.confirmPasswordLabel}
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
@@ -294,7 +300,7 @@ export const Login: React.FC = () => {
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Re-enter password"
+                    placeholder={t.auth.confirmPasswordPlaceholder}
                     className="w-full rounded-xl border border-slate-700 bg-slate-950/70 py-2.5 pl-10 pr-3 text-sm text-white placeholder-slate-500 transition focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     required
                   />
@@ -307,10 +313,10 @@ export const Login: React.FC = () => {
                 className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:from-emerald-400 hover:to-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <span>Registering...</span>
+                  <span>{t.auth.registering}</span>
                 ) : (
                   <>
-                    <span>Create Public Account</span>
+                    <span>{t.auth.registerSubmitBtn}</span>
                     <ArrowRight size={16} />
                   </>
                 )}
@@ -321,7 +327,7 @@ export const Login: React.FC = () => {
           {/* Quick-select Demo Credentials */}
           <div className="mt-8 border-t border-slate-800/80 pt-5">
             <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2.5">
-              Quick-Select Demo Accounts (SIH 2026):
+              {t.auth.demoRolesLabel}
             </p>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -331,7 +337,7 @@ export const Login: React.FC = () => {
               >
                 <CheckCircle2 size={13} className="text-cyan-400 shrink-0" />
                 <div className="truncate">
-                  <span className="font-medium text-slate-200">Operator</span>
+                  <span className="font-medium text-slate-200">{t.auth.roleOperator}</span>
                   <p className="text-[10px] text-slate-500 truncate">CONTROL_OPERATOR</p>
                 </div>
               </button>
@@ -343,7 +349,7 @@ export const Login: React.FC = () => {
               >
                 <CheckCircle2 size={13} className="text-purple-400 shrink-0" />
                 <div className="truncate">
-                  <span className="font-medium text-slate-200">Admin</span>
+                  <span className="font-medium text-slate-200">{t.auth.roleAdmin}</span>
                   <p className="text-[10px] text-slate-500 truncate">ADMIN</p>
                 </div>
               </button>
@@ -355,7 +361,7 @@ export const Login: React.FC = () => {
               >
                 <CheckCircle2 size={13} className="text-amber-400 shrink-0" />
                 <div className="truncate">
-                  <span className="font-medium text-slate-200">Field Officer</span>
+                  <span className="font-medium text-slate-200">{t.auth.roleFieldOfficer}</span>
                   <p className="text-[10px] text-slate-500 truncate">FIELD_OFFICER</p>
                 </div>
               </button>
@@ -367,7 +373,7 @@ export const Login: React.FC = () => {
               >
                 <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
                 <div className="truncate">
-                  <span className="font-medium text-slate-200">Driver</span>
+                  <span className="font-medium text-slate-200">{t.auth.roleDriver}</span>
                   <p className="text-[10px] text-slate-500 truncate">DRIVER</p>
                 </div>
               </button>
@@ -377,7 +383,7 @@ export const Login: React.FC = () => {
 
         {/* Footer info */}
         <p className="mt-6 text-center text-[11px] text-slate-600">
-          Smart India Hackathon 2026 &bull; SIH-NER &bull; Enterprise RBAC Protected
+          {t.auth.footerInfo}
         </p>
       </div>
     </div>

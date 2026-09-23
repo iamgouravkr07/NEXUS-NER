@@ -11,6 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -34,6 +35,7 @@ type CitizenReport = {
 
 export default function MyReports() {
   const { getAuthHeader } = useAuth();
+  const { t, formatString } = useLanguage();
   const [reports, setReports] = useState<CitizenReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -67,14 +69,14 @@ export default function MyReports() {
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-50 text-emerald-700 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-400 px-2.5 py-0.5 text-xs font-bold">
             <CheckCircle2 size={13} />
-            <span>Verified — Incident Active</span>
+            <span>{t.myReports.statusVerified}</span>
           </span>
         );
       case "REJECTED":
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-red-500/30 bg-red-50 text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-400 px-2.5 py-0.5 text-xs font-bold">
             <XCircle size={13} />
-            <span>Rejected</span>
+            <span>{t.myReports.statusRejected}</span>
           </span>
         );
       case "UNVERIFIED":
@@ -82,7 +84,7 @@ export default function MyReports() {
         return (
           <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300 px-2.5 py-0.5 text-xs font-bold">
             <Clock3 size={13} />
-            <span>UNVERIFIED (Under Review)</span>
+            <span>{t.myReports.statusUnverified}</span>
           </span>
         );
     }
@@ -93,9 +95,9 @@ export default function MyReports() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">My Submitted Reports</h1>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{t.myReports.title}</h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Track operational verification and status of your citizen hazard submissions.
+            {t.myReports.subtitle}
           </p>
         </div>
 
@@ -107,14 +109,14 @@ export default function MyReports() {
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 transition"
           >
             <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-            <span>Refresh</span>
+            <span>{t.myReports.refreshBtn}</span>
           </button>
           <Link
             to="/report-problem"
             className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 px-3.5 py-2 text-xs font-bold text-white shadow-lg transition"
           >
             <Plus size={15} />
-            <span>New Report</span>
+            <span>{t.myReports.newReportBtn}</span>
           </Link>
         </div>
       </div>
@@ -129,7 +131,7 @@ export default function MyReports() {
       {loading && reports.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-12 text-center text-slate-600 dark:text-slate-400 shadow-sm dark:shadow-none">
           <RefreshCw size={24} className="animate-spin mx-auto mb-3 text-cyan-600 dark:text-cyan-400" />
-          <p className="text-sm">Loading your citizen reports...</p>
+          <p className="text-sm">{t.common.loading}</p>
         </div>
       ) : reports.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-12 text-center space-y-4 shadow-sm dark:shadow-none">
@@ -137,9 +139,9 @@ export default function MyReports() {
             <FileText size={26} />
           </div>
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">No Submitted Reports Found</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">{t.myReports.emptyTitle}</h3>
             <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto mt-1">
-              You haven't reported any road hazards or disruptions yet. Notice something on the road?
+              {t.myReports.emptyDesc}
             </p>
           </div>
           <Link
@@ -147,7 +149,7 @@ export default function MyReports() {
             className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition"
           >
             <Plus size={15} />
-            <span>Report a Road Hazard</span>
+            <span>{t.myReports.reportHazardBtn}</span>
           </Link>
         </div>
       ) : (
@@ -183,14 +185,14 @@ export default function MyReports() {
               {/* Rejection / Verification Feedback Banner */}
               {report.status === "REJECTED" && report.rejection_reason && (
                 <div className="rounded-lg border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 p-2.5 text-xs text-red-800 dark:text-red-300">
-                  <span className="font-semibold block text-[11px] text-red-900 dark:text-red-200">Reviewer Feedback:</span>
+                  <span className="font-semibold block text-[11px] text-red-900 dark:text-red-200">{t.myReports.reviewerFeedback}:</span>
                   {report.rejection_reason}
                 </div>
               )}
               {report.status === "VERIFIED" && report.converted_incident_id && (
                 <div className="rounded-lg border border-emerald-200 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 p-2.5 text-xs text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
-                  <span>Linked to Official Incident: <strong>#{report.converted_incident_id}</strong></span>
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Active in Risk Engine</span>
+                  <span>{formatString(t.myReports.linkedIncident, { id: report.converted_incident_id })}</span>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">{t.myReports.activeInRiskEngine}</span>
                 </div>
               )}
 
@@ -203,12 +205,12 @@ export default function MyReports() {
                   </span>
                   {report.road_name && (
                     <span className="text-slate-700 dark:text-slate-300 font-medium">
-                      Corridor: {report.road_name}
+                      {t.myReports.corridorLabel}: {report.road_name}
                     </span>
                   )}
                 </div>
                 <span>
-                  Submitted {new Date(report.created_at).toLocaleString([], {
+                  {t.myReports.submittedOn} {new Date(report.created_at).toLocaleString([], {
                     dateStyle: "short",
                     timeStyle: "short",
                   })}

@@ -4,8 +4,10 @@ import { networkService } from '../services/network';
 import type { AppNetworkStatus } from '../services/network';
 import { syncQueue } from '../offline/syncQueue';
 import { syncWorker } from '../offline/syncWorker';
+import { useLanguage } from '../context/LanguageContext';
 
 export const NetworkBanner: React.FC = () => {
+  const { t } = useLanguage();
   const [network, setNetwork] = useState<AppNetworkStatus>(networkService.getStatus());
   const [pendingCount, setPendingCount] = useState<number>(0);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -54,16 +56,16 @@ export const NetworkBanner: React.FC = () => {
       <div className="flex items-center justify-between bg-amber-50 dark:bg-amber-500/10 border-b border-amber-200 dark:border-amber-500/20 px-4 py-2 text-xs text-amber-800 dark:text-amber-400">
         <div className="flex items-center gap-2">
           <WifiOff size={16} className="shrink-0" />
-          <span className="font-semibold uppercase tracking-wider">Offline Mode</span>
+          <span className="font-semibold uppercase tracking-wider">{t.network.offlineMode}</span>
           <span className="text-slate-400 dark:text-slate-600 hidden sm:inline">|</span>
           <span className="text-slate-600 dark:text-slate-300">
             {pendingCount > 0
-              ? `${pendingCount} event${pendingCount > 1 ? 's' : ''} queued locally in outbox`
-              : 'Local storage active — reports will queue offline'}
+              ? `${pendingCount} ${t.fieldReport.pendingOutboxBadge}`
+              : t.fieldReport.outboxActiveTitle}
           </span>
         </div>
         <span className="rounded-full bg-amber-200/60 dark:bg-amber-500/20 px-2.5 py-0.5 text-[10px] font-medium text-amber-900 dark:text-amber-300">
-          No Internet
+          {t.network.noInternet}
         </span>
       </div>
     );
@@ -75,10 +77,10 @@ export const NetworkBanner: React.FC = () => {
       <div className="flex items-center justify-between bg-cyan-50 dark:bg-cyan-500/10 border-b border-cyan-200 dark:border-cyan-500/20 px-4 py-2 text-xs text-cyan-800 dark:text-cyan-400">
         <div className="flex items-center gap-2">
           <RefreshCw size={15} className={`shrink-0 ${isSyncing ? 'animate-spin' : ''}`} />
-          <span className="font-semibold uppercase tracking-wider">Outbox Pending</span>
+          <span className="font-semibold uppercase tracking-wider">{t.network.pendingOutbox}</span>
           <span className="text-slate-400 dark:text-slate-600 hidden sm:inline">|</span>
           <span className="text-slate-600 dark:text-slate-300">
-            {pendingCount} event{pendingCount > 1 ? 's' : ''} ready to synchronize
+            {pendingCount} {t.fieldReport.pendingOutboxBadge}
           </span>
         </div>
         <button
@@ -88,7 +90,7 @@ export const NetworkBanner: React.FC = () => {
           className="flex items-center gap-1.5 rounded bg-cyan-600 text-white hover:bg-cyan-500 dark:bg-cyan-500/20 dark:hover:bg-cyan-500/30 dark:text-cyan-300 px-2.5 py-1 text-[11px] font-semibold transition"
         >
           <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
-          {isSyncing ? 'Syncing...' : 'Sync Now'}
+          {isSyncing ? t.network.syncing : t.network.syncNow}
         </button>
       </div>
     );
@@ -99,14 +101,14 @@ export const NetworkBanner: React.FC = () => {
     <div className="flex items-center justify-between bg-slate-100/80 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800/80 px-4 py-1.5 text-[11px] text-slate-600 dark:text-slate-400">
       <div className="flex items-center gap-2">
         <Wifi size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-        <span className="font-medium text-emerald-700 dark:text-emerald-400">Online</span>
+        <span className="font-medium text-emerald-700 dark:text-emerald-400">{t.network.online}</span>
         <span className="text-slate-400 dark:text-slate-600">·</span>
         <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1">
           <CheckCircle2 size={12} className="text-emerald-600 dark:text-emerald-500" />
-          Offline outbox clear
+          {t.network.offlineOutboxClear}
         </span>
       </div>
-      <span className="text-[10px] text-slate-500">Auto-sync active</span>
+      <span className="text-[10px] text-slate-500">{t.network.autoSyncActive}</span>
     </div>
   );
 };

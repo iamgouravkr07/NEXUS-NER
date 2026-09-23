@@ -1,20 +1,20 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, FileText, Bell, Route, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Route, ShieldAlert, AlertTriangle, LogIn, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 export const MobileBottomNav: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const role = user?.role || '';
+  const role = user?.role || 'GUEST';
 
   const navItems = [
     {
-      name: role === 'DRIVER' ? 'Mission' : t.nav.controlTower,
+      name: role === 'DRIVER' ? 'Mission' : role === 'GUEST' ? 'Home' : t.nav.controlTower,
       path: '/',
       icon: LayoutDashboard,
-      roles: ['ADMIN', 'CONTROL_OPERATOR', 'DRIVER'],
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'DRIVER', 'GUEST'],
     },
     {
       name: t.nav.fieldReport,
@@ -25,14 +25,14 @@ export const MobileBottomNav: React.FC = () => {
     {
       name: 'Road Risk',
       path: '/road-risk',
-      icon: LayoutDashboard,
-      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER', 'PUBLIC'],
+      icon: Activity,
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER', 'PUBLIC', 'GUEST'],
     },
     {
       name: 'Report',
       path: '/report-problem',
       icon: AlertTriangle,
-      roles: ['PUBLIC'],
+      roles: ['PUBLIC', 'GUEST'],
     },
     {
       name: 'My Reports',
@@ -58,9 +58,15 @@ export const MobileBottomNav: React.FC = () => {
       icon: ShieldAlert,
       roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER'],
     },
+    {
+      name: 'Sign In',
+      path: '/login',
+      icon: LogIn,
+      roles: ['GUEST'],
+    },
   ];
 
-  const visibleItems = navItems.filter((item) => item.roles.includes(role) || !role);
+  const visibleItems = navItems.filter((item) => item.roles.includes(role));
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 text-slate-900 backdrop-blur border-t border-slate-200 dark:bg-slate-950/95 dark:text-white dark:border-slate-800 px-2 py-1.5 flex items-center justify-around pb-[max(0.375rem,env(safe-area-inset-bottom))] transition-colors duration-150">

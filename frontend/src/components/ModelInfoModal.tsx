@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { BrainCircuit, X, Database, ShieldAlert, CheckCircle2 } from "lucide-react";
 import { mlClient } from "../api/mlClient";
 import type { ModelMetadataResponse } from "../types/ml";
+import { useLanguage } from "../context/LanguageContext";
 
 interface ModelInfoModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const ModelInfoModal: React.FC<ModelInfoModalProps> = ({
   onClose,
   metadata: initialMetadata,
 }) => {
+  const { t } = useLanguage();
   const [metadata, setMetadata] = useState<ModelMetadataResponse | null>(
     initialMetadata || null
   );
@@ -58,10 +60,10 @@ export const ModelInfoModal: React.FC<ModelInfoModalProps> = ({
             </div>
             <div>
               <h3 id="model-info-title" className="text-base font-semibold text-slate-900 dark:text-white">
-                ML Model & Dataset Architecture
+                {t.modelInfo.title}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                NEXUS-NER Disruption Prediction Subsystem
+                {t.modelInfo.subtitle}
               </p>
             </div>
           </div>
@@ -183,11 +185,11 @@ export const ModelInfoModal: React.FC<ModelInfoModalProps> = ({
                   <ShieldAlert size={18} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
                   <div className="text-xs space-y-1">
                     <p className="font-semibold text-amber-800 dark:text-amber-300">
-                      Smart India Hackathon Data Honesty Declaration
+                      {t.modelInfo.sihDeclarationTitle}
                     </p>
                     <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
                       {metadata.data_honesty_notice ||
-                        "This prototype model was trained using physics-informed training/augmentation data and has not been validated as certified real-world government operational accuracy."}
+                        t.modelInfo.sihDeclarationDesc}
                     </p>
                     <p className="text-slate-500 dark:text-slate-400 text-[11px] pt-1">
                       Deterministic operational risk remains the authoritative basis for road status and routing decisions.
@@ -210,7 +212,7 @@ export const ModelInfoModal: React.FC<ModelInfoModalProps> = ({
             onClick={onClose}
             className="rounded-lg border border-slate-200 bg-white px-4 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white transition cursor-pointer"
           >
-            Close
+            {t.common.close}
           </button>
         </div>
       </div>
