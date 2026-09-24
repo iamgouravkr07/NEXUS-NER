@@ -139,7 +139,7 @@ export default function PublicReport() {
     setIsSubmitting(true);
     try {
       let res: Response;
-      if (photo?.file) {
+      if (photo) {
         const formData = new FormData();
         formData.append("latitude", lat.toString());
         formData.append("longitude", lon.toString());
@@ -149,7 +149,17 @@ export default function PublicReport() {
         if (roadId !== "") {
           formData.append("road_id", roadId.toString());
         }
-        formData.append("photo", photo.file, photo.name || "report_photo.jpg");
+        if (photo.file) {
+          formData.append("photo", photo.file, photo.name || "report_photo.jpg");
+        } else if (photo.webPath) {
+          try {
+            const blobRes = await fetch(photo.webPath);
+            const blob = await blobRes.blob();
+            formData.append("photo", blob, photo.name || "report_photo.jpg");
+          } catch {
+            // fallback if blob fetch fails
+          }
+        }
 
         res = await fetch(`${API_URL}/public-reports/`, {
           method: "POST",
