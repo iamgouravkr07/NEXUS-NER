@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
@@ -17,8 +17,32 @@ import { useLanguage } from "../context/LanguageContext";
 import { geolocationService } from "../services/geolocation";
 import { cameraService } from "../services/camera";
 import type { PhotoEvidence } from "../services/camera";
+import { getStorage } from "../offline/database";
+import type { IncidentQueueRecord } from "../offline/database";
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
+const PUBLIC_DRAFT_KEY = "public_report_draft";
+
+function dataUrlToFile(dataUrl: string, fileName: string, mimeType: string): File {
+  const parts = dataUrl.split(",");
+  const base64 = parts.length > 1 ? parts[1] : parts[0];
+  const binaryStr = atob(base64);
+  const len = binaryStr.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  return new File([bytes], fileName, { type: mimeType });
+}
+
+function fileToDataUrl(file: File | Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 const REPORT_TYPES = [
   { value: "LANDSLIDE", label: "Landslide / Rockfall" },
@@ -56,6 +80,9 @@ export default function PublicReport() {
   const [roadId, setRoadId] = useState<number | "">("");
   const [photo, setPhoto] = useState<PhotoEvidence | null>(null);
 
+  const photoDataUrlRef = useRef<string | null>(null);
+  const isRestoringRef = useRef<boolean>(true);
+
   const [roads, setRoads] = useState<Road[]>([]);
   const [isLocating, setIsLocating] = useState(false);
   const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
@@ -63,15 +90,248 @@ export default function PublicReport() {
   const [errorMessage, setErrorMessage] = useState("");
   const [submittedReport, setSubmittedReport] = useState<any | null>(null);
 
+  const saveDraft = useCallback(
+    async (
+      typeVal: string,
+      sevVal: string,
+      descVal: string,
+      latVal: string,
+      lonVal: string,
+      roadVal: number | "",
+      photoVal: PhotoEvidence | null,
+      dataUrlVal: string | null
+    ) => {
+      if (isRestoringRef.current) return;
+      const hasContent =
+        descVal.trim().length > 0 ||
+        photoVal !== null ||
+        roadVal !== "" ||
+        latVal !== "26.1445" ||
+        lonVal !== "91.7362";
+
+      try {
+        const storage = getStorage();
+        await storage.init();
+
+        if (!hasContent) {
+          const existing = await storage.getIncidentDraft(PUBLIC_DRAFT_KEY);
+          if (existing && existing.status === "DRAFT") {
+            await storage.insertIncidentDraft({
+              ...existing,
+              description: "",
+              local_photo_path: null,
+              photo_metadata: null,
+              status: "CLEARED",
+            });
+          }
+          return;
+        }
+
+        const metaObj: Record<string, any> = {
+          road_id: roadVal !== "" ? roadVal : null,
+        };
+        if (photoVal) {
+          metaObj.id = photoVal.id;
+          metaObj.name = photoVal.name;
+          metaObj.sizeBytes = photoVal.sizeBytes;
+          metaObj.mimeType = photoVal.mimeType;
+          metaObj.timestamp = photoVal.timestamp;
+          if (dataUrlVal) {
+            metaObj.dataUrl = dataUrlVal;
+          }
+        }
+
+        const draftRecord: IncidentQueueRecord = {
+          client_id: PUBLIC_DRAFT_KEY,
+          incident_type: typeVal.toLowerCase(),
+          severity: sevVal.toLowerCase(),
+          description: descVal,
+          latitude: parseFloat(latVal) || 26.1445,
+          longitude: parseFloat(lonVal) || 91.7362,
+          location_name: roadVal !== "" ? `Road #${roadVal}` : null,
+          local_photo_path: photoVal?.localUri || (photoVal ? `local_blob://${photoVal.name}` : null),
+          photo_metadata: JSON.stringify(metaObj),
+          status: "DRAFT",
+          created_at: new Date().toISOString(),
+        };
+
+        await storage.insertIncidentDraft(draftRecord);
+      } catch (err) {
+        console.warn("Could not save public report draft:", err);
+      }
+    },
+    []
+  );
+
+  // Restore draft on mount
+  useEffect(() => {
+    async function restoreDraft() {
+      try {
+        const storage = getStorage();
+        await storage.init();
+
+        // 1. Check dedicated public report draft first
+        let draft = await storage.getIncidentDraft(PUBLIC_DRAFT_KEY);
+
+        // 2. If not found or inactive, look for any draft in incident_queue with status === 'DRAFT'
+        if (!draft || draft.status !== "DRAFT") {
+          const drafts = await storage.getIncidentDrafts();
+          const candidate =
+            drafts.find((d) => d.client_id === PUBLIC_DRAFT_KEY && d.status === "DRAFT") ||
+            drafts.find((d) => d.status === "DRAFT");
+          if (candidate && candidate.status === "DRAFT") {
+            draft = candidate;
+          }
+        }
+
+        if (draft && draft.status === "DRAFT") {
+          if (draft.description) {
+            setDescription(draft.description);
+          }
+          if (draft.incident_type) {
+            let normalized = draft.incident_type.toUpperCase().replace(/\s+/g, "_");
+            if (normalized === "FLOODING") normalized = "FLOOD";
+            if (REPORT_TYPES.some((r) => r.value === normalized)) {
+              setReportType(normalized);
+            }
+          }
+          if (draft.severity) {
+            const sev = draft.severity.toLowerCase();
+            if (SEVERITY_LEVELS.some((s) => s.value === sev)) {
+              setSeverityHint(sev);
+            }
+          }
+          if (typeof draft.latitude === "number" && !isNaN(draft.latitude)) {
+            setLatitude(draft.latitude.toString());
+          }
+          if (typeof draft.longitude === "number" && !isNaN(draft.longitude)) {
+            setLongitude(draft.longitude.toString());
+          }
+
+          let meta: any = null;
+          if (draft.photo_metadata) {
+            try {
+              meta = JSON.parse(draft.photo_metadata);
+            } catch {
+              meta = null;
+            }
+          }
+
+          if (meta?.road_id) {
+            setRoadId(Number(meta.road_id));
+          } else if (draft.location_name && draft.location_name.startsWith("Road #")) {
+            const parsed = parseInt(draft.location_name.replace("Road #", ""), 10);
+            if (!isNaN(parsed)) setRoadId(parsed);
+          }
+
+          if (meta?.dataUrl || draft.local_photo_path) {
+            const fileName = meta?.name || "evidence.jpg";
+            const mimeType = meta?.mimeType || "image/jpeg";
+            let fileObj: File | undefined;
+            let previewUrl = draft.local_photo_path || "";
+
+            if (meta?.dataUrl) {
+              try {
+                fileObj = dataUrlToFile(meta.dataUrl, fileName, mimeType);
+                previewUrl = meta.dataUrl;
+                photoDataUrlRef.current = meta.dataUrl;
+              } catch {
+                // Ignore
+              }
+            } else if (previewUrl.startsWith("data:")) {
+              try {
+                fileObj = dataUrlToFile(previewUrl, fileName, mimeType);
+                photoDataUrlRef.current = previewUrl;
+              } catch {
+                // Ignore
+              }
+            }
+
+            setPhoto({
+              id: meta?.id || `restored_${Date.now()}`,
+              name: fileName,
+              webPath: previewUrl,
+              localUri: draft.local_photo_path || `local_blob://${fileName}`,
+              sizeBytes: meta?.sizeBytes || meta?.size || (fileObj ? fileObj.size : 0),
+              mimeType: mimeType,
+              timestamp: meta?.timestamp || Date.now(),
+              file: fileObj,
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to restore public report draft:", err);
+      } finally {
+        isRestoringRef.current = false;
+      }
+    }
+
+    restoreDraft();
+  }, []);
+
+  // Debounced auto-save when form fields or photo change
+  useEffect(() => {
+    if (isRestoringRef.current) return;
+    const timer = setTimeout(() => {
+      saveDraft(
+        reportType,
+        severityHint,
+        description,
+        latitude,
+        longitude,
+        roadId,
+        photo,
+        photoDataUrlRef.current
+      );
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [reportType, severityHint, description, latitude, longitude, roadId, photo, saveDraft]);
+
   const handleCapturePhoto = async (sourceType: "camera" | "photos") => {
     try {
       const evidence = await cameraService.capturePhoto(sourceType);
+      let dataUrl: string | null = null;
+      if (evidence.file) {
+        try {
+          dataUrl = await fileToDataUrl(evidence.file);
+        } catch {
+          dataUrl = null;
+        }
+      } else if (evidence.webPath && evidence.webPath.startsWith("data:")) {
+        dataUrl = evidence.webPath;
+      }
+      photoDataUrlRef.current = dataUrl;
       setPhoto(evidence);
+      saveDraft(
+        reportType,
+        severityHint,
+        description,
+        latitude,
+        longitude,
+        roadId,
+        evidence,
+        dataUrl
+      );
     } catch (err: any) {
       if (!err?.message?.includes("cancelled")) {
         setErrorMessage(err?.message || "Failed to capture photo.");
       }
     }
+  };
+
+  const handleRemovePhoto = () => {
+    photoDataUrlRef.current = null;
+    setPhoto(null);
+    saveDraft(
+      reportType,
+      severityHint,
+      description,
+      latitude,
+      longitude,
+      roadId,
+      null,
+      null
+    );
   };
 
   // Load road list for reference
@@ -195,6 +455,23 @@ export default function PublicReport() {
 
       const data = await res.json();
       setSubmittedReport(data);
+
+      try {
+        const storage = getStorage();
+        await storage.init();
+        const existing = await storage.getIncidentDraft(PUBLIC_DRAFT_KEY);
+        if (existing) {
+          await storage.insertIncidentDraft({
+            ...existing,
+            status: "SUBMITTED",
+            description: "",
+            local_photo_path: null,
+            photo_metadata: null,
+          });
+        }
+      } catch {
+        // ignore
+      }
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to submit report. Please try again.");
     } finally {
@@ -282,6 +559,7 @@ export default function PublicReport() {
                 setSubmittedReport(null);
                 setDescription("");
                 setPhoto(null);
+                photoDataUrlRef.current = null;
               }}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 transition"
             >
@@ -480,7 +758,7 @@ export default function PublicReport() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setPhoto(null)}
+                  onClick={handleRemovePhoto}
                   title={t.fieldReport.removePhotoBtn}
                   className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800 dark:hover:text-red-400 transition"
                 >
