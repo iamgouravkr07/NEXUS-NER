@@ -588,6 +588,83 @@ class Phase7DPublicReportTests(unittest.TestCase):
             "PASS: Scenario 11 - Duplicate rejection is blocked."
         )
 
+    def test_12_submit_report_with_photo_multipart(self):
+        fake_image_bytes = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00\xff\xdb"
+        response = self.client.post(
+            "/public-reports/",
+            headers={"Authorization": f"Bearer {self.public_token}"},
+            data={
+                "latitude": "26.1445",
+                "longitude": "91.7362",
+                "report_type": "FLOOD",
+                "description": "Flash flooding on Guwahati arterial highway.",
+                "severity_hint": "critical",
+                "road_id": str(self.test_road.id),
+            },
+            files={
+                "photo": ("flood_hazard.jpg", fake_image_bytes, "image/jpeg")
+            },
+        )
+        self.assertEqual(response.status_code, 201, response.text)
+        data = response.json()
+        self.created_report_ids.append(data["id"])
+        self.assertIn("photo_url", data)
+        self.assertIsNotNone(data["photo_url"])
+        self.assertTrue(data["photo_url"].startswith("/uploads/reports/"))
+
+        # Verify photo can be retrieved from backend static endpoint
+        photo_res = self.client.get(data["photo_url"])
+        self.assertEqual(photo_res.status_code, 200)
+        self.assertEqual(photo_res.content, fake_image_bytes)
+
+        print(
+            "PASS: Scenario 12 - PUBLIC can submit a report with photo and retrieve it from backend."
+        )
+
+    def test_13_submit_report_multipart_without_photo(self):
+        response = self.client.post(
+            "/public-reports/",
+            headers={"Authorization": f"Bearer {self.public_token}"},
+            data={
+                "latitude": "26.1445",
+                "longitude": "91.7362",
+                "report_type": "ROAD_DAMAGE",
+                "description": "Potholes along the highway segment without photo.",
+                "severity_hint": "low",
+            },
+        )
+        self.assertEqual(response.status_code, 201, response.text)
+        data = response.json()
+        self.created_report_ids.append(data["id"])
+        self.assertIn("photo_url", data)
+        self.assertIsNone(data["photo_url"])
+
+        print(
+            "PASS: Scenario 13 - Multipart report without photo succeeds with photo_url=None."
+        )
+
+    def test_14_reject_invalid_photo_extension(self):
+        response = self.client.post(
+            "/public-reports/",
+            headers={"Authorization": f"Bearer {self.public_token}"},
+            data={
+                "latitude": "26.1445",
+                "longitude": "91.7362",
+                "report_type": "LANDSLIDE",
+                "description": "Landslide with invalid file payload.",
+                "severity_hint": "high",
+            },
+            files={
+                "photo": ("malicious.exe", b"MZexecutabledata", "application/octet-stream")
+            },
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Unsupported image extension", response.text)
+
+        print(
+            "PASS: Scenario 14 - Invalid image file extension is safely rejected."
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

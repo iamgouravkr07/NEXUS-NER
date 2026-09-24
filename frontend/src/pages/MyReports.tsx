@@ -25,6 +25,7 @@ type CitizenReport = {
   report_type: string;
   description: string;
   severity_hint?: string | null;
+  photo_url?: string | null;
   status: string;
   created_at: string;
   reviewed_at?: string | null;
@@ -181,6 +182,24 @@ export default function MyReports() {
               <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
                 {report.description}
               </p>
+
+              {/* Photo Evidence if present */}
+              {report.photo_url && (
+                <div className="pt-1">
+                  <a
+                    href={report.photo_url.startsWith("http") ? report.photo_url : `${API_URL}${report.photo_url}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block"
+                  >
+                    <img
+                      src={report.photo_url.startsWith("http") ? report.photo_url : `${API_URL}${report.photo_url}`}
+                      alt={`Report #${report.id} attachment`}
+                      className="h-24 w-32 sm:h-28 sm:w-40 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:opacity-90 transition"
+                    />
+                  </a>
+                </div>
+              )}
 
               {/* Rejection / Verification Feedback Banner */}
               {report.status === "REJECTED" && report.rejection_reason && (

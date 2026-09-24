@@ -2,16 +2,21 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
+  Camera,
   CheckCircle2,
   FileText,
+  ImagePlus,
   LocateFixed,
   RefreshCw,
   Send,
   ShieldCheck,
+  X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { geolocationService } from "../services/geolocation";
+import { cameraService } from "../services/camera";
+import type { PhotoEvidence } from "../services/camera";
 
 const API_URL = (import.meta as any).env?.VITE_API_URL || "http://127.0.0.1:8000";
 
@@ -49,6 +54,7 @@ export default function PublicReport() {
   const [latitude, setLatitude] = useState("26.1445");
   const [longitude, setLongitude] = useState("91.7362");
   const [roadId, setRoadId] = useState<number | "">("");
+  const [photo, setPhoto] = useState<PhotoEvidence | null>(null);
 
   const [roads, setRoads] = useState<Road[]>([]);
   const [isLocating, setIsLocating] = useState(false);
@@ -56,6 +62,17 @@ export default function PublicReport() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [submittedReport, setSubmittedReport] = useState<any | null>(null);
+
+  const handleCapturePhoto = async (sourceType: "camera" | "photos") => {
+    try {
+      const evidence = await cameraService.capturePhoto(sourceType);
+      setPhoto(evidence);
+    } catch (err: any) {
+      if (!err?.message?.includes("cancelled")) {
+        setErrorMessage(err?.message || "Failed to capture photo.");
+      }
+    }
+  };
 
   // Load road list for reference
   useEffect(() => {
@@ -121,25 +138,45 @@ export default function PublicReport() {
 
     setIsSubmitting(true);
     try {
-      const payload: any = {
-        latitude: lat,
-        longitude: lon,
-        report_type: reportType,
-        description: description.trim(),
-        severity_hint: severityHint,
-      };
-      if (roadId !== "") {
-        payload.road_id = Number(roadId);
-      }
+      let res: Response;
+      if (photo?.file) {
+        const formData = new FormData();
+        formData.append("latitude", lat.toString());
+        formData.append("longitude", lon.toString());
+        formData.append("report_type", reportType);
+        formData.append("description", description.trim());
+        formData.append("severity_hint", severityHint);
+        if (roadId !== "") {
+          formData.append("road_id", roadId.toString());
+        }
+        formData.append("photo", photo.file, photo.name || "report_photo.jpg");
 
-      const res = await fetch(`${API_URL}/public-reports/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeader(),
-        },
-        body: JSON.stringify(payload),
-      });
+        res = await fetch(`${API_URL}/public-reports/`, {
+          method: "POST",
+          headers: getAuthHeader(),
+          body: formData,
+        });
+      } else {
+        const payload: any = {
+          latitude: lat,
+          longitude: lon,
+          report_type: reportType,
+          description: description.trim(),
+          severity_hint: severityHint,
+        };
+        if (roadId !== "") {
+          payload.road_id = Number(roadId);
+        }
+
+        res = await fetch(`${API_URL}/public-reports/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeader(),
+          },
+          body: JSON.stringify(payload),
+        });
+      }
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
@@ -202,6 +239,23 @@ export default function PublicReport() {
               <span className="text-slate-500 dark:text-slate-400 block">{t.incidents.descLabel}</span>
               <span className="text-slate-700 dark:text-slate-300">{submittedReport.description}</span>
             </div>
+            {submittedReport.photo_url && (
+              <div className="col-span-2 pt-2 border-t border-slate-200 dark:border-slate-800/80">
+                <span className="text-slate-500 dark:text-slate-400 block mb-1.5">{t.fieldReport.photoLabel}</span>
+                <a
+                  href={submittedReport.photo_url.startsWith("http") ? submittedReport.photo_url : `${API_URL}${submittedReport.photo_url}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-block"
+                >
+                  <img
+                    src={submittedReport.photo_url.startsWith("http") ? submittedReport.photo_url : `${API_URL}${submittedReport.photo_url}`}
+                    alt="Report evidence"
+                    className="h-28 w-36 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:opacity-90 transition"
+                  />
+                </a>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
@@ -217,6 +271,7 @@ export default function PublicReport() {
               onClick={() => {
                 setSubmittedReport(null);
                 setDescription("");
+                setPhoto(null);
               }}
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 transition"
             >
@@ -383,6 +438,81 @@ export default function PublicReport() {
             placeholder={t.publicReport.descriptionPlaceholder}
             className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-3 text-xs text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none resize-none leading-relaxed placeholder:text-slate-400"
           />
+        </div>
+
+        {/* Photo Evidence (Optional) */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              {t.fieldReport.photoLabel}
+            </label>
+            <span className="text-[10px] text-slate-500 font-mono">
+              {photo ? t.fieldReport.photoAttachedText : ""}
+            </span>
+          </div>
+
+          {photo ? (
+            <div className="relative rounded-xl border border-cyan-300 bg-cyan-50/50 p-3.5 dark:border-cyan-500/30 dark:bg-slate-950">
+              <div className="flex items-center gap-3">
+                <img
+                  src={photo.webPath}
+                  alt="Incident preview"
+                  className="h-16 w-20 rounded-lg object-cover border border-slate-200 dark:border-slate-800"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{photo.name}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    {photo.sizeBytes > 0 ? `${(photo.sizeBytes / 1024).toFixed(1)} KB` : "Device Photo"}
+                  </p>
+                  <span className="mt-1 inline-flex items-center gap-1 rounded bg-cyan-100 dark:bg-cyan-500/10 px-2 py-0.5 text-[10px] font-semibold text-cyan-800 dark:text-cyan-400">
+                    <CheckCircle2 size={11} /> {t.fieldReport.photoAttachedText}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPhoto(null)}
+                  title={t.fieldReport.removePhotoBtn}
+                  className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800 dark:hover:text-red-400 transition"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleCapturePhoto("camera")}
+                className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/60 p-3.5 text-center transition hover:border-cyan-500 hover:bg-cyan-50/40 dark:hover:border-cyan-500/50"
+              >
+                <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 text-cyan-600 dark:text-cyan-400 mb-1.5 shadow-sm">
+                  <Camera size={18} />
+                </div>
+                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  {t.fieldReport.takePhotoBtn}
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                  {t.fieldReport.takePhotoSub}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCapturePhoto("photos")}
+                className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/60 p-3.5 text-center transition hover:border-cyan-500 hover:bg-cyan-50/40 dark:hover:border-cyan-500/50"
+              >
+                <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 text-cyan-600 dark:text-cyan-400 mb-1.5 shadow-sm">
+                  <ImagePlus size={18} />
+                </div>
+                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  {t.fieldReport.photoGalleryBtn}
+                </span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
+                  {t.fieldReport.uploadGallerySub}
+                </span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Submit CTA */}

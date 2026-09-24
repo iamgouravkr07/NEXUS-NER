@@ -48,4 +48,6 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+backend/uploads/
+
 

@@ -9,6 +9,7 @@ load_dotenv(ROOT_DIR / ".env")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.staticfiles import StaticFiles
 
 from app import config
 
@@ -86,6 +87,11 @@ app.include_router(analytics_router)
 app.include_router(websocket_router)
 app.include_router(assignments_router, prefix="/assignments", tags=["Assignments"])
 app.include_router(public_reports_router, prefix="/public-reports", tags=["Public Reports"])
+
+# Mount static uploads directory for persisted report evidence
+UPLOADS_DIR = Path(__file__).resolve().parents[1] / "uploads"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 @app.get("/")
 

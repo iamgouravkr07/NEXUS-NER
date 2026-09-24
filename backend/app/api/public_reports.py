@@ -1,7 +1,7 @@
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.api.auth import require_roles
@@ -14,6 +14,7 @@ from app.schemas.public_report import (
     PublicReportSummary,
     PublicReportVerify,
 )
+from app.services.photo_storage import save_report_photo
 from app.services.public_report_service import PublicReportService
 
 logger = logging.getLogger("nexus_ner.api.public_reports")
@@ -27,19 +28,81 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
     summary="Submit a public citizen report (PUBLIC only)",
 )
-def submit_public_report(
-    payload: PublicReportCreate,
+async def submit_public_report(
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("PUBLIC")),
 ):
     """
     Citizens submit field observations into the UNVERIFIED queue.
+    Supports:
+    1. multipart/form-data with optional 'photo' file upload.
+    2. application/json for backward compatibility.
     The reporter identity is strictly bound to the authenticated user token.
     """
+    content_type = request.headers.get("content-type", "").lower()
+    photo_url: Optional[str] = None
+
+    if "multipart/form-data" in content_type or "application/x-www-form-urlencoded" in content_type:
+        form = await request.form()
+        lat_val = form.get("latitude")
+        lon_val = form.get("longitude")
+        rep_type = form.get("report_type")
+        desc = form.get("description")
+        road_id_val = form.get("road_id")
+        sev_hint = form.get("severity_hint")
+
+        try:
+            latitude = float(lat_val) if lat_val is not None else None
+            longitude = float(lon_val) if lon_val is not None else None
+        except (ValueError, TypeError):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Latitude and longitude must be valid floating-point numbers.",
+            )
+
+        road_id = int(road_id_val) if road_id_val not in (None, "", "null") else None
+
+        try:
+            payload = PublicReportCreate(
+                latitude=latitude,
+                longitude=longitude,
+                report_type=str(rep_type) if rep_type is not None else "",
+                description=str(desc) if desc is not None else "",
+                road_id=road_id,
+                severity_hint=str(sev_hint) if sev_hint not in (None, "", "null") else None,
+            )
+        except ValueError as err:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(err),
+            )
+
+        raw_file = form.get("photo")
+        if hasattr(raw_file, "filename") and bool(raw_file.filename):
+            photo_url = save_report_photo(raw_file)
+
+    else:
+        try:
+            body = await request.json()
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid JSON payload.",
+            )
+        try:
+            payload = PublicReportCreate(**body)
+        except ValueError as err:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(err),
+            )
+
     return PublicReportService.create_report(
         db=db,
         reporter_id=current_user.id,
         payload=payload,
+        photo_url=photo_url,
     )
 
 

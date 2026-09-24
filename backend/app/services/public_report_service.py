@@ -46,27 +46,32 @@ class PublicReportService:
                 road_name = r[0]
 
         return PublicReportResponse(
-        id=report.id,
-        reporter_user_id=report.reporter_user_id,
-        latitude=report.latitude,
-        longitude=report.longitude,
-        road_id=report.road_id,
-        road_name=road_name,
-        report_type=report.report_type,
-        description=report.description,
-        severity_hint=report.severity_hint,
-        status=report.status,
-        created_at=report.created_at,
-        reviewed_at=report.reviewed_at,
-        reviewed_by_user_id=None if public_view else report.reviewed_by_user_id,
-        converted_incident_id=report.converted_incident_id,
-        rejection_reason=report.rejection_reason,
-        verification_notes=None if public_view else report.verification_notes,
+            id=report.id,
+            reporter_user_id=report.reporter_user_id,
+            latitude=report.latitude,
+            longitude=report.longitude,
+            road_id=report.road_id,
+            road_name=road_name,
+            report_type=report.report_type,
+            description=report.description,
+            severity_hint=report.severity_hint,
+            status=report.status,
+            created_at=report.created_at,
+            reviewed_at=report.reviewed_at,
+            reviewed_by_user_id=None if public_view else report.reviewed_by_user_id,
+            converted_incident_id=report.converted_incident_id,
+            rejection_reason=report.rejection_reason,
+            verification_notes=None if public_view else report.verification_notes,
+            photo_url=report.photo_url,
         )
 
     @classmethod
     def create_report(
-        cls, db: Session, reporter_id: int, payload: PublicReportCreate
+        cls,
+        db: Session,
+        reporter_id: int,
+        payload: PublicReportCreate,
+        photo_url: Optional[str] = None,
     ) -> PublicReportResponse:
         user = db.query(User).filter(User.id == reporter_id).first()
         if not user:
@@ -109,6 +114,7 @@ class PublicReportService:
             report_type=payload.report_type,
             description=payload.description.strip(),
             severity_hint=payload.severity_hint,
+            photo_url=photo_url or payload.photo_url,
             status="UNVERIFIED",
             created_at=datetime.now(timezone.utc),
         )

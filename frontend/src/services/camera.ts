@@ -11,6 +11,7 @@ export interface PhotoEvidence {
   sizeBytes: number;
   mimeType: string;
   timestamp: number;
+  file?: File | Blob;
 }
 
 class CameraService {
@@ -45,14 +46,25 @@ class CameraService {
           }
         }
 
+        let fileBlob: Blob | undefined;
+        if (photo.webPath) {
+          try {
+            const res = await fetch(photo.webPath);
+            fileBlob = await res.blob();
+          } catch {
+            // Keep undefined if fetch fails
+          }
+        }
+
         return {
           id: photoId,
           name: fileName,
           webPath: photo.webPath || localUri,
           localUri,
-          sizeBytes: 0, // Estimated or native file size
+          sizeBytes: fileBlob?.size || 0, // Estimated or native file size
           mimeType: `image/${photo.format || 'jpeg'}`,
           timestamp: Date.now(),
+          file: fileBlob,
         };
       } catch (err: any) {
         if (err?.message?.includes('cancelled') || err?.message?.includes('canceled')) {
@@ -89,6 +101,7 @@ class CameraService {
           sizeBytes: file.size,
           mimeType: file.type || 'image/jpeg',
           timestamp: Date.now(),
+          file,
         });
       };
 

@@ -24,6 +24,7 @@ class PublicReportCreate(BaseModel):
     description: str = Field(..., min_length=5, max_length=2000, description="Detailed description of problem")
     road_id: Optional[int] = Field(None, description="Optional affected road identifier")
     severity_hint: Optional[str] = Field(None, description="Citizen-perceived severity level")
+    photo_url: Optional[str] = Field(None, description="Optional photo URL/path")
 
     @field_validator("report_type")
     @classmethod
@@ -81,6 +82,7 @@ class PublicReportResponse(BaseModel):
     converted_incident_id: Optional[int] = None
     rejection_reason: Optional[str] = None
     verification_notes: Optional[str] = None
+    photo_url: Optional[str] = None
 
     class Config:
         from_attributes = True

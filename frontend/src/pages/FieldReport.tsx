@@ -1282,6 +1282,23 @@ function FieldReport() {
                     {p.description}
                   </p>
 
+                  {p.photo_url && (
+                    <div className="pt-1">
+                      <a
+                        href={p.photo_url.startsWith("http") ? p.photo_url : `${API_URL}${p.photo_url}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-block"
+                      >
+                        <img
+                          src={p.photo_url.startsWith("http") ? p.photo_url : `${API_URL}${p.photo_url}`}
+                          alt={`Report #${p.id} attachment`}
+                          className="h-20 w-28 sm:h-24 sm:w-32 object-cover rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:opacity-90 transition"
+                        />
+                      </a>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-3 text-[11px] text-slate-500 font-mono dark:text-slate-400">
                     <span className="flex items-center gap-1">
                       <MapPin size={12} className="text-cyan-600 dark:text-cyan-400" />

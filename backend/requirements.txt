@@ -16,6 +16,7 @@ typing_extensions==4.16.0
 uvicorn==0.52.4
 watchfiles==1.2.0
 websockets==17.1
+python-multipart>=0.0.12
 
 # Database & Spatial
 SQLAlchemy>=2.0.0

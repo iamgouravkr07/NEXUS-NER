@@ -48,6 +48,7 @@ def upgrade():
                     report_type VARCHAR(50) NOT NULL,
                     description TEXT NOT NULL,
                     severity_hint VARCHAR(20),
+                    photo_url VARCHAR(255),
                     status VARCHAR(20) NOT NULL DEFAULT 'UNVERIFIED',
                     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
                     reviewed_at TIMESTAMP WITH TIME ZONE,
