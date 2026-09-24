@@ -22,6 +22,7 @@ class RiskItem(BaseModel):
     highway: str
     state: str
     district: str
+    status: str = "open"
     risk_score: float
     risk_level: str
     probability: float
@@ -53,6 +54,7 @@ DEFAULT_CORRIDORS = [
         "highway": "NH-415",
         "state": "Arunachal Pradesh",
         "district": "Papum Pare",
+        "status": "open",
         "risk_score": 82.0,
         "risk_level": "High",
         "probability": 0.82,
@@ -70,6 +72,7 @@ DEFAULT_CORRIDORS = [
         "highway": "NH-6",
         "state": "Mizoram",
         "district": "Aizawl",
+        "status": "open",
         "risk_score": 76.0,
         "risk_level": "High",
         "probability": 0.76,
@@ -87,6 +90,7 @@ DEFAULT_CORRIDORS = [
         "highway": "NH-10",
         "state": "Sikkim",
         "district": "East Sikkim",
+        "status": "open",
         "risk_score": 68.0,
         "risk_level": "Moderate",
         "probability": 0.68,
@@ -104,6 +108,7 @@ DEFAULT_CORRIDORS = [
         "highway": "NH-27",
         "state": "Assam",
         "district": "Kamrup",
+        "status": "open",
         "risk_score": 43.0,
         "risk_level": "Moderate",
         "probability": 0.43,
@@ -121,6 +126,7 @@ DEFAULT_CORRIDORS = [
         "highway": "NH-15",
         "state": "Assam",
         "district": "Dhemaji",
+        "status": "open",
         "risk_score": 88.0,
         "risk_level": "Critical",
         "probability": 0.88,
@@ -195,6 +201,7 @@ def get_road_risks(db: Session = Depends(get_db)):
                 highway=road.road_name,
                 state=meta.get("state", "Northeast India"),
                 district=meta.get("district", "NER Corridor"),
+                status=road.status,
                 risk_score=score,
                 risk_level=level,
                 probability=round(min(1.0, score / 100.0), 2),

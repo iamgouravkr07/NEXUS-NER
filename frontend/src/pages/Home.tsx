@@ -1117,6 +1117,17 @@ function Home() {
     return roads.find((r) => r.id === activeDisruption.affected_road_id) || null;
   }, [activeDisruption, roads]);
 
+  const primaryRoad = useMemo(() => {
+    return (
+      affectedRoad ||
+      roads.find((r) => r.id === 135 || r.road_name?.includes("NH-15")) ||
+      roads[0] ||
+      null
+    );
+  }, [affectedRoad, roads]);
+
+  const primaryRoadStatus = (primaryRoad?.status || "open").toLowerCase();
+
   // Relational resolution of active dispatched trip (in-transit/rerouting/active with vehicle_id)
   const activeDispatchedTrip = useMemo(() => {
     return (
@@ -1549,8 +1560,28 @@ function Home() {
                 <span className="text-slate-700 dark:text-slate-300 font-medium">{t.common.unit} AS-01-BX-4091</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" />
-                <span className="text-slate-700 dark:text-slate-300 font-medium">NH-15 {t.roads.statusBlocked}</span>
+                <span
+                  className={`h-2.5 w-2.5 rounded-full ${
+                    primaryRoadStatus === "open"
+                      ? "bg-emerald-500"
+                      : primaryRoadStatus === "restricted"
+                      ? "bg-amber-500"
+                      : primaryRoadStatus === "under_repair"
+                      ? "bg-blue-500"
+                      : "bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]"
+                  }`}
+                />
+                <span className="text-slate-700 dark:text-slate-300 font-medium">
+                  NH-15 {
+                    primaryRoadStatus === "open"
+                      ? t.roads.statusOpen
+                      : primaryRoadStatus === "restricted"
+                      ? t.roads.statusRestricted
+                      : primaryRoadStatus === "under_repair"
+                      ? t.roads.statusUnderRepair
+                      : t.roads.statusBlocked
+                  }
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
@@ -1703,9 +1734,25 @@ function Home() {
             <div className="absolute bottom-3 left-3 z-[1000] rounded-lg border border-slate-200 bg-white/95 text-slate-900 dark:border-slate-800 dark:bg-slate-950/90 dark:text-white px-3 py-2 backdrop-blur shadow-md">
               <div className="flex items-center gap-2">
                 <Route size={14} className="text-cyan-600 dark:text-cyan-400" />
-                <span className="text-xs font-semibold">NH-15 Guwahati-Tezpur Corridor</span>
-                <span className="rounded bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400 text-[10px] font-bold px-1.5 py-0.5">
-                  Blocked at km 84
+                <span className="text-xs font-semibold">{primaryRoad?.road_name || "NH-15 Guwahati-Tezpur Corridor"}</span>
+                <span
+                  className={`rounded text-[10px] font-bold px-1.5 py-0.5 border ${
+                    primaryRoadStatus === "open"
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-500/20 dark:text-emerald-400 dark:border-emerald-500/30"
+                      : primaryRoadStatus === "restricted"
+                      ? "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30"
+                      : primaryRoadStatus === "under_repair"
+                      ? "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30"
+                      : "bg-red-100 text-red-800 border-red-300 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30"
+                  }`}
+                >
+                  {primaryRoadStatus === "open"
+                    ? t.roads.statusOpen
+                    : primaryRoadStatus === "restricted"
+                    ? t.roads.statusRestricted
+                    : primaryRoadStatus === "under_repair"
+                    ? t.roads.statusUnderRepair
+                    : t.roads.statusBlocked}
                 </span>
               </div>
             </div>
@@ -2220,7 +2267,15 @@ function Home() {
           <div>
             <p className="text-xs text-slate-500 dark:text-slate-400">{t.dashboard.disruptionsTitle}</p>
             <p className="mt-1 text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              1 {t.roads.statusBlocked} (NH-15)
+              {primaryRoadStatus !== "open"
+                ? `1 ${
+                    primaryRoadStatus === "restricted"
+                      ? t.roads.statusRestricted
+                      : primaryRoadStatus === "under_repair"
+                      ? t.roads.statusUnderRepair
+                      : t.roads.statusBlocked
+                  } (NH-15)`
+                : `0 ${t.roads.statusBlocked} (NH-15)`}
             </p>
           </div>
         </div>

@@ -122,18 +122,52 @@ function RoadRisk() {
     try {
       setLoading(true);
 
-      const response = await fetch(`${API_URL}/risk/`);
+      const [riskResponse, roadsResponse] = await Promise.all([
+        fetch(`${API_URL}/risk/`).catch(() => null),
+        fetch(`${API_URL}/roads/`).catch(() => null),
+      ]);
 
-      if (!response.ok) {
-        throw new Error("Risk endpoint unavailable");
+      const roadsMap = new Map<number, any>();
+      let roadsList: any[] = [];
+      if (roadsResponse && roadsResponse.ok) {
+        roadsList = await roadsResponse.json().catch(() => []);
+        if (Array.isArray(roadsList)) {
+          for (const r of roadsList) {
+            roadsMap.set(r.id, r);
+          }
+        }
       }
 
-      const data = await response.json();
+      let data: any[] = [];
+      if (riskResponse && riskResponse.ok) {
+        data = await riskResponse.json().catch(() => []);
+      }
+
+      // If risk endpoint is empty but roads exists, use roads as fallback
+      if ((!Array.isArray(data) || data.length === 0) && roadsList.length > 0) {
+        data = roadsList.map((r) => ({
+          id: r.id,
+          road: r.road_name,
+          highway: r.road_name,
+          status: r.status,
+          risk_score: r.risk_score,
+          latitude: r.latitude,
+          longitude: r.longitude,
+        }));
+      }
 
       if (Array.isArray(data) && data.length > 0) {
         const normalized = data.map(
           (item: RiskItem, index: number) => {
+            const roadId = item.id ?? index + 1;
+            const matchingRoad =
+              roadsMap.get(roadId) ||
+              roadsList.find(
+                (r) => r.road_name === item.road || r.road_name === item.highway
+              );
+            const status = matchingRoad?.status || item.status || "open";
             const score =
+              matchingRoad?.risk_score ??
               item.risk_score ??
               (item.probability != null
                 ? item.probability * 100
@@ -141,7 +175,8 @@ function RoadRisk() {
 
             return {
               ...item,
-              id: item.id ?? index + 1,
+              id: roadId,
+              status,
               risk_score: Math.round(score),
               risk_level:
                 item.risk_level || getRiskLevel(score),
@@ -150,7 +185,9 @@ function RoadRisk() {
         );
 
         setRisks(normalized);
-        setSelectedRisk(normalized[0]);
+        setSelectedRisk((prev) =>
+          prev ? normalized.find((r) => r.id === prev.id) || normalized[0] : normalized[0]
+        );
         setLastUpdated(
           `Updated ${new Date().toLocaleTimeString([], {
             hour: "2-digit",
@@ -326,6 +363,22 @@ function RoadRisk() {
         (b.risk_score ?? 0) - (a.risk_score ?? 0)
     )[0];
   }, [risks]);
+
+  const nh15Risk = useMemo(() => {
+    return (
+      risks.find(
+        (r) =>
+          r.road?.includes("NH-15") ||
+          r.highway?.includes("NH-15") ||
+          r.id === 135
+      ) ||
+      selectedRisk ||
+      risks[0] ||
+      null
+    );
+  }, [risks, selectedRisk]);
+
+  const nh15Status = (nh15Risk?.status || "open").toLowerCase();
 
   return (
     <div className="space-y-6">
@@ -531,8 +584,26 @@ function RoadRisk() {
 
               <div className="flex items-center gap-3 text-[10px] text-slate-500 dark:text-slate-400">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  Corridor NH-15 (Open)
+                  <span
+                    className={`h-2 w-2 rounded-full ${
+                      nh15Status === "open"
+                        ? "bg-emerald-500"
+                        : nh15Status === "restricted"
+                        ? "bg-amber-500"
+                        : nh15Status === "under_repair"
+                        ? "bg-blue-500"
+                        : "bg-red-500 animate-pulse"
+                    }`}
+                  />
+                  Corridor {nh15Risk?.highway?.split(" ")[0] || "NH-15"} ({
+                    nh15Status === "open"
+                      ? t.roads.statusOpen
+                      : nh15Status === "restricted"
+                      ? t.roads.statusRestricted
+                      : nh15Status === "under_repair"
+                      ? t.roads.statusUnderRepair
+                      : t.roads.statusBlocked
+                  })
                 </span>
 
                 <span className="flex items-center gap-1.5">
@@ -568,10 +639,22 @@ function RoadRisk() {
                       [26.6528, 92.7926],
                     ]}
                     pathOptions={{
-                      color: selectedRisk?.status === "blocked" ? "#ef4444" : "#06b6d4",
+                      color:
+                        nh15Status === "blocked"
+                          ? "#ef4444"
+                          : nh15Status === "restricted"
+                          ? "#f59e0b"
+                          : nh15Status === "under_repair"
+                          ? "#3b82f6"
+                          : "#10b981",
                       weight: 4,
                       opacity: 0.85,
-                      dashArray: selectedRisk?.status === "blocked" ? "6, 6" : undefined,
+                      dashArray:
+                        nh15Status === "blocked"
+                          ? "6, 6"
+                          : nh15Status === "restricted"
+                          ? "4, 4"
+                          : undefined,
                     }}
                   />
 
@@ -1168,6 +1251,29 @@ function RoadRisk() {
                     <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
                       {selectedRisk.surface || t.roads.notAvailable}
                     </p>
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950 sm:col-span-2 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        {t.common.status || "Corridor Accessibility Status"}
+                      </p>
+                      <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+                        {selectedRisk.road || selectedRisk.highway || "Corridor"}
+                      </p>
+                    </div>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${
+                      (selectedRisk.status || "open").toLowerCase() === "open"
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                        : (selectedRisk.status || "open").toLowerCase() === "restricted"
+                        ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                        : (selectedRisk.status || "open").toLowerCase() === "under_repair"
+                        ? "bg-blue-50 text-blue-800 border-blue-300 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
+                        : "bg-red-50 text-red-800 border-red-300 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20"
+                    }`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                      {(selectedRisk.status || "open").replace("_", " ")}
+                    </span>
                   </div>
                 </div>
 
