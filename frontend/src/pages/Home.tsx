@@ -2296,341 +2296,186 @@ function Home() {
       ) : (
         /* Public-Safe Corridor & Weather Intelligence Experience for Guests & Public Citizens */
         <div className="space-y-6">
-          {/* Public Hero / Welcome Card */}
-          <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-5 sm:p-6 shadow-sm">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="rounded-md bg-cyan-100 text-cyan-800 border border-cyan-300 dark:bg-cyan-500/20 dark:border-cyan-500/40 px-2.5 py-0.5 text-xs font-bold dark:text-cyan-300 uppercase tracking-wider">
-                    Public Road &amp; Weather Intelligence
-                  </span>
-                  <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 text-[11px] font-medium">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>Live Monitoring</span>
-                  </div>
-                </div>
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  North Eastern Region Corridor Portal
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-                  Real-time transport corridor status, atmospheric condition monitoring, and road hazard intelligence for Assam, Meghalaya, Manipur, Sikkim, and Arunachal Pradesh.
-                </p>
-              </div>
-
-              {/* Quick Public Action Buttons */}
-              <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
-                <Link
-                  to="/road-risk"
-                  className="flex items-center gap-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition"
-                >
-                  <Activity size={15} />
-                  <span>Explore Corridor Risks</span>
-                  <ArrowRight size={14} />
-                </Link>
-                <Link
-                  to="/report-problem"
-                  className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-3.5 py-2.5 text-xs font-medium transition"
-                >
-                  <AlertTriangle size={15} className="text-amber-500" />
-                  <span>Report Road Hazard</span>
-                </Link>
-                {!user && (
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-3.5 py-2.5 text-xs font-medium transition"
-                  >
-                    <LogIn size={15} className="text-cyan-600 dark:text-cyan-400" />
-                    <span>Operator Sign In</span>
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Public Key Metrics Strip */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              title="Strategic Corridors"
-              value={roads.length || 6}
-              subtitle="Regional Highways Monitored"
-              icon={<Route size={22} />}
-              badgeText="Active GIS"
-              badgeType="info"
-            />
-            <StatCard
-              title="Open &amp; Passable"
-              value={roads.filter((r) => r.status?.toLowerCase() === "open").length}
-              subtitle="Unrestricted Corridors"
-              icon={<ShieldCheck size={22} className="text-emerald-500" />}
-              badgeText="Clear Flow"
-              badgeType="success"
-            />
-            <StatCard
-              title="Corridors With Advisories"
-              value={roads.filter((r) => r.status?.toLowerCase() !== "open").length}
-              subtitle="Restricted / Repair / Blocked"
-              icon={<AlertTriangle size={22} className="text-amber-500" />}
-              badgeText="Caution"
-              badgeType="warning"
-            />
-            <StatCard
-              title="Regional Weather Hubs"
-              value={WEATHER_HUBS.length}
-              subtitle="Active Atmospheric Sensors"
-              icon={<CloudRain size={22} className="text-cyan-500" />}
-              badgeText="Telemetry Live"
-              badgeType="info"
-            />
-          </div>
-
-          {/* Regional Map + Corridor Weather Intelligence */}
-          <div className="grid gap-6 xl:grid-cols-3">
-            {/* Public-Safe Corridor Map (NO driver GPS or vehicle fleet units) */}
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm xl:col-span-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-3.5 gap-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Navigation size={16} className="text-cyan-600 dark:text-cyan-400" />
-                    <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
-                      North Eastern Regional Corridor Map
-                    </h3>
-                    <span className="rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 dark:bg-cyan-500/15 dark:border-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold dark:text-cyan-300">
-                      Public GIS
+          {/* SECTION 1: REGIONAL STATUS — Welcome Banner & Key Metrics */}
+          <div className="space-y-4">
+            <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-5 sm:p-6 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="rounded-md bg-cyan-100 text-cyan-800 border border-cyan-300 dark:bg-cyan-500/20 dark:border-cyan-500/40 px-2.5 py-0.5 text-xs font-bold dark:text-cyan-300 uppercase tracking-wider">
+                      Public Road &amp; Weather Intelligence
                     </span>
+                    <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-50 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-0.5 text-[11px] font-medium">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Live Monitoring</span>
+                    </div>
                   </div>
-                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                    Inter-state arterial connectivity &amp; atmospheric observation stations
+                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                    North Eastern Region Corridor Portal
+                  </h1>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+                    Real-time transport corridor status, atmospheric condition monitoring, and road hazard intelligence for Assam, Meghalaya, Manipur, Sikkim, and Arunachal Pradesh.
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                    <span className="text-slate-700 dark:text-slate-300 font-medium">Logistics Hubs</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
-                    <span className="text-slate-700 dark:text-slate-300 font-medium">Weather Stations</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="relative h-[380px] bg-slate-100 dark:bg-slate-950 overflow-hidden">
-                <MapErrorBoundary fallbackMessage="Regional corridor map tiles offline — cached geometry available">
-                  <MapContainer
-                    center={[26.20, 92.50]}
-                    zoom={7}
-                    scrollWheelZoom={false}
-                    className="h-full w-full"
+                {/* Quick Public Action Buttons */}
+                <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
+                  <Link
+                    to="/road-risk"
+                    className="flex items-center gap-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition"
                   >
-                    <TileLayer
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-
-                    {/* Regional Weather Hubs Markers */}
-                    {WEATHER_HUBS.map((hub, idx) => (
-                      <CircleMarker
-                        key={hub.name}
-                        center={[hub.lat, hub.lon]}
-                        radius={6}
-                        pathOptions={{
-                          color: selectedHubIdx === idx ? "#06b6d4" : "#0284c7",
-                          fillColor: selectedHubIdx === idx ? "#22d3ee" : "#38bdf8",
-                          fillOpacity: 0.9,
-                          weight: 2,
-                        }}
-                      >
-                        <Popup>
-                          <div className="text-xs">
-                            <strong className="text-cyan-600 dark:text-cyan-400">{hub.name}</strong>
-                            <br />State: {hub.state}
-                            <br />Lat: {hub.lat.toFixed(4)}, Lon: {hub.lon.toFixed(4)}
-                          </div>
-                        </Popup>
-                      </CircleMarker>
-                    ))}
-
-                    {/* Guwahati Primary Origin Hub */}
-                    <CircleMarker
-                      center={[26.1445, 91.7362]}
-                      radius={8}
-                      pathOptions={{ color: "#10b981", fillColor: "#059669", fillOpacity: 0.9, weight: 2 }}
+                    <Activity size={15} />
+                    <span>Explore Corridor Risks</span>
+                    <ArrowRight size={14} />
+                  </Link>
+                  <Link
+                    to="/report-problem"
+                    className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-3.5 py-2.5 text-xs font-medium transition"
+                  >
+                    <AlertTriangle size={15} className="text-amber-500" />
+                    <span>Report Road Hazard</span>
+                  </Link>
+                  {!user && (
+                    <Link
+                      to="/login"
+                      className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-3.5 py-2.5 text-xs font-medium transition"
                     >
-                      <Popup>
-                        <div className="text-xs">
-                          <strong className="text-emerald-600">Guwahati Regional Logistics Gateway</strong>
-                          <br />NH-27 Central Interchange
-                        </div>
-                      </Popup>
-                    </CircleMarker>
-
-                    {/* Tezpur Hub */}
-                    <CircleMarker
-                      center={[26.6528, 92.7926]}
-                      radius={8}
-                      pathOptions={{ color: "#3b82f6", fillColor: "#2563eb", fillOpacity: 0.9, weight: 2 }}
-                    >
-                      <Popup>
-                        <div className="text-xs">
-                          <strong className="text-blue-600">Tezpur North Bank Hub</strong>
-                          <br />NH-15 Northern Corridor
-                        </div>
-                      </Popup>
-                    </CircleMarker>
-                  </MapContainer>
-                </MapErrorBoundary>
-
-                <div className="absolute bottom-3 left-3 z-[1000] rounded-lg border border-slate-200 bg-white/95 text-slate-900 dark:border-slate-800 dark:bg-slate-950/90 dark:text-white px-3 py-1.5 backdrop-blur shadow-md">
-                  <div className="flex items-center gap-2">
-                    <Route size={14} className="text-cyan-600 dark:text-cyan-400" />
-                    <span className="text-xs font-semibold">NER Arterial Corridors</span>
-                    <span className="rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] font-bold px-1.5 py-0.5">
-                      Public GIS View
-                    </span>
-                  </div>
+                      <LogIn size={15} className="text-cyan-600 dark:text-cyan-400" />
+                      <span>Operator Sign In</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Weather Intelligence Panel */}
-            <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <CloudRain size={16} className="text-cyan-600 dark:text-cyan-400" />
-                      <h3 className="font-semibold text-slate-900 dark:text-white">{t.dashboard.weatherTitle}</h3>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t.dashboard.weatherSub}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => fetchHubWeather(selectedHubIdx)}
-                    aria-label="Refresh atmospheric conditions"
-                    className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 transition dark:hover:border-slate-700 dark:hover:text-white"
-                    title={t.common.refresh}
-                  >
-                    <RefreshCw size={13} className={loadingWeather ? "animate-spin text-cyan-600 dark:text-cyan-400" : ""} />
-                  </button>
-                </div>
-
-                <div className="border-b border-slate-100 dark:border-slate-800/80 p-3">
-                  <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1.5">
-                    Select Weather Observation Hub:
-                  </label>
-                  <select
-                    value={selectedHubIdx}
-                    onChange={(e) => setSelectedHubIdx(Number(e.target.value))}
-                    className="w-full rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-cyan-500"
-                  >
-                    {WEATHER_HUBS.map((hub, idx) => (
-                      <option key={hub.name} value={idx}>
-                        {hub.name} ({hub.lat.toFixed(2)}°N, {hub.lon.toFixed(2)}°E)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="p-4">
-                  {loadingWeather && !weatherData ? (
-                    <div className="flex h-36 items-center justify-center text-xs text-slate-500 dark:text-slate-400">
-                      <RefreshCw size={16} className="animate-spin text-cyan-600 dark:text-cyan-400 mr-2" />
-                      {t.common.loading}
-                    </div>
-                  ) : weatherError && !weatherData ? (
-                    <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10 p-3 text-xs text-red-700 dark:text-red-400">
-                      <p className="font-medium">{t.common.error}</p>
-                      <p className="mt-1 text-[11px] text-red-600 dark:text-red-400/80">{weatherError}</p>
-                      <button
-                        type="button"
-                        onClick={() => fetchHubWeather(selectedHubIdx)}
-                        className="mt-2 text-[11px] underline hover:text-red-800 dark:hover:text-red-300"
-                      >
-                        {t.common.refresh}
-                      </button>
-                    </div>
-                  ) : weatherData ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-950/70 p-3.5 border border-slate-200 dark:border-slate-800/60">
-                        <div>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold text-slate-900 dark:text-white">
-                              {weatherData.temperature_c !== undefined ? `${weatherData.temperature_c}°C` : "—"}
-                            </span>
-                            {weatherData.feels_like_c !== undefined && (
-                              <span className="text-xs text-slate-500 dark:text-slate-400">
-                                {t.dashboard.feelsLike} {weatherData.feels_like_c}°C
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-0.5 text-xs font-medium text-cyan-600 dark:text-cyan-400">
-                            {weatherData.weather_condition || "Clear"}
-                          </p>
-                        </div>
-
-                        <div className="text-right">
-                          <span
-                            className={`inline-block rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${
-                              weatherData.risk_signal?.risk_level === "Critical"
-                                ? "border-red-300 bg-red-100 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400"
-                                : weatherData.risk_signal?.risk_level === "High"
-                                ? "border-orange-300 bg-orange-100 text-orange-800 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400"
-                                : weatherData.risk_signal?.risk_level === "Moderate"
-                                ? "border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400"
-                                : "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
-                            }`}
-                          >
-                            {weatherData.risk_signal?.risk_level || "Low"} {t.dashboard.threatTitle}
-                          </span>
-                          <p className="mt-1 text-[10px] text-slate-500 dark:text-slate-400">
-                            {t.dashboard.threatScore}: {weatherData.risk_signal?.risk_score ?? 0}/100
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
-                          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
-                            <Droplets size={13} className="text-cyan-600 dark:text-cyan-400" />
-                            <span>{t.dashboard.rain}</span>
-                          </div>
-                          <p className="font-semibold text-slate-900 dark:text-white">
-                            {weatherData.rainfall_mm !== undefined ? `${weatherData.rainfall_mm} mm` : "0 mm"}
-                          </p>
-                        </div>
-
-                        <div className="rounded-lg bg-slate-50 dark:bg-slate-950/60 p-2.5 border border-slate-200 dark:border-slate-800/40">
-                          <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 mb-1">
-                            <Wind size={13} className="text-cyan-600 dark:text-cyan-400" />
-                            <span>{t.dashboard.wind}</span>
-                          </div>
-                          <p className="font-semibold text-slate-900 dark:text-white">
-                            {weatherData.wind_speed_kmh !== undefined ? `${weatherData.wind_speed_kmh} km/h` : "—"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              {weatherLastUpdated && (
-                <div className="border-t border-slate-100 dark:border-slate-800/80 px-4 py-2 bg-slate-50/50 dark:bg-slate-950/40 text-[10px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                  <span>Observation Time: {weatherLastUpdated}</span>
-                  <span className="text-cyan-600 dark:text-cyan-400">Station Online</span>
-                </div>
-              )}
+            {/* Regional Status Metrics Strip */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard
+                title="Strategic Corridors"
+                value={roads.length || 6}
+                subtitle="Regional Highways Monitored"
+                icon={<Route size={22} />}
+                badgeText="Active GIS"
+                badgeType="info"
+              />
+              <StatCard
+                title="Open &amp; Passable"
+                value={roads.filter((r) => r.status?.toLowerCase() === "open").length}
+                subtitle="Unrestricted Corridors"
+                icon={<ShieldCheck size={22} className="text-emerald-500" />}
+                badgeText="Clear Flow"
+                badgeType="success"
+              />
+              <StatCard
+                title="Corridors With Advisories"
+                value={roads.filter((r) => r.status?.toLowerCase() !== "open").length}
+                subtitle="Restricted / Repair / Blocked"
+                icon={<AlertTriangle size={22} className="text-amber-500" />}
+                badgeText={roads.filter((r) => r.status?.toLowerCase() !== "open").length > 0 ? "Caution" : "All Clear"}
+                badgeType={roads.filter((r) => r.status?.toLowerCase() !== "open").length > 0 ? "warning" : "success"}
+              />
+              <StatCard
+                title="Regional Weather Hubs"
+                value={WEATHER_HUBS.length}
+                subtitle="Active Atmospheric Sensors"
+                icon={<CloudRain size={22} className="text-cyan-500" />}
+                badgeText="Telemetry Live"
+                badgeType="info"
+              />
             </div>
           </div>
 
-          {/* Strategic Corridors Status Cards */}
+          {/* SECTION 2: ACTIVE PUBLIC ALERTS & ADVISORIES */}
+          <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 p-5 shadow-sm space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
+                  <Bell size={18} />
+                </div>
+                <div>
+                  <h2 className="font-bold text-slate-900 dark:text-white text-base">
+                    Active Public Travel Advisories
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Live road restrictions and environmental cautions impacting public commuter transit
+                  </p>
+                </div>
+              </div>
+              <span className="rounded-full bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 px-2.5 py-0.5 text-xs font-semibold">
+                {roads.filter((r) => r.status?.toLowerCase() !== "open").length} Active
+              </span>
+            </div>
+
+            {roads.filter((r) => r.status?.toLowerCase() !== "open").length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {roads
+                  .filter((r) => r.status?.toLowerCase() !== "open")
+                  .map((advisoryRoad) => {
+                    const st = advisoryRoad.status?.toLowerCase();
+                    const isBlocked = st === "blocked";
+                    const isRepair = st === "under_repair";
+                    return (
+                      <div
+                        key={advisoryRoad.id}
+                        className={`rounded-lg border p-3.5 flex items-start justify-between gap-3 ${
+                          isBlocked
+                            ? "border-red-200 bg-red-50/70 dark:border-red-500/30 dark:bg-red-950/20"
+                            : isRepair
+                            ? "border-blue-200 bg-blue-50/70 dark:border-blue-500/30 dark:bg-blue-950/20"
+                            : "border-amber-200 bg-amber-50/70 dark:border-amber-500/30 dark:bg-amber-950/20"
+                        }`}
+                      >
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                                isBlocked
+                                  ? "bg-red-200 text-red-900 dark:bg-red-500/30 dark:text-red-300"
+                                  : isRepair
+                                  ? "bg-blue-200 text-blue-900 dark:bg-blue-500/30 dark:text-blue-300"
+                                  : "bg-amber-200 text-amber-900 dark:bg-amber-500/30 dark:text-amber-300"
+                              }`}
+                            >
+                              {advisoryRoad.status?.replace("_", " ")}
+                            </span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                              {advisoryRoad.road_name}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 dark:text-slate-300">
+                            Disruption Risk: <strong>{Math.round(advisoryRoad.risk_score)}%</strong> • Plan alternate routes or exercise transit caution.
+                          </p>
+                        </div>
+
+                        <Link
+                          to="/road-risk"
+                          className="text-xs font-semibold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 dark:hover:text-cyan-300 shrink-0 inline-flex items-center gap-1 self-center"
+                        >
+                          <span>Details</span>
+                          <ArrowRight size={12} />
+                        </Link>
+                      </div>
+                    );
+                  })}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-500/20 dark:bg-emerald-950/20 p-3.5 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
+                  <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400" />
+                  <span>All monitored NER highway corridors are currently clear with nominal travel flow.</span>
+                </div>
+                <span className="font-semibold text-emerald-700 dark:text-emerald-400 hidden sm:inline">Normal Operations</span>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 3: ROAD ACCESSIBILITY / CORRIDOR STATUS */}
           <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-2">
               <div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base">
+                <h2 className="font-bold text-slate-900 dark:text-white text-base">
                   Strategic Highway Corridors
-                </h3>
+                </h2>
                 <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                   Current accessibility, disruption risk, and operational status for primary routes
                 </p>
@@ -2700,6 +2545,287 @@ function Home() {
                   </div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* SECTION 4: WEATHER & RISK INTELLIGENCE */}
+          <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <CloudRain size={18} className="text-cyan-600 dark:text-cyan-400" />
+                  <h2 className="font-bold text-slate-900 dark:text-white text-base">
+                    {t.dashboard.weatherTitle}
+                  </h2>
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  {t.dashboard.weatherSub}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <select
+                  value={selectedHubIdx}
+                  onChange={(e) => setSelectedHubIdx(Number(e.target.value))}
+                  className="rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-cyan-500"
+                >
+                  {WEATHER_HUBS.map((hub, idx) => (
+                    <option key={hub.name} value={idx}>
+                      {hub.name} ({hub.lat.toFixed(2)}°N, {hub.lon.toFixed(2)}°E)
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => fetchHubWeather(selectedHubIdx)}
+                  aria-label="Refresh atmospheric conditions"
+                  className="rounded-lg border border-slate-200 bg-slate-50 p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400 transition dark:hover:border-slate-700 dark:hover:text-white"
+                  title={t.common.refresh}
+                >
+                  <RefreshCw size={14} className={loadingWeather ? "animate-spin text-cyan-600 dark:text-cyan-400" : ""} />
+                </button>
+              </div>
+            </div>
+
+            {loadingWeather && !weatherData ? (
+              <div className="flex h-28 items-center justify-center text-xs text-slate-500 dark:text-slate-400">
+                <RefreshCw size={16} className="animate-spin text-cyan-600 dark:text-cyan-400 mr-2" />
+                {t.common.loading}
+              </div>
+            ) : weatherData ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-950/70 p-3.5 border border-slate-200 dark:border-slate-800/60">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">{t.dashboard.temp}</span>
+                  <div className="mt-1 flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-slate-900 dark:text-white">
+                      {weatherData.temperature_c !== undefined ? `${weatherData.temperature_c}°C` : "—"}
+                    </span>
+                    <span className="text-xs text-cyan-600 dark:text-cyan-400 font-medium">
+                      {weatherData.weather_condition || "Clear"}
+                    </span>
+                  </div>
+                  {weatherData.feels_like_c !== undefined && (
+                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                      {t.dashboard.feelsLike}: {weatherData.feels_like_c}°C
+                    </p>
+                  )}
+                </div>
+
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-950/70 p-3.5 border border-slate-200 dark:border-slate-800/60">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">{t.dashboard.threatTitle}</span>
+                  <div className="mt-1 flex items-center justify-between">
+                    <span
+                      className={`inline-block rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${
+                        weatherData.risk_signal?.risk_level === "Critical"
+                          ? "border-red-300 bg-red-100 text-red-800 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400"
+                          : weatherData.risk_signal?.risk_level === "High"
+                          ? "border-orange-300 bg-orange-100 text-orange-800 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-400"
+                          : weatherData.risk_signal?.risk_level === "Moderate"
+                          ? "border-amber-300 bg-amber-100 text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400"
+                          : "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400"
+                      }`}
+                    >
+                      {weatherData.risk_signal?.risk_level || "Low"}
+                    </span>
+                    <span className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {weatherData.risk_signal?.risk_score ?? 0}/100
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    Observation Hub: {WEATHER_HUBS[selectedHubIdx]?.name}
+                  </p>
+                </div>
+
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-950/70 p-3.5 border border-slate-200 dark:border-slate-800/60">
+                  <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <Droplets size={13} className="text-cyan-600 dark:text-cyan-400" />
+                    <span className="text-[10px] uppercase tracking-wider font-semibold">{t.dashboard.rain}</span>
+                  </div>
+                  <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                    {weatherData.rainfall_mm !== undefined ? `${weatherData.rainfall_mm} mm` : "0 mm"}
+                  </p>
+                  <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    Probability: {weatherData.precipitation_probability != null ? `${weatherData.precipitation_probability}%` : "Nominal"}
+                  </p>
+                </div>
+
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-950/70 p-3.5 border border-slate-200 dark:border-slate-800/60">
+                  <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <Wind size={13} className="text-cyan-600 dark:text-cyan-400" />
+                    <span className="text-[10px] uppercase tracking-wider font-semibold">{t.dashboard.wind}</span>
+                  </div>
+                  <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+                    {weatherData.wind_speed_kmh !== undefined ? `${weatherData.wind_speed_kmh} km/h` : "—"}
+                  </p>
+                  <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+                    Humidity: {weatherData.humidity_percent != null ? `${weatherData.humidity_percent}%` : "Standard"}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {weatherLastUpdated && (
+              <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+                <span>Observation Timestamp: {weatherLastUpdated}</span>
+                <span className="text-cyan-600 dark:text-cyan-400 font-medium">Sensor Network Synchronized</span>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 5: PUBLIC RISK MAP */}
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/80 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 dark:border-slate-800 px-5 py-3.5 gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Navigation size={16} className="text-cyan-600 dark:text-cyan-400" />
+                  <h2 className="font-bold text-slate-900 dark:text-white text-base">
+                    North Eastern Regional Corridor Map
+                  </h2>
+                  <span className="rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 dark:bg-cyan-500/15 dark:border-cyan-500/30 px-2 py-0.5 text-[10px] font-semibold dark:text-cyan-300">
+                    Public GIS
+                  </span>
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                  Inter-state arterial connectivity &amp; atmospheric observation stations
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  <span className="text-slate-700 dark:text-slate-300 font-medium">Logistics Hubs</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
+                  <span className="text-slate-700 dark:text-slate-300 font-medium">Weather Stations</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative h-[400px] bg-slate-100 dark:bg-slate-950 overflow-hidden">
+              <MapErrorBoundary fallbackMessage="Regional corridor map tiles offline — cached geometry available">
+                <MapContainer
+                  center={[26.20, 92.50]}
+                  zoom={7}
+                  scrollWheelZoom={false}
+                  className="h-full w-full"
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+
+                  {/* Regional Weather Hubs Markers */}
+                  {WEATHER_HUBS.map((hub, idx) => (
+                    <CircleMarker
+                      key={hub.name}
+                      center={[hub.lat, hub.lon]}
+                      radius={6}
+                      pathOptions={{
+                        color: selectedHubIdx === idx ? "#06b6d4" : "#0284c7",
+                        fillColor: selectedHubIdx === idx ? "#22d3ee" : "#38bdf8",
+                        fillOpacity: 0.9,
+                        weight: 2,
+                      }}
+                    >
+                      <Popup>
+                        <div className="text-xs">
+                          <strong className="text-cyan-600 dark:text-cyan-400">{hub.name}</strong>
+                          <br />State: {hub.state}
+                          <br />Lat: {hub.lat.toFixed(4)}, Lon: {hub.lon.toFixed(4)}
+                        </div>
+                      </Popup>
+                    </CircleMarker>
+                  ))}
+
+                  {/* Guwahati Primary Origin Hub */}
+                  <CircleMarker
+                    center={[26.1445, 91.7362]}
+                    radius={8}
+                    pathOptions={{ color: "#10b981", fillColor: "#059669", fillOpacity: 0.9, weight: 2 }}
+                  >
+                    <Popup>
+                      <div className="text-xs">
+                        <strong className="text-emerald-600">Guwahati Regional Logistics Gateway</strong>
+                        <br />NH-27 Central Interchange
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+
+                  {/* Tezpur Hub */}
+                  <CircleMarker
+                    center={[26.6528, 92.7926]}
+                    radius={8}
+                    pathOptions={{ color: "#3b82f6", fillColor: "#2563eb", fillOpacity: 0.9, weight: 2 }}
+                  >
+                    <Popup>
+                      <div className="text-xs">
+                        <strong className="text-blue-600">Tezpur North Bank Hub</strong>
+                        <br />NH-15 Northern Corridor
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                </MapContainer>
+              </MapErrorBoundary>
+
+              <div className="absolute bottom-3 left-3 z-[1000] rounded-lg border border-slate-200 bg-white/95 text-slate-900 dark:border-slate-800 dark:bg-slate-950/90 dark:text-white px-3 py-1.5 backdrop-blur shadow-md">
+                <div className="flex items-center gap-2">
+                  <Route size={14} className="text-cyan-600 dark:text-cyan-400" />
+                  <span className="text-xs font-semibold">NER Arterial Corridors</span>
+                  <span className="rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400 text-[10px] font-bold px-1.5 py-0.5">
+                    Public GIS View
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 6: REPORT ROAD HAZARD / PUBLIC REPORTING CTA */}
+          <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-cyan-50/40 dark:border-slate-800 dark:from-slate-900/90 dark:via-slate-900 dark:to-cyan-950/30 p-5 sm:p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
+                    <AlertTriangle size={18} />
+                  </div>
+                  <h2 className="font-bold text-slate-900 dark:text-white text-base">
+                    {t.publicReport.portalTitle}
+                  </h2>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
+                  {t.publicReport.portalSubtitle}
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {t.publicReport.guardrailDesc}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+                <Link
+                  to="/report-problem"
+                  className="flex items-center gap-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 text-xs shadow-sm transition active:scale-[0.99]"
+                >
+                  <AlertTriangle size={15} />
+                  <span>Submit Road Hazard</span>
+                  <ArrowRight size={13} />
+                </Link>
+                {user ? (
+                  <Link
+                    to="/my-reports"
+                    className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-3 py-2.5 text-xs font-medium transition"
+                  >
+                    <span>My Submissions</span>
+                  </Link>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 px-3 py-2.5 text-xs font-medium transition"
+                  >
+                    <LogIn size={14} className="text-cyan-600 dark:text-cyan-400" />
+                    <span>Sign In</span>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>
