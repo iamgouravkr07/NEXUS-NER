@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   AlertTriangle,
@@ -7,6 +7,8 @@ import {
   ChevronRight,
   CloudRain,
   MapPin,
+  Maximize2,
+  Minimize2,
   RefreshCw,
   Route,
   ShieldAlert,
@@ -20,6 +22,7 @@ import {
   Polyline,
   Popup,
   TileLayer,
+  useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { MapErrorBoundary } from "../components/MapErrorBoundary";
@@ -108,8 +111,63 @@ function getRiskLevel(score: number) {
   return "Low";
 }
 
+function MapResizeHandler({ isFullscreen }: { isFullscreen: boolean }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.invalidateSize();
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [map, isFullscreen]);
+
+  return null;
+}
+
 function RoadRisk() {
   const { t, formatString } = useLanguage();
+  const mapWrapperRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === mapWrapperRef.current);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullscreen]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!mapWrapperRef.current) return;
+    if (!document.fullscreenElement && !isFullscreen) {
+      if (mapWrapperRef.current.requestFullscreen) {
+        mapWrapperRef.current.requestFullscreen().catch(() => {
+          setIsFullscreen(true);
+        });
+      } else {
+        setIsFullscreen(true);
+      }
+    } else {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else {
+        setIsFullscreen(false);
+      }
+    }
+  }, [isFullscreen]);
+
   const [risks, setRisks] = useState<RiskItem[]>(demoRisks);
   const [selectedRisk, setSelectedRisk] =
     useState<RiskItem | null>(demoRisks[0]);
@@ -618,14 +676,32 @@ function RoadRisk() {
               </div>
             </div>
 
-            <div className="relative h-[440px] overflow-hidden bg-slate-950">
+            <div
+              ref={mapWrapperRef}
+              className={
+                isFullscreen
+                  ? "fixed inset-0 z-[9999] h-screen w-screen bg-slate-950 overflow-hidden"
+                  : "relative h-[440px] overflow-hidden bg-slate-950"
+              }
+            >
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="absolute top-3 right-3 z-[1000] rounded-lg border border-slate-300 bg-white/90 p-2 text-slate-700 shadow-md backdrop-blur hover:bg-white hover:text-slate-950 focus:outline-none dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white transition"
+                title={isFullscreen ? "Exit Fullscreen" : "Fullscreen Map"}
+                aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen Map"}
+              >
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+
               <MapErrorBoundary fallbackMessage="Road risk GIS map tiles offline">
                 <MapContainer
                   center={[26.40, 92.20]}
                   zoom={8}
-                  scrollWheelZoom={false}
+                  scrollWheelZoom={true}
                   className="h-full w-full"
                 >
+                  <MapResizeHandler isFullscreen={isFullscreen} />
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

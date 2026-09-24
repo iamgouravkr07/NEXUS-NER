@@ -13,6 +13,8 @@ import {
   Eye,
   LogIn,
   MapPin,
+  Maximize2,
+  Minimize2,
   Navigation,
   Radio,
   RefreshCw,
@@ -240,13 +242,17 @@ function TacticalMapController({
   vehicleCoord?: [number, number];
 }) {
   const map = useMap();
+  const hasFittedRef = useRef(false);
 
   useEffect(() => {
+    if (hasFittedRef.current) return;
+
     if (routeCoords && routeCoords.length > 1) {
       map.fitBounds(routeCoords, {
         padding: [35, 35],
         maxZoom: 10,
       });
+      hasFittedRef.current = true;
       return;
     }
 
@@ -255,8 +261,23 @@ function TacticalMapController({
         padding: [40, 40],
         maxZoom: 9,
       });
+      hasFittedRef.current = true;
     }
   }, [map, routeCoords, hazardCoord, vehicleCoord]);
+
+  return null;
+}
+
+function MapResizeHandler({ isFullscreen }: { isFullscreen: boolean }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.invalidateSize();
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [map, isFullscreen]);
 
   return null;
 }
@@ -778,6 +799,50 @@ function Home() {
   const { t, formatString } = useLanguage();
   const isDriver = user?.role === "DRIVER";
   const isOperator = user?.role === "ADMIN" || user?.role === "CONTROL_OPERATOR" || user?.role === "FIELD_OFFICER";
+
+  const tacticalMapWrapperRef = useRef<HTMLDivElement>(null);
+  const guestMapWrapperRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const activeEl = user ? tacticalMapWrapperRef.current : guestMapWrapperRef.current;
+      setIsFullscreen(document.fullscreenElement === activeEl);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, [user]);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !document.fullscreenElement) {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullscreen]);
+
+  const toggleFullscreen = useCallback(() => {
+    const targetEl = user ? tacticalMapWrapperRef.current : guestMapWrapperRef.current;
+    if (!targetEl) return;
+    if (!document.fullscreenElement && !isFullscreen) {
+      if (targetEl.requestFullscreen) {
+        targetEl.requestFullscreen().catch(() => {
+          setIsFullscreen(true);
+        });
+      } else {
+        setIsFullscreen(true);
+      }
+    } else {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else {
+        setIsFullscreen(false);
+      }
+    }
+  }, [user, isFullscreen]);
 
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -1590,18 +1655,37 @@ function Home() {
             </div>
           </div>
 
-          <div className="relative h-[410px] bg-slate-100 dark:bg-slate-950 overflow-hidden">
+          <div
+            ref={tacticalMapWrapperRef}
+            className={
+              isFullscreen
+                ? "fixed inset-0 z-[9999] h-screen w-screen bg-slate-950 overflow-hidden"
+                : "relative h-[410px] bg-slate-100 dark:bg-slate-950 overflow-hidden"
+            }
+          >
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="absolute top-3 right-3 z-[1000] rounded-lg border border-slate-300 bg-white/90 p-2 text-slate-700 shadow-md backdrop-blur hover:bg-white hover:text-slate-950 focus:outline-none dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white transition"
+              title={isFullscreen ? "Exit Fullscreen" : "Fullscreen Map"}
+              aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen Map"}
+            >
+              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            </button>
+
             <MapErrorBoundary fallbackMessage="Tactical corridor map tiles offline — cached geometry available">
               <MapContainer
                 center={[26.40, 92.20]}
                 zoom={8}
-                scrollWheelZoom={false}
+                scrollWheelZoom={true}
                 className="h-full w-full"
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
+
+                <MapResizeHandler isFullscreen={isFullscreen} />
 
                 <TacticalMapController
                   routeCoords={tacticalRouteCoords}
@@ -2702,14 +2786,32 @@ function Home() {
               </div>
             </div>
 
-            <div className="relative h-[400px] bg-slate-100 dark:bg-slate-950 overflow-hidden">
+            <div
+              ref={guestMapWrapperRef}
+              className={
+                isFullscreen
+                  ? "fixed inset-0 z-[9999] h-screen w-screen bg-slate-950 overflow-hidden"
+                  : "relative h-[400px] bg-slate-100 dark:bg-slate-950 overflow-hidden"
+              }
+            >
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="absolute top-3 right-3 z-[1000] rounded-lg border border-slate-300 bg-white/90 p-2 text-slate-700 shadow-md backdrop-blur hover:bg-white hover:text-slate-950 focus:outline-none dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white transition"
+                title={isFullscreen ? "Exit Fullscreen" : "Fullscreen Map"}
+                aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen Map"}
+              >
+                {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+              </button>
+
               <MapErrorBoundary fallbackMessage="Regional corridor map tiles offline — cached geometry available">
                 <MapContainer
                   center={[26.20, 92.50]}
                   zoom={7}
-                  scrollWheelZoom={false}
+                  scrollWheelZoom={true}
                   className="h-full w-full"
                 >
+                  <MapResizeHandler isFullscreen={isFullscreen} />
                   <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
