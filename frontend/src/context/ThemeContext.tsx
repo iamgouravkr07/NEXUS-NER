@@ -23,7 +23,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch {
       // ignore storage error
     }
-    return "dark"; // Dark mode is default
+    return "light"; // Light mode is default
   });
 
   const setTheme = (newTheme: Theme) => {
