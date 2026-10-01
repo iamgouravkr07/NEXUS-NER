@@ -1,11 +1,12 @@
 import json
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import requests
 
 from app.database import get_db
+from app.services.assignment_service import AssignmentService
 from app.models.trip import Trip
 from app.models.vehicle import Vehicle
 from app.models.incident import Incident
@@ -151,8 +152,19 @@ def create_trip(
 @router.get("/", response_model=list[TripResponse])
 def get_trips(
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
+    if current_user.role == "DRIVER":
+        active_assignment = AssignmentService.get_active_assignment_for_driver(db, current_user.id)
+        if not active_assignment:
+            return []
+        return (
+            db.query(Trip)
+            .filter(Trip.vehicle_id == active_assignment.vehicle_id)
+            .order_by(Trip.id.desc())
+            .all()
+        )
+
     return (
         db.query(Trip)
         .order_by(Trip.id.desc())
@@ -168,7 +180,7 @@ def get_trips(
 def get_trip(
     trip_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
     trip = (
         db.query(Trip)
@@ -181,6 +193,14 @@ def get_trip(
             status_code=404,
             detail="Trip not found",
         )
+
+    if current_user.role == "DRIVER":
+        active_assignment = AssignmentService.get_active_assignment_for_driver(db, current_user.id)
+        if not active_assignment or trip.vehicle_id != active_assignment.vehicle_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Driver #{current_user.id} is not authorized to access Trip #{trip_id}.",
+            )
 
     return trip
 

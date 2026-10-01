@@ -82,7 +82,7 @@ function App() {
               <Route
                 path="/control"
                 element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "DRIVER"]}>
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "DRIVER", "SIH_EVALUATOR"]}>
                     <Home />
                   </ProtectedRoute>
                 }
@@ -92,7 +92,7 @@ function App() {
               <Route
                 path="/incidents"
                 element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"]}>
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR"]}>
                     <Incidents />
                   </ProtectedRoute>
                 }
@@ -102,7 +102,7 @@ function App() {
               <Route
                 path="/vehicles"
                 element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER"]}>
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR"]}>
                     <Vehicles />
                   </ProtectedRoute>
                 }
@@ -112,7 +112,7 @@ function App() {
               <Route
                 path="/routes"
                 element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR"]}>
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "SIH_EVALUATOR"]}>
                     <RoutePlanner />
                   </ProtectedRoute>
                 }
@@ -120,7 +120,7 @@ function App() {
               <Route
                 path="/route-planner"
                 element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR"]}>
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "SIH_EVALUATOR"]}>
                     <RoutePlanner />
                   </ProtectedRoute>
                 }
@@ -130,7 +130,7 @@ function App() {
               <Route
                 path="/alerts"
                 element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"]}>
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR"]}>
                     <Alerts />
                   </ProtectedRoute>
                 }
@@ -140,7 +140,7 @@ function App() {
               <Route
                 path="/analytics"
                 element={
-                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR"]}>
+                  <ProtectedRoute allowedRoles={["ADMIN", "CONTROL_OPERATOR", "SIH_EVALUATOR"]}>
                     <Analytics />
                   </ProtectedRoute>
                 }

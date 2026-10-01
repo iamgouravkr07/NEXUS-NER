@@ -230,7 +230,7 @@ def get_road_risks(db: Session = Depends(get_db)):
 def get_corridor_predictive_risk(
     road_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ) -> PredictiveRiskResult:
     """
     Retrieve predictive risk evaluation for a monitored road corridor.

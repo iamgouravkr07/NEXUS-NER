@@ -14,7 +14,7 @@ export const MobileBottomNav: React.FC = () => {
       name: role === 'DRIVER' ? 'Mission' : role === 'GUEST' ? 'Home' : t.nav.controlTower,
       path: '/',
       icon: LayoutDashboard,
-      roles: ['ADMIN', 'CONTROL_OPERATOR', 'DRIVER', 'GUEST'],
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'DRIVER', 'GUEST', 'SIH_EVALUATOR'],
     },
     {
       name: t.nav.fieldReport,
@@ -26,7 +26,7 @@ export const MobileBottomNav: React.FC = () => {
       name: 'Road Risk',
       path: '/road-risk',
       icon: Activity,
-      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER', 'PUBLIC', 'GUEST'],
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER', 'PUBLIC', 'GUEST', 'SIH_EVALUATOR'],
     },
     {
       name: 'Report',
@@ -44,19 +44,19 @@ export const MobileBottomNav: React.FC = () => {
       name: t.nav.alerts,
       path: '/alerts',
       icon: Bell,
-      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER'],
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'DRIVER', 'SIH_EVALUATOR'],
     },
     {
       name: t.nav.routes,
       path: '/routes',
       icon: Route,
-      roles: ['ADMIN', 'CONTROL_OPERATOR'],
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'SIH_EVALUATOR'],
     },
     {
       name: t.nav.incidents,
       path: '/incidents',
       icon: ShieldAlert,
-      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER'],
+      roles: ['ADMIN', 'CONTROL_OPERATOR', 'FIELD_OFFICER', 'SIH_EVALUATOR'],
     },
     {
       name: 'Sign In',

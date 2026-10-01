@@ -291,10 +291,10 @@ def seed_demo_scenario(db=None) -> dict:
         demo_state = {
             "seeded_at": datetime.now(timezone.utc).isoformat(),
             "demo_users": [
-                {"role": "ADMIN", "username": "admin", "demo_password": BOOTSTRAP_ADMIN_PASSWORD},
-                {"role": "CONTROL_OPERATOR", "username": "operator", "demo_password": BOOTSTRAP_OPERATOR_PASSWORD},
-                {"role": "FIELD_OFFICER", "username": "field_officer", "demo_password": BOOTSTRAP_FIELD_PASSWORD},
-                {"role": "DRIVER", "username": "driver", "demo_password": BOOTSTRAP_DRIVER_PASSWORD},
+                {"role": "ADMIN", "username": "admin"},
+                {"role": "CONTROL_OPERATOR", "username": "operator"},
+                {"role": "FIELD_OFFICER", "username": "field_officer"},
+                {"role": "DRIVER", "username": "driver"},
             ],
             "vehicle": {
                 "id": vehicle.id,
@@ -369,7 +369,7 @@ def print_demo_banner(state: dict):
     print("-" * 70)
     print(" DEMONSTRATION USER ACCOUNTS (Role-Based Access Control):")
     for u in state["demo_users"]:
-        print(f"  * {u['role']:<16} : {u['username']:<14} (Password: {u['demo_password']})")
+        print(f"  * {u['role']:<16} : {u['username']:<14}")
     print("-" * 70)
     print(" SIX-STEP SIH 2026 PRESENTATION NARRATIVE:")
     print("  1. CONTROL TOWER   : Observe normal operations (Trip #%d, Vehicle #%d at Guwahati)." % (t['id'], v['id']))

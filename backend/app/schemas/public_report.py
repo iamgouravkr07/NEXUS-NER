@@ -69,7 +69,8 @@ class PublicReportReject(BaseModel):
 
 class PublicReportResponse(BaseModel):
     id: int
-    reporter_user_id: int
+    reporter_user_id: Optional[int] = None
+    reporter_username: Optional[str] = None
     latitude: float
     longitude: float
     road_id: Optional[int] = None

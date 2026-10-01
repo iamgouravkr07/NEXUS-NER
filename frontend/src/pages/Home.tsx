@@ -909,7 +909,7 @@ function Home() {
   const { subscribe } = useWebSocket();
   const { t, formatString, language } = useLanguage();
   const isDriver = user?.role === "DRIVER";
-  const isOperator = user?.role === "ADMIN" || user?.role === "CONTROL_OPERATOR" || user?.role === "FIELD_OFFICER";
+  const isOperator = user?.role === "ADMIN" || user?.role === "CONTROL_OPERATOR" || user?.role === "FIELD_OFFICER" || user?.role === "SIH_EVALUATOR";
 
   const tacticalMapWrapperRef = useRef<HTMLDivElement>(null);
   const guestMapWrapperRef = useRef<HTMLDivElement>(null);

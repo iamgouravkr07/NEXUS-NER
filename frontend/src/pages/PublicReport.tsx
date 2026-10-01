@@ -70,7 +70,7 @@ type Road = {
 
 export default function PublicReport() {
   const { t, formatString } = useLanguage();
-  const { getAuthHeader } = useAuth();
+  const { isAuthenticated, getAuthHeader } = useAuth();
 
   const [reportType, setReportType] = useState("LANDSLIDE");
   const [severityHint, setSeverityHint] = useState("high");
@@ -375,6 +375,11 @@ export default function PublicReport() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
+
+    if (!isAuthenticated) {
+      setErrorMessage("Authentication required: Please log in as a citizen before submitting an incident report.");
+      return;
+    }
 
     const lat = parseFloat(latitude);
     const lon = parseFloat(longitude);

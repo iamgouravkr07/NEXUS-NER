@@ -28,7 +28,7 @@ def list_alerts(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
     """Retrieve operational alerts with optional multi-criteria filters."""
     return alert_service.get_alerts(
@@ -45,7 +45,7 @@ def list_alerts(
 @router.get("/summary", response_model=AlertSummary)
 def get_alerts_summary(
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
     """Retrieve aggregated counts across severities and lifecycle states."""
     return alert_service.get_alert_summary(db=db)
@@ -127,7 +127,7 @@ def resolve_alert_endpoint(
 def get_alert(
     alert_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
     """Fetch single alert by ID."""
     from app.models.alert import Alert

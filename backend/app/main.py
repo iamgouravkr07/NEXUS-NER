@@ -7,9 +7,11 @@ from dotenv import load_dotenv
 ROOT_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT_DIR / ".env")
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
+from typing import Optional
 
 from app import config
 
@@ -56,19 +58,36 @@ try:
 except Exception as err:
     logger.warning("Database connection failed during table initialization: %s", err)
 
+is_production = config.ENVIRONMENT in ("production", "staging")
+
 app = FastAPI(
     title="NEXUS-NER API",
     description="AI-powered logistics and accessibility intelligence platform for North Eastern Region",
-    version="0.1.0"
+    version="0.1.0",
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
+    openapi_url=None if is_production else "/openapi.json",
 )
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(self), camera=(), microphone=()"
+    if request.url.scheme == "https" or is_production:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=config.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
 )
 
 
@@ -88,10 +107,25 @@ app.include_router(websocket_router)
 app.include_router(assignments_router, prefix="/assignments", tags=["Assignments"])
 app.include_router(public_reports_router, prefix="/public-reports", tags=["Public Reports"])
 
-# Mount static uploads directory for persisted report evidence
+# Secure uploads directory for persisted report evidence
 UPLOADS_DIR = Path(__file__).resolve().parents[1] / "uploads"
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
+
+
+@app.get("/uploads/{file_path:path}", summary="Secure report evidence retrieval")
+def get_secure_upload(
+    file_path: str,
+    request: Request,
+):
+    safe_path = Path(UPLOADS_DIR / file_path).resolve()
+    if not safe_path.is_relative_to(UPLOADS_DIR.resolve()) or not safe_path.is_file():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Requested file not found.")
+
+    allowed_exts = {".jpg", ".jpeg", ".png", ".webp"}
+    if safe_path.suffix.lower() not in allowed_exts:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access to non-image assets is forbidden.")
+
+    return FileResponse(safe_path)
 
 @app.get("/")
 

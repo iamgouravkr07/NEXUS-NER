@@ -16,6 +16,7 @@ from app.schemas.public_report import (
 )
 from app.services.photo_storage import upload_report_photo
 from app.services.public_report_service import PublicReportService
+from app.services.rate_limiter import rate_limit
 
 logger = logging.getLogger("nexus_ner.api.public_reports")
 
@@ -26,19 +27,17 @@ router = APIRouter()
     "/",
     response_model=PublicReportResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Submit a public citizen report (PUBLIC only)",
+    summary="Submit a public citizen report (Logged-in citizen only)",
 )
 async def submit_public_report(
     request: Request,
     db: Session = Depends(get_db),
+    _limiter: None = Depends(rate_limit(limit=20, window_seconds=60, scope="public_reports")),
     current_user: User = Depends(require_roles("PUBLIC")),
 ):
     """
     Citizens submit field observations into the UNVERIFIED queue.
-    Supports:
-    1. multipart/form-data with optional 'photo' file upload.
-    2. application/json for backward compatibility.
-    The reporter identity is strictly bound to the authenticated user token.
+    Requires authenticated citizen with PUBLIC role. Anonymous submissions return HTTP 401.
     """
     content_type_header = request.headers.get("content-type", "").lower()
     photo_url: Optional[str] = None
@@ -136,7 +135,7 @@ def get_my_reports(
 )
 def get_reports_summary(
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR")),
 ):
     """
     Provides aggregated status counts for Control Tower and Field Command.
@@ -153,7 +152,7 @@ def get_public_report(
     report_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "PUBLIC")
+        require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "PUBLIC", "SIH_EVALUATOR")
     ),
 ):
     """
@@ -194,7 +193,7 @@ def list_public_reports(
     status_filter: Optional[str] = Query(None, description="Filter by status: UNVERIFIED, VERIFIED, REJECTED"),
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR")),
 ):
     """
     Operational queue of public reports for review, verification, or rejection.

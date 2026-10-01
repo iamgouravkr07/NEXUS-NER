@@ -36,7 +36,7 @@ function isTokenExpired(jwtToken: string): boolean {
   }
 }
 
-export type UserRole = "ADMIN" | "CONTROL_OPERATOR" | "FIELD_OFFICER" | "DRIVER" | "PUBLIC";
+export type UserRole = "ADMIN" | "CONTROL_OPERATOR" | "FIELD_OFFICER" | "DRIVER" | "PUBLIC" | "SIH_EVALUATOR";
 
 export type AuthUser = {
   id: number;
@@ -51,7 +51,7 @@ type AuthContextType = {
   token: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (username: string, password?: string, isDemo?: boolean) => Promise<{ success: boolean; error?: string }>;
   register: (username: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   getAuthHeader: () => Record<string, string>;
@@ -90,12 +90,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const apiUrl = getAuthApiUrl();
 
-  const login = async (username: string, password: string) => {
+  const login = async (username: string, password?: string, isDemo: boolean = false) => {
     try {
+      const payload: { username: string; password?: string; demo?: boolean } = { username };
+      if (password !== undefined) {
+        payload.password = password;
+      }
+      if (isDemo) {
+        payload.demo = true;
+      }
+
       const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {

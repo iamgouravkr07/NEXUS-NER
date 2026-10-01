@@ -77,7 +77,7 @@ def create_vehicle(
 @router.get("/", response_model=list[VehicleResponse])
 def get_vehicles(
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR")),
 ):
     return db.query(Vehicle).order_by(Vehicle.id.desc()).all()
 
@@ -86,8 +86,16 @@ def get_vehicles(
 def get_vehicle(
     vehicle_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
+    if current_user.role == "DRIVER":
+        active_assignment = AssignmentService.get_active_assignment_for_driver(db, current_user.id)
+        if not active_assignment or active_assignment.vehicle_id != vehicle_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Driver #{current_user.id} is not assigned to vehicle #{vehicle_id}."
+            )
+
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
     ).first()
@@ -108,8 +116,16 @@ def get_vehicle(
 def get_vehicle_location(
     vehicle_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
+    if current_user.role == "DRIVER":
+        active_assignment = AssignmentService.get_active_assignment_for_driver(db, current_user.id)
+        if not active_assignment or active_assignment.vehicle_id != vehicle_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Driver #{current_user.id} is not assigned to vehicle #{vehicle_id}. GPS tracking access forbidden."
+            )
+
     vehicle = db.query(Vehicle).filter(
         Vehicle.id == vehicle_id
     ).first()

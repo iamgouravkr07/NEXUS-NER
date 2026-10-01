@@ -7,11 +7,26 @@ logger = logging.getLogger("nexus_ner.security")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
 raw_jwt_secret = os.getenv("JWT_SECRET_KEY")
 
+INSECURE_JWT_PATTERNS = [
+    "insecure",
+    "change-in-production",
+    "change_this",
+    "secret-key",
+    "default",
+    "nexus-ner-insecure",
+]
+
 if raw_jwt_secret:
     if len(raw_jwt_secret) < 32:
         raise ValueError(
             "JWT_SECRET_KEY must be at least 32 characters (256 bits of entropy) for security compliance."
         )
+    if ENVIRONMENT in ("production", "staging"):
+        lowered = raw_jwt_secret.lower()
+        if any(pat in lowered for pat in INSECURE_JWT_PATTERNS):
+            raise RuntimeError(
+                "FATAL SECURITY ERROR: Known insecure or default JWT_SECRET_KEY cannot be used in production/staging environments."
+            )
     JWT_SECRET_KEY = raw_jwt_secret
 else:
     if ENVIRONMENT in ("production", "staging"):
@@ -32,6 +47,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "480"
 raw_cors = os.getenv("CORS_ORIGINS", "")
 if raw_cors:
     CORS_ORIGINS = [orig.strip() for orig in raw_cors.split(",") if orig.strip()]
+    if ENVIRONMENT in ("production", "staging") and "*" in CORS_ORIGINS:
+        raise RuntimeError("FATAL SECURITY ERROR: Wildcard '*' CORS origin is not permitted in production.")
 else:
     if ENVIRONMENT in ("production", "staging"):
         CORS_ORIGINS = ["https://nexus-ner.gov.in"]
@@ -48,10 +65,18 @@ else:
         ]
 
 # Demo / Bootstrap credentials (isolated for SIH development / demonstration only)
-BOOTSTRAP_ADMIN_PASSWORD = os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "Admin@Nexus2026")
-BOOTSTRAP_OPERATOR_PASSWORD = os.getenv("BOOTSTRAP_OPERATOR_PASSWORD", "Operator@Nexus2026")
-BOOTSTRAP_FIELD_PASSWORD = os.getenv("BOOTSTRAP_FIELD_PASSWORD", "Field@Nexus2026")
-BOOTSTRAP_DRIVER_PASSWORD = os.getenv("BOOTSTRAP_DRIVER_PASSWORD", "Driver@Nexus2026")
+if ENVIRONMENT in ("production", "staging"):
+    BOOTSTRAP_ADMIN_PASSWORD = os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "")
+    BOOTSTRAP_OPERATOR_PASSWORD = os.getenv("BOOTSTRAP_OPERATOR_PASSWORD", "")
+    BOOTSTRAP_FIELD_PASSWORD = os.getenv("BOOTSTRAP_FIELD_PASSWORD", "")
+    BOOTSTRAP_DRIVER_PASSWORD = os.getenv("BOOTSTRAP_DRIVER_PASSWORD", "")
+    BOOTSTRAP_EVALUATOR_PASSWORD = os.getenv("BOOTSTRAP_EVALUATOR_PASSWORD", "")
+else:
+    BOOTSTRAP_ADMIN_PASSWORD = os.getenv("BOOTSTRAP_ADMIN_PASSWORD", "Admin@Nexus2026")
+    BOOTSTRAP_OPERATOR_PASSWORD = os.getenv("BOOTSTRAP_OPERATOR_PASSWORD", "Operator@Nexus2026")
+    BOOTSTRAP_FIELD_PASSWORD = os.getenv("BOOTSTRAP_FIELD_PASSWORD", "Field@Nexus2026")
+    BOOTSTRAP_DRIVER_PASSWORD = os.getenv("BOOTSTRAP_DRIVER_PASSWORD", "Driver@Nexus2026")
+    BOOTSTRAP_EVALUATOR_PASSWORD = os.getenv("BOOTSTRAP_EVALUATOR_PASSWORD", "Evaluator@Nexus2026")
 
 # Weather Integration Configuration
 WEATHER_PROVIDER = os.getenv("WEATHER_PROVIDER", "open-meteo").lower()

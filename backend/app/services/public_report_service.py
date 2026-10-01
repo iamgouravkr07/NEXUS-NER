@@ -32,10 +32,10 @@ NER_MAX_LON = 98.0
 class PublicReportService:
     @staticmethod
     def _to_response(
-    report: PublicReport,
-    db: Session,
-    public_view: bool = False,
-) -> PublicReportResponse:
+        report: PublicReport,
+        db: Session,
+        public_view: bool = False,
+    ) -> PublicReportResponse:
         road_name = None
 
         if report.road:
@@ -45,9 +45,18 @@ class PublicReportService:
             if r:
                 road_name = r[0]
 
+        reporter_username = None
+        if report.reporter:
+            reporter_username = report.reporter.username
+        elif report.reporter_user_id:
+            u = db.query(User.username).filter(User.id == report.reporter_user_id).first()
+            if u:
+                reporter_username = u[0]
+
         return PublicReportResponse(
             id=report.id,
             reporter_user_id=report.reporter_user_id,
+            reporter_username=reporter_username,
             latitude=report.latitude,
             longitude=report.longitude,
             road_id=report.road_id,
@@ -72,11 +81,17 @@ class PublicReportService:
         cls,
         db: Session,
         reporter_id: int,
-        payload: PublicReportCreate,
+        payload: PublicReportCreate = None,
         photo_url: Optional[str] = None,
         photo_public_id: Optional[str] = None,
         content_type: Optional[str] = None,
     ) -> PublicReportResponse:
+        if reporter_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required to submit an incident report.",
+            )
+
         user = db.query(User).filter(User.id == reporter_id).first()
         if not user:
             raise HTTPException(
@@ -128,7 +143,7 @@ class PublicReportService:
         db.commit()
         db.refresh(report)
 
-        logger.info("Public citizen report #%d submitted by User #%d (type=%s, status=UNVERIFIED)", report.id, reporter_id, report.report_type)
+        logger.info("Public citizen report #%d submitted by User #%d (%s) (type=%s, status=UNVERIFIED)", report.id, user.id, user.username, report.report_type)
         return cls._to_response(report, db)
 
     @classmethod

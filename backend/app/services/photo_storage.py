@@ -172,7 +172,7 @@ def upload_report_photo(file: Any) -> PhotoUploadResult:
         logger.error("Cloudinary upload failed: %s", upload_err)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Cloudinary upload failed: {str(upload_err)}",
+            detail="Cloudinary upload failed. Please try again.",
         )
 
     photo_url = upload_result.get("secure_url") or upload_result.get("url")

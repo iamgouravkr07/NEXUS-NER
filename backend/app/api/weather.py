@@ -124,10 +124,14 @@ def get_weather_forecast_endpoint(
         )
 
 
+from app.services.rate_limiter import rate_limit
+
+
 @router.post("/route", response_model=RouteWeatherResponse)
 def evaluate_route_weather_endpoint(
     request: RouteWeatherRequest,
     db: Session = Depends(get_db),
+    _limiter: None = Depends(rate_limit(limit=20, window_seconds=60, scope="weather_route")),
 ):
     """
     Sample weather and deterministic risk exposure across an entire corridor/route geometry.
@@ -138,6 +142,18 @@ def evaluate_route_weather_endpoint(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Route geometry contains no coordinates.",
+        )
+
+    if len(coordinates) > 1000:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Route geometry contains too many coordinates (maximum 1000).",
+        )
+
+    if request.interval_km is not None and request.interval_km < 5.0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Sampling interval_km must be at least 5.0 km to prevent excessive queries.",
         )
 
     # Validate first coordinate to ensure route is roughly within NER operating envelope
@@ -151,7 +167,8 @@ def evaluate_route_weather_endpoint(
             interval_km=request.interval_km,
         )
     except WeatherProviderError as err:
+        logger.warning("Route weather sampling failed: %s", err)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Route weather sampling failed: {err}",
+            detail="Atmospheric weather service temporarily unavailable.",
         )

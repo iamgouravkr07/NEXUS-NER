@@ -13,7 +13,7 @@ class PublicReport(Base):
     reporter_user_id = Column(
         Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
         index=True,
     )
 

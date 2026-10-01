@@ -16,6 +16,7 @@ from app.config import (
     BOOTSTRAP_OPERATOR_PASSWORD,
     BOOTSTRAP_FIELD_PASSWORD,
     BOOTSTRAP_DRIVER_PASSWORD,
+    BOOTSTRAP_EVALUATOR_PASSWORD,
 )
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
@@ -98,7 +99,7 @@ def authenticate_user(db: Session, username_or_email: str, password: str) -> Opt
 def create_user(db: Session, user_in: UserCreate) -> User:
     """Create a new persistent user with Argon2id hashed password."""
     normalized_role = user_in.role.upper().strip()
-    valid_roles = {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"}
+    valid_roles = {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC", "SIH_EVALUATOR"}
     if normalized_role not in valid_roles:
         raise ValueError(f"Invalid role '{normalized_role}'. Allowed: {sorted(list(valid_roles))}")
 
@@ -122,7 +123,7 @@ def update_user(db: Session, db_user: User, user_update: UserUpdate) -> User:
         db_user.email = user_update.email.strip().lower()
     if user_update.role is not None:
         norm_role = user_update.role.upper().strip()
-        if norm_role not in {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"}:
+        if norm_role not in {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC", "SIH_EVALUATOR"}:
             raise ValueError(f"Invalid role '{norm_role}'")
         db_user.role = norm_role
     if user_update.is_active is not None:
@@ -141,31 +142,37 @@ def list_users(db: Session, offset: int = 0, limit: int = 100) -> List[User]:
 
 
 def seed_initial_users_if_empty(db: Session):
-    """Seed initial development/demo accounts if users table is empty."""
+    """Seed initial development and evaluation accounts idempotently if missing."""
     try:
-        user_count = db.query(User).count()
-        if user_count > 0:
-            return
-
         bootstrap_accounts = [
             ("admin", "admin@nexusner.gov.in", BOOTSTRAP_ADMIN_PASSWORD, "ADMIN"),
             ("operator", "operator@nexusner.gov.in", BOOTSTRAP_OPERATOR_PASSWORD, "CONTROL_OPERATOR"),
             ("field_officer", "field@nexusner.gov.in", BOOTSTRAP_FIELD_PASSWORD, "FIELD_OFFICER"),
             ("driver", "driver@nexusner.gov.in", BOOTSTRAP_DRIVER_PASSWORD, "DRIVER"),
+            ("sih_evaluator", "evaluator@nexusner.gov.in", BOOTSTRAP_EVALUATOR_PASSWORD, "SIH_EVALUATOR"),
         ]
 
+        seeded_any = False
         for username, email, pwd, role in bootstrap_accounts:
-            user = User(
-                username=username,
-                email=email,
-                password_hash=hash_password(pwd),
-                role=role,
-                is_active=True
-            )
-            db.add(user)
+            if not pwd:
+                logger.debug("Skipping unconfigured bootstrap account '%s'", username)
+                continue
+            existing = db.query(User).filter(User.username == username).first()
+            if not existing:
+                user = User(
+                    username=username,
+                    email=email,
+                    password_hash=hash_password(pwd),
+                    role=role,
+                    is_active=True
+                )
+                db.add(user)
+                seeded_any = True
+                logger.info("Seeded missing account '%s' with role '%s'", username, role)
 
-        db.commit()
-        logger.info("Seeded 4 default demonstration accounts (ADMIN, CONTROL_OPERATOR, FIELD_OFFICER, DRIVER)")
+        if seeded_any:
+            db.commit()
+            logger.info("Demonstration and evaluation user seeding completed successfully")
     except Exception as err:
         db.rollback()
         logger.warning("Could not seed initial users: %s", err)

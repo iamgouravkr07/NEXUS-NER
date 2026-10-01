@@ -38,7 +38,7 @@ DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 def get_analytics_summary(
     days: int = Query(7, ge=1, le=90, description="Time window in days"),
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "SIH_EVALUATOR")),
 ):
     """
     Returns live operational summary metrics and trends derived from the database:

@@ -32,6 +32,7 @@ from app.schemas.ml import (
     PredictiveRiskResult,
 )
 from app.services import ml_prediction_service
+from app.services.rate_limiter import rate_limit
 
 logger = logging.getLogger("nexus_ner.ml")
 
@@ -73,7 +74,8 @@ def get_explainer() -> DisruptionExplainer:
 )
 def predict_corridor_disruption(
     request: DisruptionPredictionRequest,
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+    _limiter: None = Depends(rate_limit(limit=20, window_seconds=60, scope="ml_predict_disruption")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR")),
     explainer: DisruptionExplainer = Depends(get_explainer),
 ) -> DisruptionPredictionResponse:
     """
@@ -175,7 +177,7 @@ def predict_corridor_disruption(
     include_in_schema=False,
 )
 def get_model_metadata(
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR")),
 ) -> Dict[str, Any]:
     """
     Return persisted architecture, operational thresholds, and data provenance metadata.
@@ -210,7 +212,8 @@ def get_model_metadata(
 def evaluate_corridor_predictive_risk_endpoint(
     request: CorridorPredictiveRiskRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+    _limiter: None = Depends(rate_limit(limit=20, window_seconds=60, scope="ml_predict_corridor_risk")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR")),
 ) -> PredictiveRiskResult:
     """
     Execute authenticated corridor predictive risk evaluation.

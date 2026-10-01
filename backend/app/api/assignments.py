@@ -93,7 +93,7 @@ def get_my_active_assignment(
 def get_active_assignment_for_vehicle(
     vehicle_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR")),
 ):
     assignment = AssignmentService.get_active_assignment_for_vehicle(
         db=db, vehicle_id=vehicle_id
@@ -114,7 +114,7 @@ def get_active_assignment_for_vehicle(
 def get_assignment_by_id(
     assignment_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "SIH_EVALUATOR")),
 ):
     assignment = AssignmentService.get_assignment_by_id(
         db=db, assignment_id=assignment_id
@@ -136,7 +136,7 @@ def list_assignments(
     active_only: bool = Query(False, description="Filter for active assignments only"),
     limit: int = Query(100, ge=1, le=500),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR")),
+    current_user: User = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "SIH_EVALUATOR")),
 ):
     return AssignmentService.list_assignments(
         db=db, active_only=active_only, limit=limit

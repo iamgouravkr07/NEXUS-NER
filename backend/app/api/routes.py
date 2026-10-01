@@ -40,7 +40,7 @@ class AlternativeRouteRequest(RouteRequest):
 def calculate_route_endpoint(
     request: RouteRequest,
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
     try:
         return calculate_route(
@@ -50,19 +50,20 @@ def calculate_route_endpoint(
             destination_lon=request.destination_lon,
         )
     except requests.RequestException as error:
+        logger.warning("Routing service error: %s", error)
         raise HTTPException(
             status_code=502,
-            detail=f"Routing service unavailable: {str(error)}",
+            detail="External routing service is temporarily unreachable.",
         )
     except RuntimeError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+        raise HTTPException(status_code=404, detail="Route could not be calculated for specified coordinates.")
 
 
 @router.post("/risk-check")
 def route_risk_check(
     request: RouteRequest,
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
     try:
         route = calculate_route(
@@ -77,19 +78,20 @@ def route_risk_check(
         )
         return {"route": route, "risk": risk}
     except requests.RequestException as error:
+        logger.warning("Routing service error: %s", error)
         raise HTTPException(
             status_code=502,
-            detail=f"Routing service unavailable: {str(error)}",
+            detail="External routing service is temporarily unreachable.",
         )
     except RuntimeError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+        raise HTTPException(status_code=404, detail="Route could not be calculated for specified coordinates.")
 
 
 @router.post("/alternatives")
 def calculate_alternative_routes(
     request: AlternativeRouteRequest,
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
     try:
         primary_route = calculate_route(
@@ -302,9 +304,10 @@ def calculate_alternative_routes(
         }
 
     except requests.RequestException as error:
+        logger.warning("Routing service error: %s", error)
         raise HTTPException(
             status_code=502,
-            detail=f"Routing service unavailable: {str(error)}",
+            detail="External routing service is temporarily unreachable.",
         )
     except RuntimeError as error:
-        raise HTTPException(status_code=404, detail=str(error))
+        raise HTTPException(status_code=404, detail="Route could not be calculated for specified coordinates.")

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import (
+    DemoLoginRequest,
     LoginRequest,
     Token,
     UserCreate,
@@ -16,6 +17,7 @@ from app.schemas.user import (
     UserResponse,
 )
 from app.services import auth_service
+from app.services.rate_limiter import rate_limit
 
 logger = logging.getLogger("nexus_ner.auth")
 
@@ -78,6 +80,37 @@ def get_current_user(
     return user
 
 
+oauth2_optional_scheme = HTTPBearer(auto_error=False)
+
+
+def get_optional_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(oauth2_optional_scheme),
+    db: Session = Depends(get_db),
+) -> Optional[User]:
+    """Retrieve the active authenticated user if a valid token is provided, else None for anonymous requests."""
+    if not credentials or not credentials.credentials:
+        return None
+
+    payload = auth_service.decode_access_token(credentials.credentials)
+    if not payload:
+        return None
+
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        return None
+
+    try:
+        user_id = int(user_id_str)
+    except (ValueError, TypeError):
+        return None
+
+    user = auth_service.get_user_by_id(db, user_id)
+    if not user or not user.is_active:
+        return None
+
+    return user
+
+
 def require_roles(*allowed_roles: str):
     """Factory creating an RBAC dependency that permits only specified roles."""
     normalized_allowed = {r.upper().strip() for r in allowed_roles}
@@ -94,10 +127,51 @@ def require_roles(*allowed_roles: str):
     return role_dependency
 
 
+DEMO_USER_ROLES = {
+    "admin": "ADMIN",
+    "operator": "CONTROL_OPERATOR",
+    "field_officer": "FIELD_OFFICER",
+    "driver": "DRIVER",
+    "sih_evaluator": "SIH_EVALUATOR",
+}
+
+
 @router.post("/login", response_model=Token)
-def login(payload: LoginRequest, db: Session = Depends(get_db)):
-    """Authenticate via username/email + password and receive a signed JWT."""
-    user = auth_service.authenticate_user(db, payload.username, payload.password)
+def login(
+    payload: LoginRequest,
+    db: Session = Depends(get_db),
+    _limiter: None = Depends(rate_limit(limit=10, window_seconds=60, scope="auth_login")),
+):
+    """Authenticate via username/email + password or recognized demo role and receive a signed JWT."""
+    user = None
+
+    if payload.demo:
+        clean_user = payload.username.strip().lower()
+        if clean_user not in DEMO_USER_ROLES:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Unauthorized demonstration account",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        user = auth_service.get_user_by_username_or_email(db, clean_user)
+        if not user:
+            # Idempotently seed demonstration/evaluator accounts if not present
+            auth_service.seed_initial_users_if_empty(db)
+            user = auth_service.get_user_by_username_or_email(db, clean_user)
+        if not user or user.role != DEMO_USER_ROLES[clean_user]:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Demonstration account configuration mismatch",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    else:
+        if not payload.password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password is required for credentials login",
+            )
+        user = auth_service.authenticate_user(db, payload.username, payload.password)
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -124,20 +198,45 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     )
 
 
+@router.post("/demo-login", response_model=Token)
+def demo_login(
+    payload: DemoLoginRequest,
+    db: Session = Depends(get_db),
+    _limiter: None = Depends(rate_limit(limit=5, window_seconds=60, scope="auth_demo_login")),
+):
+    """
+    Dedicated demonstration login endpoint for SIH evaluators and standard demonstration roles.
+    Authenticates genuine registered accounts without storing or exposing passwords in frontend JavaScript.
+    """
+    candidate = (payload.role_or_username or payload.username or payload.role or "").strip().lower()
+    if not candidate:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Role or username is required for demo login",
+        )
+    role_to_username = {v.lower(): k for k, v in DEMO_USER_ROLES.items()}
+    username = role_to_username.get(candidate, candidate)
+    return login(LoginRequest(username=username, demo=True), db=db)
+
+
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: UserRegister, db: Session = Depends(get_db)):
+def register(
+    payload: UserRegister,
+    db: Session = Depends(get_db),
+    _limiter: None = Depends(rate_limit(limit=5, window_seconds=60, scope="auth_register")),
+):
     """
     Public registration endpoint for standard users.
     Assigns safe default role 'PUBLIC'.
     Defends against privilege escalation: requests attempting to self-assign
-    operational roles (ADMIN, CONTROL_OPERATOR, FIELD_OFFICER, DRIVER) are rejected.
+    operational or evaluator roles (ADMIN, CONTROL_OPERATOR, FIELD_OFFICER, DRIVER, SIH_EVALUATOR) are rejected.
     """
     if payload.role is not None:
         requested_role = payload.role.strip().upper()
-        if requested_role in {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER"}:
+        if requested_role in {"ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR"}:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Self-assignment of operational role '{payload.role}' is forbidden",
+                detail=f"Self-assignment of privileged role '{payload.role}' is forbidden",
             )
         if requested_role != "PUBLIC":
             raise HTTPException(

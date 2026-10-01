@@ -3,23 +3,19 @@
   "demo_users": [
     {
       "role": "ADMIN",
-      "username": "admin",
-      "demo_password": "Admin@Nexus2026"
+      "username": "admin"
     },
     {
       "role": "CONTROL_OPERATOR",
-      "username": "operator",
-      "demo_password": "Operator@Nexus2026"
+      "username": "operator"
     },
     {
       "role": "FIELD_OFFICER",
-      "username": "field_officer",
-      "demo_password": "Field@Nexus2026"
+      "username": "field_officer"
     },
     {
       "role": "DRIVER",
-      "username": "driver",
-      "demo_password": "Driver@Nexus2026"
+      "username": "driver"
     }
   ],
   "vehicle": {

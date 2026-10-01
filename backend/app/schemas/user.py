@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=100)
     email: str = Field(..., max_length=255)
-    role: str = Field(default="PUBLIC", examples=["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC"])
+    role: str = Field(default="PUBLIC", examples=["ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "PUBLIC", "SIH_EVALUATOR"])
     is_active: bool = True
 
 
@@ -37,7 +37,14 @@ class UserResponse(UserBase):
 
 class LoginRequest(BaseModel):
     username: str = Field(..., description="Username or email address")
-    password: str
+    password: Optional[str] = Field(None, description="Password (optional for whitelisted demo logins)")
+    demo: Optional[bool] = Field(False, description="Authenticate recognized demo account without exposing secrets to frontend")
+
+
+class DemoLoginRequest(BaseModel):
+    role_or_username: Optional[str] = Field(None, description="Demo role or username (e.g. operator, admin, field_officer, driver, sih_evaluator)")
+    username: Optional[str] = Field(None, description="Demo username")
+    role: Optional[str] = Field(None, description="Demo role")
 
 
 class Token(BaseModel):

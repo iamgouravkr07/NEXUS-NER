@@ -15,6 +15,7 @@ from app.schemas.nlp_incident import (
 )
 from app.services import alert_service
 from app.services.nlp_extraction_service import get_nlp_extraction_service, ExtractionError
+from app.services.rate_limiter import rate_limit
 from app.services.websocket_manager import manager
 from app.api.auth import require_roles
 
@@ -28,7 +29,8 @@ router = APIRouter(
 @router.post("/extract-from-text", response_model=IncidentExtractionResponse)
 def extract_incident_from_text(
     payload: IncidentExtractionRequest,
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER")),
+    _limiter: None = Depends(rate_limit(limit=15, window_seconds=60, scope="extract_from_text")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "SIH_EVALUATOR")),
 ):
     """
     Extract structured incident attributes from unstructured natural language reports using AI/NLP.
@@ -45,7 +47,7 @@ def extract_incident_from_text(
     except Exception as exc:
         raise HTTPException(
             status_code=500,
-            detail=f"NLP extraction processing failed: {exc}",
+            detail="NLP extraction processing encountered an internal error.",
         )
 
 
@@ -118,7 +120,7 @@ def create_incident(
 @router.get("/", response_model=list[IncidentResponse])
 def get_incidents(
     db: Session = Depends(get_db),
-    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER")),
+    current_user = Depends(require_roles("ADMIN", "CONTROL_OPERATOR", "FIELD_OFFICER", "DRIVER", "SIH_EVALUATOR")),
 ):
     return db.query(Incident).order_by(Incident.id.desc()).all()
 

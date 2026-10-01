@@ -88,7 +88,7 @@ function Header() {
           <h2 className="text-base sm:text-lg font-semibold truncate text-slate-900 dark:text-white">
             {user?.role === "DRIVER"
               ? (t.driverCockpit?.missionActive || "Mission Cockpit")
-              : user?.role === "ADMIN" || user?.role === "CONTROL_OPERATOR"
+              : user?.role === "ADMIN" || user?.role === "CONTROL_OPERATOR" || user?.role === "SIH_EVALUATOR"
               ? t.nav.controlTower
               : "NEXUS-NER"}
           </h2>
